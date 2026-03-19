@@ -96,8 +96,8 @@ extern (C) void switchToTask(Task* task)
     Critical.endCritical;
 
     showContext(&tasks[0].context);
-    ComContext.saveContext(cast(size_t*) &(__osTask.context));
-    ComContext.loadContext(cast(size_t*)&(__currentTask.context));
+    ComContext.halSaveContext(cast(size_t*) &(__osTask.context));
+    ComContext.halLoadContext(cast(size_t*)&(__currentTask.context));
     //context_switch(&(__osTask.context), &(__currentTask.context));
 }
 
@@ -221,12 +221,12 @@ void yield()
 
 extern (C) void saveCurrentTask()
 {
-    ComContext.saveContext(cast(size_t*) &__currentTask.context);
+    ComContext.halSaveContext(cast(size_t*) &__currentTask.context);
 }
 
 extern (C) void loadCurrentTask()
 {
-    ComContext.loadContext(cast(size_t*) &__currentTask.context);
+    ComContext.halLoadContext(cast(size_t*) &__currentTask.context);
 }
 
 extern (C) void switchToOs()

@@ -21,7 +21,7 @@ import Syslog = api.kernel.log.syslog;
 void trapInit()
 {
     import ComContext = api.hal.context;
-    Interrupts.set_minterrupt_vector_trap(&ComContext.switchInterruptContext);
+    Interrupts.set_minterrupt_vector_trap(&ComContext.halSwitchInterruptContext);
 
     Interrupts.mStatus(Interrupts.mStatus | Interrupts.MSTATUS_MIE);
 }

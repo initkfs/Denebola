@@ -5,7 +5,7 @@ import ldc.attributes;
 
 version (Riscv32)
 {
-    extern (C) void saveContext(size_t* ctx) @optStrategy("none")
+    extern (C) void comSaveContext(size_t* ctx) @optStrategy("none")
     {
         __asm("
     sw ra, 0($0)      # 0
@@ -29,7 +29,7 @@ version (Riscv32)
     }
 
     //freeze with @section(".text.init")
-    void loadContext(size_t* ctx) @naked @optStrategy("none")
+    extern (C) void comLoadContext(size_t* ctx) @naked @optStrategy("none")
     {
         __asm("
     lw ra, 0(a0)      # 0
@@ -53,7 +53,7 @@ version (Riscv32)
     ", "");
     }
 
-    align(16) void switchInterruptContext() @naked @optStrategy("none") @section(".text.init")
+    align(16) void comSwitchInterruptContext() @naked @optStrategy("none") @section(".text.init")
     {
         __asm("
     addi sp, sp, -16
@@ -186,7 +186,7 @@ com_trap_vector_ret:
 }
 else version (Riscv64)
 {
-    void saveContext(size_t* ctx) @optStrategy("none")
+    extern (C) void comSaveContext(size_t* ctx) @optStrategy("none")
     {
         __asm("
     sd ra, 0($0)      # 0
@@ -209,7 +209,7 @@ else version (Riscv64)
     ", "{t0},~{t0}", ctx);
     }
 
-    void loadContext(size_t* ctx) @naked @optStrategy("none")
+    extern (C) void comLoadContext(size_t* ctx) @naked @optStrategy("none")
     {
         __asm("
     ld ra, 0(a0)      # 0
@@ -233,7 +233,7 @@ else version (Riscv64)
     ", "");
     }
 
-    align(16) void switchInterruptContext() @naked @optStrategy("none") @section(".text.init")
+    align(16) void comSwitchInterruptContext() @naked @optStrategy("none") @section(".text.init")
     {
         __asm("
     addi sp, sp, -16

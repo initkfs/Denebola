@@ -110,6 +110,8 @@ set_minterrupt_vector_trap:
     csrw mtvec, a0
     ret
  */
-void set_minterrupt_vector_trap(void function() handler){
-    __asm("csrw mtvec, $0", "r", handler);
+void set_minterrupt_vector_trap(void function()* handler)
+{
+    size_t funcAddr = cast(size_t)*handler;
+    __asm("csrw mtvec, $0", "r", funcAddr);
 }

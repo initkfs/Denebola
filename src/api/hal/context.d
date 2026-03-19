@@ -4,12 +4,32 @@
 module api.hal.context;
 
 import api.arch.riscv.versions;
+import ldc.attributes;
 
-static if (__isRiscv)
+__gshared extern (C)
 {
-    public import api.arch.riscv.boards.com.com_context;
+    void function(size_t* ctx) halSaveContext;
+    void function(size_t* ctx) halLoadContext;
 }
-else
+
+__gshared void function() halSwitchInterruptContext;
+
+extern (C) void initialize()
 {
-    static assert(false, "Not supported HAL context for platform");
+    static if (__isRiscv)
+    {
+        import ComContext = api.arch.riscv.boards.com.com_context;
+    }
+    else
+    {
+        static assert(false, "Not supported HAL context for platform");
+    }
+
+    halSaveContext = &ComContext.comSaveContext;
+    halLoadContext = &ComContext.comLoadContext;
+    halSwitchInterruptContext = &ComContext.comSwitchInterruptContext;
+
+    assert(halSaveContext);
+    assert(halLoadContext);
+    assert(halSwitchInterruptContext);
 }

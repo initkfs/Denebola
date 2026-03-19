@@ -101,6 +101,11 @@ extern (C) void dstart()
 
     Syslog.setLoad(true);
 
+    import HalInit = api.hal.inits.hal_init;
+    HalInit.initialize;
+
+    Syslog.info("Init HAL layer");
+
     // ubyte* bssStart = cast(ubyte*) get_bss_start;
     // ubyte* bssEnd = cast(ubyte*) get_bss_end;
 
