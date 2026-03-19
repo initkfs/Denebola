@@ -35,7 +35,7 @@ bool lock(Semaphore* sem)
 
     TaskManager.__currentTask.state = TaskState.waitSem;
 
-    CriticalSection.end();
+    Critical.endCritical;
 
     TaskManager.yield;
 

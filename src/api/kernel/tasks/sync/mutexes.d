@@ -42,14 +42,14 @@ void lock(Mutex* mutex)
         }
     }
 
-    if (currentTask.priority > mutex.owner.priority)
+    if (TaskManager.__currentTask.priority > mutex.owner.priority)
     {
         mutex.owner.savedPriority = mutex.owner.priority;
-        mutex.owner.priority = currentTask.priority;
+        mutex.owner.priority = TaskManager.__currentTask.priority;
         //updateTaskPriority(mutex.owner);
     }
 
-    currentTask.state = TaskState.waitMutex;
+    TaskManager.__currentTask.state = TaskState.waitMutex;
     mutex.waitingTasks.push(TaskManager.__currentTask);
 
     Critical.endCritical;
@@ -60,7 +60,7 @@ void unlock(Mutex* mutex)
 {
     Critical.startCritical;
 
-    if (mutex.owner != currentTask)
+    if (mutex.owner != TaskManager.__currentTask)
     {
         Critical.endCritical;
         return;
