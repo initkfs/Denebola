@@ -95,7 +95,7 @@ __gshared {
 
 extern (C) void dstart()
 {
-    import Interrupts = api.hal.interrupts;
+    import Interrupts = api.hal.hal_interrupts;
 
     Interrupts.mGlobalInterruptDisable;
 
@@ -120,7 +120,7 @@ extern (C) void dstart()
     trapInit;
     Syslog.info("Init traps");
 
-    // import MemoryHAL = api.hal.memory;
+    // import MemoryHAL = api.hal.hal_memory;
 
     // auto heapStartAddr = cast(void*)(MemoryHAL.get_heap_start);
     // auto heapEndAddr = cast(void*)(MemoryHAL.get_heap_end);

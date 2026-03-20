@@ -5,7 +5,7 @@ module api.kernel.trap;
 
 version (RiscvGeneric)
 {
-    import Interrupts = api.hal.interrupts;
+    import Interrupts = api.hal.hal_interrupts;
 }
 else
 {

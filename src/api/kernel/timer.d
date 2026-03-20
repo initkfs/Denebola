@@ -8,7 +8,7 @@ import api.kstd.io.cstdio;
 version (RiscvGeneric)
 {
     import Harts = api.hal.hal_cpu;
-    import Interrupts = api.hal.interrupts;
+    import Interrupts = api.hal.hal_interrupts;
 }
 else
 {

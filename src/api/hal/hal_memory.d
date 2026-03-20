@@ -1,4 +1,4 @@
-module api.hal.memory;
+module api.hal.hal_memory;
 
 import api.arch.riscv.versions;
 
@@ -15,12 +15,5 @@ else
 size_t _heap_start;
 size_t _heap_end;
 
-size_t get_heap_start()
-{
-    return _heap_start;
-}
-
-size_t get_heap_end()
-{
-    return _heap_end;
-}
+size_t get_heap_start() => _heap_start;
+size_t get_heap_end() => _heap_end;

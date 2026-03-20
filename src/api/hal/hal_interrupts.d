@@ -1,12 +1,13 @@
 /**
  * Authors: initkfs
  */
-module api.hal.interrupts;
+module api.hal.hal_interrupts;
 
 import api.arch.riscv.versions;
 
 static if (__isRiscv)
 {
+    //TODO split hal\com interfaces
     public import api.arch.riscv.boards.com.com_interrupts_constants;
     public import api.arch.riscv.boards.com.com_interrupts;
 
