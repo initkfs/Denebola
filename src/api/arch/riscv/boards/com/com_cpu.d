@@ -3,39 +3,28 @@ module api.arch.riscv.boards.com.com_cpu;
 /**
  * Authors: initkfs
  */
+import api.hal.hal_cpu: ArchCaps;
 import ldc.llvmasm;
 
-__gshared
-{
-    size_t __riscv_xlen;
-
-    bool isMultiplyDivide;
-    bool isAtomic;
-    bool isFloat;
-    bool isDouble;
-    bool isCompressed;
-    bool isBaseInteger;
-    bool isUserMode;
-}
-
-size_t mhartId() @trusted => __asm!size_t("csrr $0, mhartid", "=r");
+size_t comMhartId() @trusted => __asm!size_t("csrr $0, mhartid", "=r");
 
 size_t m_get_misa() @trusted => __asm!size_t("csrr $0, misa", "=r");
 size_t m_get_mvendorid() @trusted => __asm!size_t("csrr $0, mvendorid", "=r");
 size_t m_get_marchid() @trusted => __asm!size_t("csrr $0, marchid", "=r");
 size_t m_get_mimpid() @trusted => __asm!size_t("csrr $0, mimpid", "=r");
 
-void wfi(){
+void comWait() @trusted
+{
     __asm("wfi", "");
 }
 
-void loadMisa()
+ArchCaps comLoadCaps() @trusted
 {
     size_t misa = m_get_misa();
 
     if (misa == 0)
     {
-        return;
+        return ArchCaps.init;
     }
 
     version (Riscv64)
@@ -51,36 +40,40 @@ void loadMisa()
         static assert(false, "Unsupported platform");
     }
 
+    ArchCaps caps;
+
     ubyte mxl = (misa >> shift) & 0x3; // RV64 (RV32 >> 30), & 0b11 two bits isolation
     switch (mxl)
     {
         case 1:
-            __riscv_xlen = 32;
+            caps.__riscv_xlen = 32;
             break;
         case 2:
-            __riscv_xlen = 64;
+            caps.__riscv_xlen = 64;
             break;
         default:
             break;
     }
 
     if (misa & (1 << ('M' - 'A')))
-        isMultiplyDivide = true; //Multiply/Divide
+        caps.isMultiplyDivide = true; //Multiply/Divide
     if (misa & (1 << ('A' - 'A')))
-        isAtomic = true; //Atomic
+        caps.isAtomic = true; //Atomic
     if (misa & (1 << ('F' - 'A')))
-        isFloat = true; // Float
+        caps.isFloat = true; // Float
     if (misa & (1 << ('D' - 'A')))
-        isDouble = true; //Double
+        caps.isDouble = true; //Double
     if (misa & (1 << ('C' - 'A')))
-        isCompressed = true; //Compressed;
+        caps.isCompressed = true; //Compressed;
     if (misa & (1 << ('I' - 'A')))
-        isBaseInteger = true; //Base Integer;
+        caps.isBaseInteger = true; //Base Integer;
     if (misa & (1 << ('U' - 'A')))
-        isUserMode = true; //User mode;
+        caps.isUserMode = true; //User mode;
+
+    return caps;
 }
 
-string vendorId()
+string comVendorId() @trusted
 {
     auto id = m_get_mvendorid();
     if (id == 0)

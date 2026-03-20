@@ -7,7 +7,7 @@ import api.kstd.io.cstdio;
 
 version (RiscvGeneric)
 {
-    import Harts = api.hal.cpu;
+    import Harts = api.hal.hal_cpu;
     import Interrupts = api.hal.interrupts;
 }
 else
@@ -46,7 +46,7 @@ size_t ticksFromSec(size_t sec, size_t freqHz) => sec * freqHz;
 
 void timerInit()
 {
-    size_t id = Harts.mhartId();
+    size_t id = Harts.halHartId();
 
     interval = ticksFromSec(startIntervalSec, Interrupts.mTimerHz);
     assert(interval > 0);
@@ -77,19 +77,19 @@ void timerInit()
 extern (C) size_t timer_handler(size_t epc, size_t cause)
 {
     //TODO or MTIE?
-    auto id = Harts.mhartId();
+    auto id = Harts.halHartId();
     writeIntevalToTimer(id);
     //Syslog.trace("Call timer handler");
     return epc;
 }
 
-private void writeIntevalToTimer(size_t mhartId)
+private void writeIntevalToTimer(size_t comHartId)
 {
     import Volatile = api.kernel.volatile;
 
     //*mtimeCmpPtr = currTimeValue + interval;
 
-    ulong* mtimeCmpPtr = cast(ulong*) Interrupts.mTimeRegCmpAddr(mhartId);
+    ulong* mtimeCmpPtr = cast(ulong*) Interrupts.mTimeRegCmpAddr(comHartId);
 
     ulong currTimeValue = Volatile.load(cast(ulong*) Interrupts.mTime());
     const timeValue = currTimeValue + interval;
