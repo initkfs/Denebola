@@ -108,7 +108,7 @@ private void writeIntevalToTimer(size_t mhartId)
                 import ldc.llvmasm : __asm;
 
                 uint spinCount = 0;
-                while (!Atomic.cas(&isProcessUpdate, 0, 1))
+                while (!Atomic.halCas(&isProcessUpdate, 0, 1))
                 {
                     //2^spin_count
                     for (uint i = 0; i < (1 << spinCount); i++)
@@ -127,7 +127,7 @@ private void writeIntevalToTimer(size_t mhartId)
                 MemCore.memoryFenceWW;
                 mtimeCmpPtr[1] = timeValue >> 32;
 
-                while (Atomic.cas(&isProcessUpdate, 1, 0))
+                while (Atomic.halCas(&isProcessUpdate, 1, 0))
                 {
 
                 }

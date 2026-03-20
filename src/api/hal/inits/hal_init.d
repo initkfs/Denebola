@@ -10,10 +10,12 @@ enum halfunc;
 
 void initialize()
 {
-    import Context = api.hal.context;
+    import HalContext = api.hal.hal_context;
+    import HalAtomic = api.hal.hal_atomic;
 
     alias halModules = AliasSeq!(
-        Context,
+        HalContext,
+        HalAtomic,
     );
 
     static foreach (m; halModules)

@@ -4,7 +4,7 @@
 module api.main;
 
 //Entry point
-import api.hal.entry;
+import api.hal.hal_entry;
 
 import Tests = api.kernel.tests;
 import Syslog = api.kernel.log.syslog;
@@ -20,7 +20,7 @@ import MathStrict = api.kstd.math.math_strict;
 import MathRandom = api.kstd.math.math_random;
 import Units = api.kstd.util.units;
 import Bits = api.kstd.bits;
-import Atomic = api.hal.atomic;
+import Atomic = api.hal.hal_atomic;
 import Spinlock = api.kernel.tasks.sync.spinlock;
 import Critical = api.kernel.tasks.critical;
 import Queues = api.kernel.utils.queues;

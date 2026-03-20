@@ -3,7 +3,7 @@
  */
 module api.kernel.tasks.sync.spinlock;
 
-import Atomic = api.hal.atomic;
+import Atomic = api.hal.hal_atomic;
 
 struct Lock
 {
@@ -42,13 +42,13 @@ struct Lock
     void acquire() @trusted
     {
         //TODO halt if locked
-        const ret = Atomic.swapAcquire(&lockStatus);
+        const ret = Atomic.halSwapAcquire(&lockStatus);
         assert(ret);
     }
 
     void release() @trusted
     {
-        const ret = Atomic.swapRelease(&lockStatus);
+        const ret = Atomic.halSwapRelease(&lockStatus);
         assert(!ret);
     }
 }

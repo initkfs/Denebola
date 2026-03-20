@@ -8,7 +8,7 @@ import api.kstd.io.cstdio;
 
 import Syslog = api.kernel.log.syslog;
 import Critical = api.kernel.tasks.critical;
-import ComContext = api.hal.context;
+import ComContext = api.hal.hal_context;
 
 import ldc.attributes;
 import ldc.llvmasm;

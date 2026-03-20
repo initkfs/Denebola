@@ -49,7 +49,7 @@ cas_lrsc_fail:
     ret
  */
 
-    bool cas(uint* addr, int expectedInAddr, int newValueIfAddrEqvExpected)
+    bool comCas(size_t* addr, int expectedInAddr, int newValueIfAddrEqvExpected)
     {
         return __asm!bool("
     cas_lrsc:
@@ -78,7 +78,7 @@ cas_lrsc_exit:
 else version (Riscv64)
 {
 
-    bool cas(scope size_t* addr, int expectedInAddr, int newValueIfAddrEqvExpected)
+    bool comCas(scope size_t* addr, int expectedInAddr, int newValueIfAddrEqvExpected)
     {
         return __asm!bool("
     cas_lrsc:
@@ -121,7 +121,7 @@ else
 
 version (Riscv32)
 {
-    bool swapAcquire(uint* lockPtr)
+    bool comSwapAcquire(size_t* lockPtr)
     {
         return cast(bool) __asm!size_t("
     swap_acquire:
@@ -136,7 +136,7 @@ version (Riscv32)
 }
 else version (Riscv64)
 {
-    bool swapAcquire(ulong* lockPtr)
+    bool comSwapAcquire(size_t* lockPtr)
     {
         return cast(bool) __asm!size_t("
     swap_acquire:
@@ -159,7 +159,7 @@ swap_release:
  */
 version (Riscv32)
 {
-    bool swapRelease(uint* lockPtr)
+    bool comSwapRelease(size_t* lockPtr)
     {
         return cast(bool) __asm!size_t("
        amoswap.w.rl x0, x0, 0($1)
@@ -169,7 +169,7 @@ version (Riscv32)
 }
 else version (Riscv64)
 {
-    bool swapRelease(ulong* lockPtr)
+    bool comSwapRelease(size_t* lockPtr)
     {
         return cast(bool) __asm!size_t("
        amoswap.d.rl x0, x0, 0($1)

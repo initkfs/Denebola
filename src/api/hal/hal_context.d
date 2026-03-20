@@ -1,11 +1,10 @@
 /**
  * Authors: initkfs
  */
-module api.hal.context;
+module api.hal.hal_context;
 
-import api.arch.riscv.versions;
 import api.hal.inits.hal_init;
-import ldc.attributes;
+import api.arch.riscv.versions;
 
 @halfunc __gshared
 {
