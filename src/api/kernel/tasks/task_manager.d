@@ -21,7 +21,6 @@ extern (C) __gshared
     Task* __currentTask;
     Task __osTask;
 
-
     ubyte[taskStacksSize][taskMaxCount] taskStacks;
     Task[taskMaxCount] tasks;
 
@@ -96,7 +95,7 @@ extern (C) void switchToTask(Task* task)
     Critical.endCritical;
 
     showContext(&tasks[0].context);
-    ComContext.halSaveContext(cast(size_t*) &(__osTask.context));
+    ComContext.halSaveContext(cast(size_t*)&(__osTask.context));
     ComContext.halLoadContext(cast(size_t*)&(__currentTask.context));
     //context_switch(&(__osTask.context), &(__currentTask.context));
 }
@@ -118,7 +117,7 @@ bool hasStateTask(TaskState state)
     foreach (ti; 0 .. taskCount)
     {
         Task* task = &tasks[ti];
-        if (task == __currentTask)
+        if (task is __currentTask)
         {
             continue;
         }
@@ -174,9 +173,8 @@ protected void roundrobin()
 extern (C) void roundrobinChoose()
 {
     Task* next;
-    size_t attempts;
 
-    while (attempts < taskCount)
+    foreach (ti; 0 .. taskCount)
     {
         if (taskIndex >= taskCount)
         {
@@ -184,7 +182,6 @@ extern (C) void roundrobinChoose()
         }
 
         Task* mustBeNext = &tasks[taskIndex];
-        taskIndex++;
 
         // if ((mustBeNext.state == TaskState.waitSignal) &&
         //     (mustBeNext.pendingSignals & mustBeNext.waitingMask))
@@ -192,26 +189,24 @@ extern (C) void roundrobinChoose()
         //     mustBeNext.state = TaskState.ready;
         // }
 
-        // if (mustBeNext.state == TaskState.ready)
-        // {
-        //     next = mustBeNext;
-        //     break;
-        // }
-        //attempts++;
-        __currentTask = mustBeNext;
-        break;
+        taskIndex++;
+
+        if (mustBeNext.state == TaskState.ready)
+        {
+            next = mustBeNext;
+            break;
+        }
     }
 
-    // if (next)
-    // {
-    //     __currentTask = next;
-    // }
-}
+    if (next && (__currentTask !is next))
+    {
+        if (__currentTask)
+        {
+            __currentTask.state = TaskState.ready;
+        }
 
-void step()
-{
-    Syslog.trace("Run sheduler step");
-    roundrobin;
+        __currentTask = next;
+    }
 }
 
 void yield()
@@ -221,20 +216,24 @@ void yield()
 
 extern (C) void saveCurrentTask()
 {
-    ComContext.halSaveContext(cast(size_t*) &__currentTask.context);
+    ComContext.halSaveContext(cast(size_t*)&__currentTask.context);
 }
 
 extern (C) void loadCurrentTask()
 {
-    ComContext.halLoadContext(cast(size_t*) &__currentTask.context);
+    ComContext.halLoadContext(cast(size_t*)&__currentTask.context);
 }
 
 extern (C) void switchToOs()
 {
-   
-    //context_save_task(&__currentTask.context);
-
     Critical.startCritical;
+
+    if (__currentTask is &__osTask)
+    {
+        return;
+    }
+
+    saveCurrentTask;
 
     auto oldTask = __currentTask;
     if (oldTask.state == TaskState.running)
@@ -243,7 +242,6 @@ extern (C) void switchToOs()
     }
 
     __currentTask = &__osTask;
-    assert(__currentTask.state == TaskState.sleep);
     __currentTask.state = TaskState.running;
     __currentTask.yieldСount++;
 

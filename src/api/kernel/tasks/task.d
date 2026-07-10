@@ -36,6 +36,7 @@ enum TaskState
     waitSem,
     waitMutex,
     waitSignal,
+    waitCondition,
     //need reset
     killed,
     completed

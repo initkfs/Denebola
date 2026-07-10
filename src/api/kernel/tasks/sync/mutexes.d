@@ -18,19 +18,16 @@ struct Mutex
     ubyte lockCount;
 }
 
-void lock(Mutex* mutex)
+bool lock(Mutex* mutex)
 {
     Critical.startCritical;
-    scope (exit)
-    {
-        Critical.endCritical;
-    }
 
     if (!mutex.owner)
     {
         mutex.owner = TaskManager.__currentTask;
         mutex.priority = TaskManager.__currentTask.priority;
-        return;
+        Critical.endCritical;
+        return true;
     }
 
     if (mutex.owner == TaskManager.__currentTask)
@@ -38,8 +35,9 @@ void lock(Mutex* mutex)
         if (mutex.isRecursive)
         {
             mutex.lockCount++;
-            return;
+            Critical.endCritical;
         }
+        return true;
     }
 
     if (TaskManager.__currentTask.priority > mutex.owner.priority)
@@ -50,10 +48,16 @@ void lock(Mutex* mutex)
     }
 
     TaskManager.__currentTask.state = TaskState.waitMutex;
+    if (mutex.waitingTasks.full)
+    {
+        return false;
+    }
+
     mutex.waitingTasks.push(TaskManager.__currentTask);
 
-    Critical.endCritical;
+    //Critical.endCritical;
     TaskManager.yield;
+    return true;
 }
 
 void unlock(Mutex* mutex)

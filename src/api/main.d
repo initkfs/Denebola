@@ -150,19 +150,24 @@ extern (C) void dstart()
     tid = TaskManager.taskCreate(&task0, "task0");
     tid1 = TaskManager.taskCreate(&task1, "task1");
     //tid2 = taskCreate(&task2);
-
     //Interrupts.mGlobalInterruptEnable;
 
     int isContinue = 0x10203040;
 
     while (true)
     {
-        Syslog.trace("Sheduler start step");
-        assert(isContinue == 0x10203040);
-        TaskManager.switchToFirstTask;
+        //Syslog.trace("Sheduler start step");
+        //assert(isContinue == 0x10203040);
+        //TaskManager.roundrobinChoose;
         //Syslog.trace("Sheduler end step");
     }
 }
+
+import api.kernel.tasks.sync.mailbox: Mailbox;
+import Mutex = api.kernel.tasks.sync.mutexes;
+
+__gshared Mailbox!(int, 10) box;
+__gshared Mutex.Mutex mutex;
 
 void task0()
 {
@@ -174,6 +179,7 @@ void task0()
         Syslog.trace("Start task0");
         //plop();
         //yield;
+        Mutex.lock(&mutex);
         assert(isContinue == 0x10203040);
         //yield;
         Syslog.trace("End task0");
@@ -203,6 +209,7 @@ void task1()
     while (true)
     {
         Syslog.trace("Start task1");
+        Mutex.lock(&mutex);
         assert(isContinue == 0x10203040);
         //yield;
         //signalSend(tid, 3);

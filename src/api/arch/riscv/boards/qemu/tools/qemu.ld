@@ -43,6 +43,11 @@ SECTIONS
     _bss_end = .;
     } >ram AT>ram :bss
 
+  .tdata : { *(.tdata .tdata.*) }
+  .tbss  : { *(.tbss .tbss.*) }
+  ASSERT(SIZEOF(.tdata) == 0, "Error: Thread-Local Storage (.tdata) variables are forbidden")
+  ASSERT(SIZEOF(.tbss) == 0, "Error: Thread-Local Storage (.tbss) variables are forbidden")
+
   .kstack : {
     . = ALIGN(16);
     . += 4K;

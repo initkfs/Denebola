@@ -4,6 +4,7 @@ import Interrupts = api.hal.hal_interrupts;
 
 /**
  * Authors: initkfs
+ * //TODO recursive
  */
 
 void startCritical()

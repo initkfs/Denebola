@@ -107,6 +107,7 @@ riscvElfLd=
 riscvElfSize=
 riscvElfObjcopy=
 riscvElfObjdump=
+riscvElfReadelf=
 
 if [[ $archType == "r32" ]]; then
      echo "Set toolchain for r32"
@@ -114,13 +115,23 @@ if [[ $archType == "r32" ]]; then
      riscvElfSize=riscv32-unknown-elf-size
      riscvElfObjcopy=riscv32-unknown-elf-objcopy
      riscvElfObjdump=riscv32-unknown-elf-objdump
+     riscvElfReadelf=riscv32-unknown-elf-readelf
 elif [[ $archType == "r64" ]]; then
      riscvElfLd=riscv64-unknown-elf-ld
      riscvElfSize=riscv64-unknown-elf-size
      riscvElfObjcopy=riscv64-unknown-elf-objcopy
      riscvElfObjdump=riscv64-unknown-elf-objdump
+     riscvElfReadelf=riscv64-unknown-elf-readelf
 else 
     echo "Unsupported arch type: $archType" >&2
+    exit 1
+fi
+
+#grep -E "tdata|tbss"
+tdata=$("$riscvElfReadelf" -W -S "$buildDir/libkernel.a" 2>/dev/null | grep tdata)
+if [ -n "$tdata" ]; then
+    echo -e "\033[0;31m[ERROR] TLS-section (tdata/tbss)\033[0m"
+        echo "$tdata"
     exit 1
 fi
 

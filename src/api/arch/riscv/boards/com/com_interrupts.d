@@ -100,6 +100,11 @@ void mSetInterruptVector(size_t* ptr)
     __asm("csrw mtvec, $0", "r", ptr);
 }
 
+void mRet()
+{
+    __asm("mret", "");
+}
+
 /** 
  * TODO from pointer
 

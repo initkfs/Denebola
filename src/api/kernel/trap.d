@@ -73,8 +73,13 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
                 timer_handler(epc, cause);
 
                 import TaskManager = api.kernel.tasks.task_manager;
+                import api.hal.hal_interrupts: mRet;
 
                 TaskManager.roundrobinChoose;
+
+                if(TaskManager.__currentTask is &TaskManager.__osTask){
+                    mRet;
+                }
 
                 break;
             case 8:
