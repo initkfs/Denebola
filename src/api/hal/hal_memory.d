@@ -12,8 +12,10 @@ else
 }
 
 
-size_t _heap_start;
-size_t _heap_end;
+__gshared extern(C) {
+    size_t _heap_start;
+    size_t _heap_end;
+}
 
 size_t get_heap_start() => _heap_start;
 size_t get_heap_end() => _heap_end;

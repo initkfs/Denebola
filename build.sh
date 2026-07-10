@@ -127,10 +127,9 @@ else
     exit 1
 fi
 
-#grep -E "tdata|tbss"
-tdata=$("$riscvElfReadelf" -W -S "$buildDir/libkernel.a" 2>/dev/null | grep tdata)
+tdata=$("$riscvElfReadelf" -W -S "$buildDir/libkernel.a" 2>/dev/null | grep -E "tdata|tbss")
 if [ -n "$tdata" ]; then
-    echo -e "\033[0;31m[ERROR] TLS-section (tdata/tbss)\033[0m"
+    echo -e "\033[0;31m[ERROR] TLS-section:\033[0m"
         echo "$tdata"
     exit 1
 fi
