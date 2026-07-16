@@ -127,12 +127,12 @@ else
     exit 1
 fi
 
-tdata=$("$riscvElfReadelf" -W -S "$buildDir/libkernel.a" 2>/dev/null | grep -E "tdata|tbss")
-if [ -n "$tdata" ]; then
-    echo -e "\033[0;31m[ERROR] TLS-section:\033[0m"
-        echo "$tdata"
-    exit 1
-fi
+# tdata=$("$riscvElfReadelf" -W -S "$buildDir/libkernel.a" 2>/dev/null | grep -E "tdata|tbss")
+# if [ -n "$tdata" ]; then
+#     echo -e "\033[0;31m[ERROR] TLS-section:\033[0m"
+#         echo "$tdata"
+#     exit 1
+# fi
 
 #https://github.com/riscv-collab/riscv-gnu-toolchain/issues/356
 "$riscvElfLd" -m "$linkerMarchType" --gc-sections -T $scriptDir/src/api/arch/riscv/boards/qemu/tools/qemu.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 

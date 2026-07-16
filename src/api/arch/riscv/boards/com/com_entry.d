@@ -11,6 +11,8 @@ void _start() @naked @optStrategy("none") @section(".text.init")
     csrr a0, mhartid
     bnez a0, _hlt
     la sp, _stack_start
+    call __initIdleTLS
+    la tp, __osTaskTLS
     call dstart
 _hlt:
     wfi

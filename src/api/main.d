@@ -46,9 +46,9 @@ __gshared
 {
     int sharedCounter;
     Spinlock.Lock lock;
-
-    bool isTimer = true;
 }
+
+extern(C) __gshared bool isTimer = true;
 
 private void runTests()
 {

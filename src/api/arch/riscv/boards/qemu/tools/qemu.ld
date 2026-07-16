@@ -13,6 +13,7 @@ PHDRS
     rodata PT_LOAD;
     data PT_LOAD;
     bss PT_LOAD;
+    tls PT_TLS;
     kstack PT_LOAD;
 }
 
@@ -43,10 +44,27 @@ SECTIONS
     _bss_end = .;
     } >ram AT>ram :bss
 
+   /*
   .tdata : { *(.tdata .tdata.*) }
   .tbss  : { *(.tbss .tbss.*) }
   ASSERT(SIZEOF(.tdata) == 0, "Error: Thread-Local Storage (.tdata) variables are forbidden")
   ASSERT(SIZEOF(.tbss) == 0, "Error: Thread-Local Storage (.tbss) variables are forbidden")
+  */
+
+   .tls_template : ALIGN(4) /*ALIGN(8) for 64bits */ {
+    _tls_start = .;
+    
+    _tdata_start = .;
+    *(.tdata .tdata.* .gnu.linkonce.td.*)
+    _tdata_end = .;
+    
+    _tbss_start = .;
+    *(.tbss .tbss.* .gnu.linkonce.tb.*)
+    *(.tcommon)
+    _tbss_end = .;
+    
+    _tls_end = .;
+  } >ram AT>ram :tls
 
   .kstack : {
     . = ALIGN(16);

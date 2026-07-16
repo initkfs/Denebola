@@ -15,13 +15,17 @@ import ldc.llvmasm;
 
 enum taskMaxCount = 16;
 enum taskStacksSize = 2048;
+enum taskTlsSize = 512; 
 
 extern (C) __gshared
 {
     Task* __currentTask;
+    
     Task __osTask;
+    align(4) ubyte[taskTlsSize] __osTaskTLS;
 
     ubyte[taskStacksSize][taskMaxCount] taskStacks;
+    ubyte[taskTlsSize][taskMaxCount] taskTls;
     Task[taskMaxCount] tasks;
 
     bool isInitOsTask;
@@ -66,6 +70,8 @@ size_t taskCreate(void function() t, string name)
     taskPtr.context.ra = cast(reg_t) t;
     taskPtr.context.mepc = taskPtr.context.ra;
     taskPtr.context.sp = cast(reg_t)&(taskStacks[i][taskStacksSize - 16]);
+    taskTls[i] = 0;
+    taskPtr.context.tp = cast(reg_t)&(taskTls[i]);
     taskPtr.context.sp = taskPtr.context.sp & ~0xF;
 
     signalsInit(taskPtr);
