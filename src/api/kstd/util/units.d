@@ -3,6 +3,10 @@
  */
 module api.kstd.util.units;
 
+// dfmt off
+version (VerFPU):
+// dfmt on
+
 import Strings = api.kstd.strings.str;
 import MathCore = api.kstd.math.math_core;
 import MathFloat = api.kstd.math.math_float;

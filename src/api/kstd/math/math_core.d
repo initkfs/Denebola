@@ -3,6 +3,8 @@
  */
 module api.kstd.math.math_core;
 
+import Ver = api.kernel.vers;
+
 T abs(T)(T x) if (__traits(isArithmetic, T))
 {
     static if (__traits(isIntegral, T))
@@ -38,7 +40,7 @@ auto minmax(MinMaxMode mode = MinMaxMode.min, A, B)(A a, B b)
         && ((__traits(isUnsigned, A) && __traits(isUnsigned, B))
         || (!__traits(isUnsigned, A) && !__traits(isUnsigned, B))))
 {
-    static if (__traits(isFloating, A))
+    static if (Ver.hasFPU && __traits(isFloating, A))
     {
         import MathFloat = api.kstd.math.math_float;
 
@@ -48,7 +50,7 @@ auto minmax(MinMaxMode mode = MinMaxMode.min, A, B)(A a, B b)
         }
     }
 
-    static if (__traits(isFloating, B))
+    static if (Ver.hasFPU && __traits(isFloating, B))
     {
         import MathFloat = api.kstd.math.math_float;
 

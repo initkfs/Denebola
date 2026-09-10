@@ -6,6 +6,7 @@ module api.main;
 //Entry point
 import api.hal.hal_entry;
 
+import Ver = api.kernel.vers;
 import Tests = api.kernel.tests;
 import Syslog = api.kernel.log.syslog;
 import BlockAllocator = api.kernel.mem.allocs.block_allocator;
@@ -18,7 +19,6 @@ import Hash = api.kstd.strings.hash;
 import MathCore = api.kstd.math.math_core;
 import MathStrict = api.kstd.math.math_strict;
 import MathRandom = api.kstd.math.math_random;
-import Units = api.kstd.util.units;
 import Bits = api.kstd.bits;
 import Atomic = api.hal.hal_atomic;
 import Spinlock = api.kernel.tasks.sync.spinlock;
@@ -27,14 +27,10 @@ import Queues = api.kernel.utils.queues;
 
 import TaskManager = api.kernel.tasks.task_manager;
 
-version (FeatureFloatPoint)
+static if (Ver.hasFPU)
 {
-    import MathFloat = api.kstd.math.math_float;
-}
-else
-{
-    //TODO placeholder
-    import MathFloat = api.kstd.math.math_core;
+   // import MathFloat = api.kstd.math.math_float;
+   // import Units = api.kstd.util.units;
 }
 
 import api.kstd.io.cstdio;
@@ -67,10 +63,10 @@ private void runTests()
         StackStrMod,
         MathCore,
         MathStrict,
-        MathFloat,
+       // Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
+       // Ver.IfVerMods!(Ver.hasFPU, "api.kstd.util.units"),
         MathRandom,
         Bits,
-        Units,
         Atomic,
         Spinlock,
         Queues

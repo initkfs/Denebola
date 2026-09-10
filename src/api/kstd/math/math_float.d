@@ -3,6 +3,10 @@
  */
 module api.kstd.math.math_float;
 
+// dfmt off
+version (VerFPU):
+// dfmt on
+
 import api.kernel.errors;
 
 import MathCore = api.kstd.math.math_core;

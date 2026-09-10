@@ -1,4 +1,5 @@
 /build/
+/build-*.sh
 /dub.selections.json
 /*.o
 /*.obj

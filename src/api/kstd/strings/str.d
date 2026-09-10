@@ -3,6 +3,7 @@
  */
 module api.kstd.strings.str;
 
+import Ver = api.kernel.vers;
 import api.kernel.errors;
 
 immutable
@@ -447,148 +448,151 @@ unittest
     assert(isEqual("raboof", reverse("foobar", buff)));
 }
 
-// https://stackoverflow.com/questions/2302969/convert-a-float-to-a-string
-C[] ftoa(T, C = char)(
-    T targetValue,
-    C[] buff,
-    T precision = 0.00000000000001) if (__traits(isFloating, T) && isSomeChar!C)
+static if (Ver.hasFPU)
 {
-    import MathCore = api.kstd.math.math_core;
-    import MathFloat = api.kstd.math.math_float;
-
-    if (MathFloat.isNaN(targetValue))
+    // https://stackoverflow.com/questions/2302969/convert-a-float-to-a-string
+    C[] ftoa(T, C = char)(
+        T targetValue,
+        C[] buff,
+        T precision = 0.00000000000001) if (__traits(isFloating, T) && isSomeChar!C)
     {
-        immutable nanStr = "NaN";
-        buff[] = nanStr;
-        return buff[0 .. nanStr.length];
-    }
+        import MathCore = api.kstd.math.math_core;
+        import MathFloat = api.kstd.math.math_float;
 
-    if (MathFloat.isPositiveInf(targetValue))
-    {
-        immutable infStr = "+Inf";
-        buff[] = infStr;
-        return buff[0 .. infStr.length];
-    }
-
-    if (MathFloat.isNegativeInf(targetValue))
-    {
-        immutable infStr = "-Inf";
-        buff[] = infStr;
-        return buff[0 .. infStr.length];
-    }
-
-    if (targetValue == 0)
-    {
-        buff[] = '0';
-        return buff[0 .. 1];
-    }
-
-    import std.traits : Unqual;
-
-    Unqual!T n = targetValue;
-    int digit, magn, magn1;
-    bool isNeg = n < 0;
-    if (isNeg)
-    {
-        n = -n;
-    }
-    size_t buffIndex;
-    // calculate magnitude
-    magn = cast(int) MathFloat.log10(n);
-    int useExp = (magn >= 14 || (isNeg && magn >= 9) || magn <= -9);
-    if (isNeg)
-    {
-        buff[buffIndex++] = '-';
-    }
-
-    //set up for scientific notation
-    if (useExp)
-    {
-        if (magn < 0)
+        if (MathFloat.isNaN(targetValue))
         {
-            magn -= 1;
+            immutable nanStr = "NaN";
+            buff[] = nanStr;
+            return buff[0 .. nanStr.length];
         }
 
-        n = n / MathFloat.pow!T(10.0f, magn);
-        magn1 = magn;
-        magn = 0;
-    }
-    if (magn < 1)
-    {
-        magn = 0;
-    }
-    //convert the number
-    while (n > precision || magn >= 0)
-    {
-        T weight = MathFloat.pow!T(10, magn);
-        if (weight > 0 && MathFloat.isFinite(weight))
+        if (MathFloat.isPositiveInf(targetValue))
         {
-            digit = cast(int) MathFloat.floor(n / weight);
-            n -= (digit * weight);
-            buff[buffIndex++] = cast(char)('0' + digit);
-        }
-        if (magn == 0 && n > 0)
-        {
-            buff[buffIndex++] = '.';
+            immutable infStr = "+Inf";
+            buff[] = infStr;
+            return buff[0 .. infStr.length];
         }
 
-        magn--;
-    }
-
-    if (useExp)
-    {
-        // convert the exponent
-        int i, j;
-        buff[buffIndex++] = 'e';
-        if (magn1 > 0)
+        if (MathFloat.isNegativeInf(targetValue))
         {
-            buff[buffIndex++] = '+';
+            immutable infStr = "-Inf";
+            buff[] = infStr;
+            return buff[0 .. infStr.length];
         }
-        else
+
+        if (targetValue == 0)
+        {
+            buff[] = '0';
+            return buff[0 .. 1];
+        }
+
+        import std.traits : Unqual;
+
+        Unqual!T n = targetValue;
+        int digit, magn, magn1;
+        bool isNeg = n < 0;
+        if (isNeg)
+        {
+            n = -n;
+        }
+        size_t buffIndex;
+        // calculate magnitude
+        magn = cast(int) MathFloat.log10(n);
+        int useExp = (magn >= 14 || (isNeg && magn >= 9) || magn <= -9);
+        if (isNeg)
         {
             buff[buffIndex++] = '-';
-            magn1 = -magn1;
         }
-        magn = 0;
-        while (magn1 > 0)
+
+        //set up for scientific notation
+        if (useExp)
         {
-            buff[buffIndex++] = cast(char)('0' + magn1 % 10);
-            magn1 /= 10;
-            magn++;
+            if (magn < 0)
+            {
+                magn -= 1;
+            }
+
+            n = n / MathFloat.pow!T(10.0f, magn);
+            magn1 = magn;
+            magn = 0;
         }
-        buffIndex -= magn;
-        for (i = 0, j = magn - 1; i < j; i++, j--)
+        if (magn < 1)
         {
-            // swap without temporary
-            buff[i] ^= buff[j];
-            buff[j] ^= buff[i];
-            buff[i] ^= buff[j];
+            magn = 0;
         }
-        buffIndex += magn;
+        //convert the number
+        while (n > precision || magn >= 0)
+        {
+            T weight = MathFloat.pow!T(10, magn);
+            if (weight > 0 && MathFloat.isFinite(weight))
+            {
+                digit = cast(int) MathFloat.floor(n / weight);
+                n -= (digit * weight);
+                buff[buffIndex++] = cast(char)('0' + digit);
+            }
+            if (magn == 0 && n > 0)
+            {
+                buff[buffIndex++] = '.';
+            }
+
+            magn--;
+        }
+
+        if (useExp)
+        {
+            // convert the exponent
+            int i, j;
+            buff[buffIndex++] = 'e';
+            if (magn1 > 0)
+            {
+                buff[buffIndex++] = '+';
+            }
+            else
+            {
+                buff[buffIndex++] = '-';
+                magn1 = -magn1;
+            }
+            magn = 0;
+            while (magn1 > 0)
+            {
+                buff[buffIndex++] = cast(char)('0' + magn1 % 10);
+                magn1 /= 10;
+                magn++;
+            }
+            buffIndex -= magn;
+            for (i = 0, j = magn - 1; i < j; i++, j--)
+            {
+                // swap without temporary
+                buff[i] ^= buff[j];
+                buff[j] ^= buff[i];
+                buff[i] ^= buff[j];
+            }
+            buffIndex += magn;
+        }
+        //buff[c++] = '\0';
+        return buff[0 .. buffIndex];
     }
-    //buff[c++] = '\0';
-    return buff[0 .. buffIndex];
-}
 
-unittest
-{
-    import api.kstd.io.cstdio;
+    unittest
+    {
+        import api.kstd.io.cstdio;
 
-    char[256] buff = 0;
+        char[256] buff = 0;
 
-    assert(ftoa(float.nan, buff) == "NaN");
-    assert(ftoa(-float.nan, buff) == "NaN");
-    assert(ftoa(float.infinity, buff) == "+Inf");
-    assert(ftoa(-float.infinity, buff) == "-Inf");
+        assert(ftoa(float.nan, buff) == "NaN");
+        assert(ftoa(-float.nan, buff) == "NaN");
+        assert(ftoa(float.infinity, buff) == "+Inf");
+        assert(ftoa(-float.infinity, buff) == "-Inf");
 
-    assert(ftoa(0f, buff) == "0");
-    assert(ftoa(1f, buff) == "1");
-    assert(ftoa(-1f, buff) == "-1");
-    assert(ftoa(5f, buff) == "5");
-    assert(ftoa(-5f, buff) == "-5");
-    assert(ftoa(1000f, buff) == "1000");
-    assert(ftoa(11.55f, buff) == "11.55000018626448");
-    assert(ftoa(-4.12f, buff) == "-4.11999988269908");
+        assert(ftoa(0f, buff) == "0");
+        assert(ftoa(1f, buff) == "1");
+        assert(ftoa(-1f, buff) == "-1");
+        assert(ftoa(5f, buff) == "5");
+        assert(ftoa(-5f, buff) == "-5");
+        assert(ftoa(1000f, buff) == "1000");
+        assert(ftoa(11.55f, buff) == "11.55000018626448");
+        assert(ftoa(-4.12f, buff) == "-4.11999988269908");
+    }
 }
 
 const(char[]) formatb(char placeholder = '%', Args...)(const(char[]) pattern, char[] buff, Args args)
@@ -614,7 +618,7 @@ const(char[]) formatb(char placeholder = '%', Args...)(const(char[]) pattern, ch
                 {
                     auto res = atoa(arg, tempBuf);
                 }
-                else static if (is(typeof(arg) == float))
+                else static if (Ver.hasFPU && is(typeof(arg) == float))
                 {
                     auto res = ftoa!float(arg, tempBuf);
                 }
