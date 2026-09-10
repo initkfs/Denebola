@@ -5,7 +5,7 @@
     "copyright": "Copyright © 2023, initkfs",
     "description": "Experimental operating system for tiny RISC-V IoT devices",
     "license": "",
-    "name": "deuterios",
+    "name": "denebola",
     "configurations": [
         {
             "name": "riscv32",

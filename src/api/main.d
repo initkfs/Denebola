@@ -179,7 +179,7 @@ void task0()
         Syslog.trace("Start task0");
         //plop();
         //yield;
-        Mutex.lock(&mutex);
+        //Mutex.lock(&mutex);
         assert(isContinue == 0x10203040);
         //yield;
         Syslog.trace("End task0");
@@ -209,7 +209,7 @@ void task1()
     while (true)
     {
         Syslog.trace("Start task1");
-        Mutex.lock(&mutex);
+        //Mutex.lock(&mutex);
         assert(isContinue == 0x10203040);
         //yield;
         //signalSend(tid, 3);
