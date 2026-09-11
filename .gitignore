@@ -8,3 +8,5 @@
 /*.dts
 /.gdbinit
 /gdb.sh
+/sdk/
+/partitions.csv

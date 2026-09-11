@@ -78,7 +78,8 @@
             "versions": [
                 "Qemu",
                 "Riscv32",
-                "Riscv32Debug"
+                "Riscv32Debug",
+                "Esp32C3"
             ],
             "dflags-ldc": [
                 "--mtriple=riscv32-unknown-elf",
