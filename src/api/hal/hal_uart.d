@@ -17,16 +17,13 @@ else
     enum HalUARTDef = COM_UART0;
 }
 
-version (Esp32C3)
+template writeUartAsm(char sym)
 {
-    template writeUartAsm(char sym)
-    {
-        enum int asciiCode = cast(int) sym;
-        enum writeUartAsm = "
-         li t0, "
-            ~ HalUARTDef.stringof ~ "
-         li t1, "
-            ~ asciiCode.stringof ~ "
-         sw t1, 0(t0)\n";
-    }
+    enum int asciiCode = cast(int) sym;
+    enum writeUartAsm = "
+         li t5, "
+        ~ HalUARTDef.stringof ~ "\n
+         li t6, "
+        ~ asciiCode.stringof ~ "\n
+         sw t6, 0(t5)\n";
 }

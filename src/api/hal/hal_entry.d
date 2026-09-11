@@ -10,18 +10,16 @@ void _start() @naked @optStrategy("none") @section(".text.init")
 {
     //TODO mixin, asm builder
     __asm(
-        HalUART.writeUartAsm!'E' ~ "
+    HalUART.writeUartAsm!'E' ~ "
     csrr a0, mhartid
-    bnez a0, _hlt"
-            ~
-            HalUART.writeUartAsm!'N' ~
-            "la sp, _stack_start
+    bnez a0, _hlt" ~
+    HalUART.writeUartAsm!'N' ~
+    "la sp, _stack_start
     call __initIdleTLS
-    la tp, __osTaskTLS"
-            ~
-            HalUART.writeUartAsm!'T' ~
-            HalUART.writeUartAsm!'\n' ~
-            "call dstart
+    la tp, __osTaskTLS" ~
+    HalUART.writeUartAsm!'T' ~
+    //interrupts not works: HalUART.writeUartAsm!'\n' ~
+    "call dstart
 _hlt:
     wfi
     j _hlt

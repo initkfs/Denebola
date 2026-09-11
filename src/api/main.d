@@ -91,9 +91,9 @@ __gshared {
 
 extern (C) void dstart()
 {
-    while(true){
+    // while(true){
 
-    }
+    // }
 
     import Interrupts = api.hal.hal_interrupts;
 

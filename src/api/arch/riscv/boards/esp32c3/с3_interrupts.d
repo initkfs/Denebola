@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module api.arch.riscv.boards.com.com_interrupts;
+module api.arch.riscv.boards.esp32c3.с3_interrupts;
 
 import api.arch.riscv.boards.com.com_interrupts_constants;
 
@@ -48,14 +48,12 @@ size_t mGloablInterrupt() @trusted => __asm!size_t("csrr $0, mie", "=r");
 
 void mGlobalInterruptEnable() @trusted
 {
-    //TODO or MSTATUS_MIE_BIT?
     //csrsi/csrci max 5 bits, 0..4
     __asm("csrsi mstatus, $0", "i", MSTATUS_MIE);
 }
 
 void mGlobalInterruptDisable() @trusted
 {
-    //TODO or MSTATUS_MIE_BIT?
     __asm("csrci mstatus, $0", "i", MSTATUS_MIE);
 }
 
