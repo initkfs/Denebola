@@ -1,4 +1,7 @@
 module api.arch.riscv.boards.com.com_context;
+/**
+ * Authors: initkfs
+ */
 
 import ldc.llvmasm;
 import ldc.attributes;
@@ -53,7 +56,7 @@ version (Riscv32)
     ", "");
     }
 
-    align(16) void comSwitchInterruptContext() @naked @optStrategy("none") @section(".text.init")
+    extern(C) align(16) void __comSwitchInterruptContext() @naked @optStrategy("none") @section(".text.init")
     {
         __asm("
     addi sp, sp, -16
@@ -233,7 +236,7 @@ else version (Riscv64)
     ", "");
     }
 
-    align(16) void comSwitchInterruptContext() @naked @optStrategy("none") @section(".text.init")
+    align(16) void __comSwitchInterruptContext() @naked @optStrategy("none") @section(".text.init")
     {
         __asm("
     addi sp, sp, -16

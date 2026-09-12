@@ -99,14 +99,17 @@ __gshared extern (C)
 extern (C) void dstart()
 {
     import Interrupts = api.hal.hal_interrupts;
-
+    
     Interrupts.halSetGlobalMIntrOff();
-    Trap.trapInit();
+    Trap.halTrapInit();
     Syslog.setLoad(true);
     Syslog.info("Init HAL layer");
 
     ubyte* bssStart = cast(ubyte*) _bss_start;
     ubyte* bssEnd = cast(ubyte*) _bss_end;
+
+    ubyte* ptr;
+    auto a = *ptr;
 
     while (bssStart < bssEnd)
     {

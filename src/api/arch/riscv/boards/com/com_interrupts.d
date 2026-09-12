@@ -7,11 +7,6 @@ import api.arch.riscv.boards.com.com_interrupts_constants;
 
 import ldc.llvmasm;
 
-extern(C) void comSetIntrsOn() @trusted
-{
-    comSetGlobalMIntrOn;
-}
-
 extern(C) size_t comGetMStatus() @trusted => __asm!size_t("csrr $0, mstatus", "=r");
 
 extern(C) void comSetMStatus(size_t status) @trusted
@@ -117,10 +112,9 @@ set_minterrupt_vector_trap:
     csrw mtvec, a0
     ret
  */
-void comSetMIntrVecHandler(void function()* handler) @trusted
+void comSetMIntrVecHandler(size_t* handler) @trusted
 {
-    size_t funcAddr = cast(size_t)*handler;
-    __asm("csrw mtvec, $0", "r", funcAddr);
+    __asm("csrw mtvec, $0", "r", handler);
 }
 
 void comSetMIntrVecValue(size_t value) @trusted

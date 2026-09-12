@@ -18,7 +18,7 @@ import api.arch.vers;
             void function(size_t* ctx) halLoadContext = &ComContext.comLoadContext;
         }
 
-        void function() halSwitchInterruptContext = &ComContext.comSwitchInterruptContext;
+        extern(C) void function() halSwitchInterruptContext = &ComContext.__comSwitchInterruptContext;
     }
     else
     {

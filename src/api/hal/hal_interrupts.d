@@ -47,8 +47,6 @@ version (Qemu)
 
         static if (__isRiscvGen)
         {
-            extern (C) void function() @trusted halSetIntrsOn = &Com.comSetIntrsOn;
-
             extern (C)
             {
                 void function() halSetTimerMIntrOn = &Com.comSetTimerMIntrOn;
@@ -61,9 +59,7 @@ version (Qemu)
         }
         else static if (__isC3)
         {
-            import api.arch.riscv.boards.esp32c3.с3_interrupts;
-
-            extern(C) void function() halSetIntrsOn = &c3SetIntrsOn;
+            
         }
         else
         {
@@ -71,7 +67,7 @@ version (Qemu)
         }
 
         void function(size_t* ptr) halSetMIntrVec = &Com.comSetMIntrVec;
-        void function(void function()*) halSetMIntrVecHandler = &Com.comSetMIntrVecHandler;
+        void function(size_t*) halSetMIntrVecHandler = &Com.comSetMIntrVecHandler;
     }
     else
     {

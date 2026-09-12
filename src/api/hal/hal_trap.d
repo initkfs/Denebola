@@ -17,16 +17,28 @@ else
 import api.kstd.io.cstdio;
 import api.kernel.tasks.task;
 import api.hal.hal_timer;
+import api.arch.vers;
 
 import Syslog = api.kernel.log.syslog;
 
-void trapInit()
+__gshared extern (C)
 {
-    import ComContext = api.hal.hal_context;
+    static if (__isRiscv)
+    {
+        import ComTrap = api.arch.riscv.boards.com.com_trap;
 
-    Interrupts.halSetMIntrVecHandler(&ComContext.halSwitchInterruptContext);
+        void function() halTrapInit = &ComTrap.comTrapInit;
+    }
+    else static if (__isC3)
+    {
+        import C3Trap = api.arch.riscv.boards.esp32c3.c3_trap;
 
-    Interrupts.halSetMStatus(Interrupts.halGetMStatus() | Interrupts.MSTATUS_MIE);
+        void function() halTrapInit = &C3Trap.c3TrapInit;
+    }
+    else
+    {
+        static assert(false, "Traps must be initialized");
+    }
 }
 
 extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
