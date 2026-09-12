@@ -14,7 +14,8 @@
                 "Riscv32",
                 "Riscv32Debug",
                 "RiscvGen",
-                "VerFPU"
+                "VerFPU",
+                "VerAtomic"
             ],
             "dflags-ldc": [
                 "--mtriple=riscv32-unknown-elf",
@@ -32,7 +33,8 @@
                 "Qemu",
                 "Riscv32",
                 "RiscvGen",
-                "VerFPU"
+                "VerFPU",
+                "VerAtomic"
             ],
             "dflags-ldc": [
                 "-mattr=+m,+a,+c,+f",
@@ -52,6 +54,7 @@
                 "Riscv64Debug",
                 "RiscvGen",
                 "VerFPU",
+                "VerAtomic",
                 "PTS64"
             ],
             "dflags-ldc": [
@@ -67,6 +70,7 @@
                 "Qemu",
                 "Riscv64",
                 "VerFPU",
+                "VerAtomic",
                 "RiscvGen",
                 "PTS64"
             ],

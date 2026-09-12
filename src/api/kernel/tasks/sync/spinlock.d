@@ -3,8 +3,6 @@
  */
 module api.kernel.tasks.sync.spinlock;
 
-import Atomic = api.hal.hal_atomic;
-
 struct Lock
 {
     enum Status
@@ -42,14 +40,32 @@ struct Lock
     void acquire() @trusted
     {
         //TODO halt if locked
-        const ret = Atomic.halSwapAcquire(&lockStatus);
-        assert(ret);
+        version (VerAtomic)
+        {
+            import Atomic = api.hal.hal_atomic;
+
+            const ret = Atomic.halSwapAcquire(&lockStatus);
+            assert(ret);
+        }
+        else
+        {
+            lockStatus = Status.lock;
+        }
     }
 
     void release() @trusted
     {
-        const ret = Atomic.halSwapRelease(&lockStatus);
-        assert(!ret);
+        version (VerAtomic)
+        {
+            import Atomic = api.hal.hal_atomic;
+
+            const ret = Atomic.halSwapRelease(&lockStatus);
+            assert(!ret);
+        }
+        else
+        {
+            lockStatus = Status.unlock;
+        }
     }
 }
 

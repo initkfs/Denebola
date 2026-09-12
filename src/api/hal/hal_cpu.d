@@ -3,7 +3,7 @@
  */
 module api.hal.hal_cpu;
 
-import api.hal.inits.hal_init: halfunc;
+import api.hal.inits.hal_init : halfunc;
 import api.arch.vers;
 
 struct ArchCaps
@@ -20,26 +20,17 @@ struct ArchCaps
 
 @halfunc __gshared @trusted
 {
-    size_t function() halHartId;
-    string function() halVendorId;
-    ArchCaps function() halLoadCaps;
-    void function() halWait;
-}
-
-void initialize()
-{
     static if (__isRiscv)
     {
         import ComCPU = api.arch.riscv.boards.com.com_cpu;
+
+        size_t function() halHartId = &ComCPU.comMhartId;
+        string function() halVendorId = &ComCPU.comVendorId;
+        ArchCaps function() halLoadCaps = &ComCPU.comLoadCaps;
+        void function() halWait = &ComCPU.comWait;
     }
     else
     {
         static assert(false, "Not supported HAL cpu for platform");
     }
-
-    halHartId = &ComCPU.comMhartId;
-    halVendorId = &ComCPU.comVendorId;
-    halLoadCaps = &ComCPU.comLoadCaps;
-    halWait = &ComCPU.comWait;
-
 }

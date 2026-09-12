@@ -4,6 +4,10 @@ module api.arch.riscv.boards.com.com_atomic;
  * Authors: initkfs
  */
 
+// dfmt off
+version (VerAtomic):
+// dfmt on
+
 import ldc.llvmasm;
 import ldc.attributes;
 

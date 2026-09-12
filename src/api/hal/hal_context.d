@@ -8,22 +8,20 @@ import api.arch.vers;
 
 @halfunc __gshared
 {
-    extern (C)
+    static if (__isRiscv)
     {
-        void function(size_t* ctx) halSaveContext;
-        void function(size_t* ctx) halLoadContext;
+        import ComContext = api.arch.riscv.boards.com.com_context;
+
+        extern (C)
+        {
+            void function(size_t* ctx) halSaveContext = &ComContext.comSaveContext;
+            void function(size_t* ctx) halLoadContext = &ComContext.comLoadContext;
+        }
+
+        void function() halSwitchInterruptContext = &ComContext.comSwitchInterruptContext;
     }
-
-    void function() halSwitchInterruptContext;
+    else
+    {
+        static assert(false, "Not supported HAL context for platform");
+    }
 }
-
-static if (__isRiscv)
-{
-    import ComContext = api.arch.riscv.boards.com.com_context;
-}
-else
-{
-    static assert(false, "Not supported HAL context for platform");
-}
-
-mixin InitHalFuncs!ComContext;

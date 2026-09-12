@@ -61,10 +61,12 @@ private void runTests()
         Hash,
         StackStrMod,
         MathCore,
-        MathStrict, // Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
-        // Ver.IfVerMods!(Ver.hasFPU, "api.kstd.util.units"),
+        MathStrict,
+        Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
+        Ver.IfVerMods!(Ver.hasFPU, "api.kstd.util.units"),
         MathRandom,
         Bits,
+        Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
         Atomic,
         Spinlock,
         Queues
@@ -90,11 +92,6 @@ __gshared
 
 extern (C) void dstart()
 {
-    //TODO disable intrs first
-    import HalInit = api.hal.inits.hal_init;
-
-    HalInit.initialize;
-
     import Interrupts = api.hal.hal_interrupts;
 
     Interrupts.halSetGlobalMIntrOff();
@@ -145,7 +142,7 @@ extern (C) void dstart()
     tid = TaskManager.taskCreate(&task0, "task0");
     tid1 = TaskManager.taskCreate(&task1, "task1");
     //tid2 = taskCreate(&task2);
-    
+
     Interrupts.halSetGlobalMIntrOn();
 
     int isContinue = 0x10203040;

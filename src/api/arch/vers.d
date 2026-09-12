@@ -36,6 +36,7 @@ else
 }
 
 enum hasFPU = isVersion!"VerFPU";
+enum hasAtomic = isVersion!"VerAtomic";
 
 template isVersion(string ver)
 {
