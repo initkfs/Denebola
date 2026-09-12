@@ -6,7 +6,7 @@ module api.main;
 //Entry point
 import api.hal.hal_entry;
 
-import Ver = api.kernel.vers;
+import Ver = api.arch.vers;
 import Tests = api.kernel.tests;
 import Syslog = api.kernel.log.syslog;
 import BlockAllocator = api.kernel.mem.allocs.block_allocator;
@@ -21,6 +21,7 @@ import MathStrict = api.kstd.math.math_strict;
 import MathRandom = api.kstd.math.math_random;
 import Bits = api.kstd.bits;
 import Atomic = api.hal.hal_atomic;
+import Trap = api.hal.hal_trap;
 import Spinlock = api.kernel.tasks.sync.spinlock;
 import Critical = api.kernel.tasks.critical;
 import Queues = api.kernel.utils.queues;
@@ -29,14 +30,12 @@ import TaskManager = api.kernel.tasks.task_manager;
 
 static if (Ver.hasFPU)
 {
-   // import MathFloat = api.kstd.math.math_float;
-   // import Units = api.kstd.util.units;
+    // import MathFloat = api.kstd.math.math_float;
+    // import Units = api.kstd.util.units;
 }
 
 import api.kstd.io.cstdio;
 import api.kernel.tasks.task;
-import api.kernel.timer;
-import api.kernel.trap;
 
 __gshared
 {
@@ -44,7 +43,7 @@ __gshared
     Spinlock.Lock lock;
 }
 
-extern(C) __gshared bool isTimer = true;
+extern (C) __gshared bool isTimer = true;
 
 private void runTests()
 {
@@ -62,9 +61,8 @@ private void runTests()
         Hash,
         StackStrMod,
         MathCore,
-        MathStrict,
-       // Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
-       // Ver.IfVerMods!(Ver.hasFPU, "api.kstd.util.units"),
+        MathStrict, // Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
+        // Ver.IfVerMods!(Ver.hasFPU, "api.kstd.util.units"),
         MathRandom,
         Bits,
         Atomic,
@@ -83,7 +81,8 @@ private void runTests()
     }
 }
 
-__gshared {
+__gshared
+{
     size_t tid;
     size_t tid1;
     size_t tid2;
@@ -91,18 +90,17 @@ __gshared {
 
 extern (C) void dstart()
 {
-    // while(true){
+    //TODO disable intrs first
+    import HalInit = api.hal.inits.hal_init;
 
-    // }
+    HalInit.initialize;
 
     import Interrupts = api.hal.hal_interrupts;
 
-    Interrupts.mGlobalInterruptDisable;
+    Interrupts.halSetGlobalMIntrOff();
+    Trap.trapInit();
 
     Syslog.setLoad(true);
-
-    import HalInit = api.hal.inits.hal_init;
-    HalInit.initialize;
 
     Syslog.info("Init HAL layer");
 
@@ -116,9 +114,6 @@ extern (C) void dstart()
     // }
 
     Syslog.info("Os start");
-
-    trapInit;
-    Syslog.info("Init traps");
 
     // import MemoryHAL = api.hal.hal_memory;
 
@@ -141,16 +136,17 @@ extern (C) void dstart()
 
     if (isTimer)
     {
-        timerInit;
+        import Timer = api.hal.hal_timer;
+
+        Timer.halInitTimer();
         Syslog.info("Init timers");
     }
-
-    Critical.endCritical;
 
     tid = TaskManager.taskCreate(&task0, "task0");
     tid1 = TaskManager.taskCreate(&task1, "task1");
     //tid2 = taskCreate(&task2);
-    //Interrupts.mGlobalInterruptEnable;
+    
+    Interrupts.halSetGlobalMIntrOn();
 
     int isContinue = 0x10203040;
 
@@ -163,7 +159,7 @@ extern (C) void dstart()
     }
 }
 
-import api.kernel.tasks.sync.mailbox: Mailbox;
+import api.kernel.tasks.sync.mailbox : Mailbox;
 import Mutex = api.kernel.tasks.sync.mutexes;
 
 __gshared Mailbox!(int, 10) box;
@@ -173,7 +169,7 @@ void task0()
 {
     int isContinue = 0x10203040;
     Syslog.trace("Enter task0");
-    
+
     while (true)
     {
         Syslog.trace("Start task0");
@@ -191,14 +187,17 @@ void task0()
     }
 }
 
-extern(C) void plop(){
+extern (C) void plop()
+{
 }
 
-void sigHandler1(){
+void sigHandler1()
+{
     Syslog.trace("Signal 1");
 }
 
-void sigHandler2(){
+void sigHandler2()
+{
     Syslog.trace("Signal 2");
 }
 

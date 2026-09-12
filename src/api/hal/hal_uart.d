@@ -1,6 +1,6 @@
 module api.hal.hal_uart;
 
-import api.arch.riscv.versions;
+import api.arch.vers;
 import ldc.attributes;
 import ldc.llvmasm;
 

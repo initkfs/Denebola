@@ -13,6 +13,7 @@
                 "Qemu",
                 "Riscv32",
                 "Riscv32Debug",
+                "RiscvGen",
                 "VerFPU"
             ],
             "dflags-ldc": [
@@ -30,6 +31,7 @@
             "versions": [
                 "Qemu",
                 "Riscv32",
+                "RiscvGen",
                 "VerFPU"
             ],
             "dflags-ldc": [
@@ -48,6 +50,7 @@
                 "Qemu",
                 "Riscv64",
                 "Riscv64Debug",
+                "RiscvGen",
                 "VerFPU",
                 "PTS64"
             ],
@@ -64,6 +67,7 @@
                 "Qemu",
                 "Riscv64",
                 "VerFPU",
+                "RiscvGen",
                 "PTS64"
             ],
             "dflags-ldc": [

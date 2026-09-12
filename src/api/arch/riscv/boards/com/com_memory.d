@@ -6,4 +6,17 @@ import ldc.llvmasm;
 
 extern (C):
 
+void comMemFenceRWRW()
+{
+    __asm(
+        "fence rw, rw", "~{memory}"
+    );
+}
+
+void comMemFenceWW()
+{
+    __asm(
+        "fence w, w", "~{memory}"
+    );
+}
 

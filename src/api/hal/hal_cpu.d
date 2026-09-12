@@ -4,7 +4,7 @@
 module api.hal.hal_cpu;
 
 import api.hal.inits.hal_init: halfunc;
-import api.arch.riscv.versions;
+import api.arch.vers;
 
 struct ArchCaps
 {

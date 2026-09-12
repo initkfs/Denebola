@@ -14,7 +14,12 @@ void halt()
         static assert(false, "Not supported platform");
     }
 
-    Interrupts.mGlobalInterruptDisable;
+    import HalIntr = api.hal.hal_interrupts;
+
+    if (HalIntr.halSetGlobalMIntrOff)
+    {
+        HalIntr.halSetGlobalMIntrOff();
+    }
 
     while (true)
     {
@@ -36,7 +41,7 @@ void panic(lazy bool expression, const string message = "Assertion failure", con
         char[64] buff = 0;
         const buffPtr = Str.atoa(line, buff);
         println("Panic! ", message, ": ", file, ":", buffPtr);
-        
+
         halt;
     }
 }

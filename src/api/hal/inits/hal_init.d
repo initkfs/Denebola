@@ -13,11 +13,15 @@ void initialize()
     import HalContext = api.hal.hal_context;
     import HalAtomic = api.hal.hal_atomic;
     import HalCPU = api.hal.hal_cpu;
+    import HalIntr = api.hal.hal_interrupts;
+    import HalTimer = api.hal.hal_timer;
 
     alias halModules = AliasSeq!(
         HalContext,
         HalAtomic,
         HalCPU,
+        HalIntr,
+        HalTimer,
     );
 
     static foreach (m; halModules)

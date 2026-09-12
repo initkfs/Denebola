@@ -1,21 +1,19 @@
+module api.arch.riscv.boards.com.com_timer;
 /**
  * Authors: initkfs
  */
-module api.kernel.timer;
+import api.arch.riscv.boards.com.com_clint;
 
-import api.kstd.io.cstdio;
+import Harts = api.arch.riscv.boards.com.com_cpu;
+import Interrupts = api.arch.riscv.boards.com.com_interrupts;
+import Volatile = api.arch.riscv.boards.com.com_volatile;
 
-version (RiscvGeneric)
+ulong mTimeRegCmpAddr(size_t hartid) @trusted
 {
-    import Harts = api.hal.hal_cpu;
-    import Interrupts = api.hal.hal_interrupts;
-}
-else
-{
-    static assert(false, "Not supported platform");
+    return clintBase + clintCompareRegHurtOffset + clintMtimecmpSize * hartid;
 }
 
-import Syslog = api.kernel.log.syslog;
+ulong mTime() @trusted => clintBase + clintTimerRegOffset;
 
 __gshared size_t interval;
 
@@ -34,7 +32,7 @@ version (RiscvGenericSMP)
  */
 enum startIntervalSec = 1;
 
-__gshared TimerScratch[Interrupts.numCores] timerMscratchs;
+__gshared TimerScratch[Harts.numCores] timerMscratchs;
 
 struct TimerScratch
 {
@@ -44,22 +42,22 @@ struct TimerScratch
 
 size_t ticksFromSec(size_t sec, size_t freqHz) => sec * freqHz;
 
-void timerInit()
+void comInitTimer()
 {
-    size_t id = Harts.halHartId();
+    size_t id = Harts.comMhartId;
 
-    interval = ticksFromSec(startIntervalSec, Interrupts.mTimerHz);
+    interval = ticksFromSec(startIntervalSec, Harts.mTimerHz);
     assert(interval > 0);
 
     writeIntevalToTimer(id);
 
     TimerScratch* mScratch = &timerMscratchs[id];
     //TODO or 64-bit timer register?
-    mScratch.clintCmpRegister = cast(size_t) Interrupts.mTimeRegCmpAddr(id);
+    mScratch.clintCmpRegister = cast(size_t) mTimeRegCmpAddr(id);
     mScratch.interval = interval;
     //Interrupts.mScratch(cast(size_t) mScratch.saveRegisters.ptr);
 
-    Interrupts.mTimerInterruptEnable;
+    Interrupts.comSetTimerMIntrOn;
 
     // uint64_t read_mtime()
     // {
@@ -74,10 +72,10 @@ void timerInit()
     // }
 }
 
-extern (C) size_t timer_handler(size_t epc, size_t cause)
+extern (C) size_t timerHandlerContinue(size_t epc, size_t cause)
 {
     //TODO or MTIE?
-    auto id = Harts.halHartId();
+    auto id = Harts.comMhartId;
     writeIntevalToTimer(id);
     //Syslog.trace("Call timer handler");
     return epc;
@@ -85,13 +83,13 @@ extern (C) size_t timer_handler(size_t epc, size_t cause)
 
 private void writeIntevalToTimer(size_t comHartId)
 {
-    import Volatile = api.kernel.volatile;
+    import Volatile = api.hal.hal_volatile;
 
     //*mtimeCmpPtr = currTimeValue + interval;
 
-    ulong* mtimeCmpPtr = cast(ulong*) Interrupts.mTimeRegCmpAddr(comHartId);
+    ulong* mtimeCmpPtr = cast(ulong*) mTimeRegCmpAddr(comHartId);
 
-    ulong currTimeValue = Volatile.load(cast(ulong*) Interrupts.mTime());
+    ulong currTimeValue = Volatile.load(cast(ulong*) mTime());
     const timeValue = currTimeValue + interval;
 
     version (RiscvGeneric)
@@ -100,15 +98,15 @@ private void writeIntevalToTimer(size_t comHartId)
         {
             version (RiscvGenericSMP)
             {
-                import MemCore = api.kernel.mem.mem_core;
+                import MemCore = api.arch.riscv.boards.com.com_memory;
 
                 //Interrupts.mInterruptsDisable;
 
-                import Atomic = api.kernel.tasks.atomic;
+                import Atomic = api.arch.riscv.boards.com.com_atomic;
                 import ldc.llvmasm : __asm;
 
                 uint spinCount = 0;
-                while (!Atomic.halCas(&isProcessUpdate, 0, 1))
+                while (!Atomic.comCas(&isProcessUpdate, 0, 1))
                 {
                     //2^spin_count
                     for (uint i = 0; i < (1 << spinCount); i++)
@@ -121,13 +119,13 @@ private void writeIntevalToTimer(size_t comHartId)
                     }
                 }
 
-                MemCore.memoryFenceWW;
+                MemCore.comMemFenceWW;
 
                 mtimeCmpPtr[0] = timeValue & 0xFFFF_FFFF;
-                MemCore.memoryFenceWW;
+                MemCore.comMemFenceWW;
                 mtimeCmpPtr[1] = timeValue >> 32;
 
-                while (Atomic.halCas(&isProcessUpdate, 1, 0))
+                while (Atomic.comCas(&isProcessUpdate, 1, 0))
                 {
 
                 }

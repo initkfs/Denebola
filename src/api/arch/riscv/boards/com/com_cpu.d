@@ -6,6 +6,9 @@ module api.arch.riscv.boards.com.com_cpu;
 import api.hal.hal_cpu: ArchCaps;
 import ldc.llvmasm;
 
+enum size_t numCores = 2;
+enum size_t mTimerHz = 10_000_000;
+
 size_t comMhartId() @trusted => __asm!size_t("csrr $0, mhartid", "=r");
 
 size_t m_get_misa() @trusted => __asm!size_t("csrr $0, misa", "=r");

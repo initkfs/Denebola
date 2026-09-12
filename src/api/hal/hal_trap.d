@@ -1,8 +1,10 @@
+module api.hal.hal_trap;
+
+import api.arch.vers;
+
 /**
  * Authors: initkfs
  */
-module api.kernel.trap;
-
 version (RiscvGeneric)
 {
     import Interrupts = api.hal.hal_interrupts;
@@ -14,16 +16,17 @@ else
 
 import api.kstd.io.cstdio;
 import api.kernel.tasks.task;
-import api.kernel.timer;
+import api.hal.hal_timer;
 
 import Syslog = api.kernel.log.syslog;
 
 void trapInit()
 {
     import ComContext = api.hal.hal_context;
-    Interrupts.set_minterrupt_vector_trap(&ComContext.halSwitchInterruptContext);
 
-    Interrupts.mStatus(Interrupts.mStatus | Interrupts.MSTATUS_MIE);
+    Interrupts.halSetMIntrVecHandler(&ComContext.halSwitchInterruptContext);
+
+    Interrupts.halSetMStatus(Interrupts.halGetMStatus() | Interrupts.MSTATUS_MIE);
 }
 
 extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
@@ -70,15 +73,30 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
                 break;
             case 7:
                 Syslog.trace("Machine timer interrupt.");
-                timer_handler(epc, cause);
+
+                static if (__isRiscvGen)
+                {
+                    import ComTimer = api.arch.riscv.boards.com.com_timer;
+
+                    ComTimer.timerHandlerContinue(epc, cause);
+                }
+                else static if (__isC3)
+                {
+
+                }
+                else
+                {
+                    static assert(false, "Need timer handler");
+                }
 
                 import TaskManager = api.kernel.tasks.task_manager;
-                import api.hal.hal_interrupts: mRet;
+                import HaltIntr = api.hal.hal_interrupts;
 
                 TaskManager.roundrobinChoose;
 
-                if(TaskManager.__currentTask is &TaskManager.__osTask){
-                    mRet;
+                if (TaskManager.__currentTask is &TaskManager.__osTask)
+                {
+                    HaltIntr.halMRet();
                 }
 
                 break;
@@ -147,7 +165,7 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
                 break;
         }
 
-        import api.kernel.errors: halt;
+        import api.kernel.errors : halt;
 
         halt;
     }

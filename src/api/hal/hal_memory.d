@@ -1,6 +1,6 @@
 module api.hal.hal_memory;
 
-import api.arch.riscv.versions;
+import api.arch.vers;
 
 static if (__isRiscv)
 {

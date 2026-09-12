@@ -3,7 +3,7 @@
  */
 module api.kstd.strings.str;
 
-import Ver = api.kernel.vers;
+import Ver = api.arch.vers;
 import api.kernel.errors;
 
 immutable

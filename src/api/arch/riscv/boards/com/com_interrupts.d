@@ -7,33 +7,33 @@ import api.arch.riscv.boards.com.com_interrupts_constants;
 
 import ldc.llvmasm;
 
-size_t mStatus() @trusted => __asm!size_t("csrr $0, mstatus", "=r");
+extern(C) void comSetIntrsOn() @trusted
+{
+    comSetGlobalMIntrOn;
+}
 
-void mStatus(size_t status) @trusted
+extern(C) size_t comGetMStatus() @trusted => __asm!size_t("csrr $0, mstatus", "=r");
+
+extern(C) void comSetMStatus(size_t status) @trusted
 {
     __asm("csrw mstatus, $0", "r", status);
 }
 
-void mExceptionCounter(size_t c) @trusted
+extern(C) void comSetMExceptionCounter(size_t c) @trusted
 {
     __asm("csrw mepc, $0", "r", c);
 }
 
-size_t mExceptionCounter() @trusted => __asm!size_t("csrr $0, mepc", "=r");
+extern(C) size_t comGetMExceptionCounter() @trusted => __asm!size_t("csrr $0, mepc", "=r");
 
-void mScratch(size_t value) @trusted
+extern(C) void comSetMScratch(size_t value) @trusted
 {
     __asm("csrw mscratch, $0", "r", value);
 }
 
-size_t mScratch() @trusted => __asm!size_t("csrr $0, mscratch", "=r");
+extern(C) size_t comGetMScratch() @trusted => __asm!size_t("csrr $0, mscratch", "=r");
 
-void mInterruptVector(size_t value) @trusted
-{
-    __asm("csrw mtvec, $0", "r", value);
-}
-
-size_t mGlobalInterruptIsEnable() @trusted
+extern(C) bool comGlobalMIntrIsOn() @trusted
 {
     auto result = __asm!size_t(
         "csrr $0, mstatus 
@@ -44,67 +44,67 @@ size_t mGlobalInterruptIsEnable() @trusted
     return result != 0;
 }
 
-size_t mGloablInterrupt() @trusted => __asm!size_t("csrr $0, mie", "=r");
+extern(C) size_t comGetGlobalMIntr() @trusted => __asm!size_t("csrr $0, mie", "=r");
 
-void mGlobalInterruptEnable() @trusted
+extern(C) void comSetGlobalMIntrOn() @trusted
 {
     //TODO or MSTATUS_MIE_BIT?
     //csrsi/csrci max 5 bits, 0..4
     __asm("csrsi mstatus, $0", "i", MSTATUS_MIE);
 }
 
-void mGlobalInterruptDisable() @trusted
+extern(C) void comSetGlobalMIntrOff() @trusted
 {
     //TODO or MSTATUS_MIE_BIT?
     __asm("csrci mstatus, $0", "i", MSTATUS_MIE);
 }
 
-size_t mLocalInterrupts() @trusted => __asm!size_t("csrr $0, mie", "=r");
+extern(C) size_t comGetLocalMIntrs() @trusted => __asm!size_t("csrr $0, mie", "=r");
 
-void mLocalInterrupts(size_t value) @trusted
+extern(C) void comSetLocalMIntrs(size_t value) @trusted
 {
     __asm("csrw mie, $0", "r", value);
 }
 
-void mExternalInterruptEnable() @trusted
+extern(C) void comSetExternMIntrOn() @trusted
 {
     __asm("csrs mie, $0", "r", MIE_MEIE);
 }
 
-void mExternalInterruptDisable() @trusted
+extern(C) void comSetExternMIntrOff() @trusted
 {
     __asm("csrc mie, $0", "r", MIE_MEIE);
 }
 
-void mTimerInterruptEnable() @trusted
+extern(C) void comSetTimerMIntrOn() @trusted
 {
     __asm("csrs mie, $0", "r", MIE_MTIE);
 }
 
-void mTimerInterruptDisable() @trusted
+extern(C) void comSetTimerMIntrOff() @trusted
 {
     __asm("csrc mie, $0", "r", MIE_MTIE);
 }
 
 // TODO bit mask 
-void mSoftwareInterruptEnable() @trusted
+extern(C) void comSetSoftwareMIntrOn() @trusted
 {
     __asm("csrs mie, $0", "r", MIE_MSIE);
 }
 
-void mSoftwareInterruptDisable() @trusted
+extern(C) void comSetSoftwareMIntrOff() @trusted
 {
     __asm("csrc mie, $0", "r", MIE_MSIE);
 }
 
-void mSetInterruptVector(size_t* ptr)
-{
-    __asm("csrw mtvec, $0", "r", ptr);
-}
-
-void mRet()
+extern(C) void comMRet() @trusted
 {
     __asm("mret", "");
+}
+
+void comSetMIntrVec(size_t* ptr) @trusted
+{
+    __asm("csrw mtvec, $0", "r", ptr);
 }
 
 /** 
@@ -117,8 +117,13 @@ set_minterrupt_vector_trap:
     csrw mtvec, a0
     ret
  */
-void set_minterrupt_vector_trap(void function()* handler)
+void comSetMIntrVecHandler(void function()* handler) @trusted
 {
     size_t funcAddr = cast(size_t)*handler;
     __asm("csrw mtvec, $0", "r", funcAddr);
+}
+
+void comSetMIntrVecValue(size_t value) @trusted
+{
+    __asm("csrw mtvec, $0", "r", value);
 }

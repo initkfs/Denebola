@@ -3,7 +3,7 @@
  */
 module api.kstd.math.math_core;
 
-import Ver = api.kernel.vers;
+import Ver = api.arch.vers;
 
 T abs(T)(T x) if (__traits(isArithmetic, T))
 {

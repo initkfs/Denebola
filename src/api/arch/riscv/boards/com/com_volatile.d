@@ -1,7 +1,4 @@
-/**
- * Authors: initkfs
- */
-module api.kernel.volatile;
+module api.arch.riscv.boards.com.com_volatile;
 
 version (LDC)
 {

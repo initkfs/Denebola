@@ -18,7 +18,7 @@ void _start() @naked @optStrategy("none") @section(".text.init")
     call __initIdleTLS
     la tp, __osTaskTLS" ~
     HalUART.writeUartAsm!'T' ~
-    //interrupts not works: HalUART.writeUartAsm!'\n' ~
+    //interrupts not works >= 32, ex. HalUART.writeUartAsm!'\n' ~
     "call dstart
 _hlt:
     wfi

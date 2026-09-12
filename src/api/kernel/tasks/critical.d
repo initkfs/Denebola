@@ -1,6 +1,6 @@
 module api.kernel.tasks.critical;
 
-import Interrupts = api.hal.hal_interrupts;
+import HalIntrs = api.hal.hal_interrupts;
 
 /**
  * Authors: initkfs
@@ -9,10 +9,11 @@ import Interrupts = api.hal.hal_interrupts;
 
 void startCritical()
 {
-    Interrupts.mGlobalInterruptDisable;
+    HalIntrs.halSetGlobalMIntrOff();
 }
 
 void endCritical()
 {
-    Interrupts.mGlobalInterruptEnable;
+    //TODO check disabled
+    HalIntrs.halSetGlobalMIntrOn();
 }

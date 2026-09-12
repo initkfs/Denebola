@@ -1,7 +1,7 @@
 module api.hal.hal_atomic;
 
 import api.hal.inits.hal_init;
-import api.arch.riscv.versions;
+import api.arch.vers;
 
 @halfunc __gshared
 {
