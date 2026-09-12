@@ -90,25 +90,28 @@ __gshared
     size_t tid2;
 }
 
+__gshared extern (C)
+{
+    size_t _bss_start;
+    size_t _bss_end;
+}
+
 extern (C) void dstart()
 {
     import Interrupts = api.hal.hal_interrupts;
 
     Interrupts.halSetGlobalMIntrOff();
     Trap.trapInit();
-
     Syslog.setLoad(true);
-
     Syslog.info("Init HAL layer");
 
-    // ubyte* bssStart = cast(ubyte*) get_bss_start;
-    // ubyte* bssEnd = cast(ubyte*) get_bss_end;
+    ubyte* bssStart = cast(ubyte*) _bss_start;
+    ubyte* bssEnd = cast(ubyte*) _bss_end;
 
-    // while (bssStart < bssEnd)
-    // {
-    //     //TODO volatile
-    //     *bssStart++ = 0;
-    // }
+    while (bssStart < bssEnd)
+    {
+        *bssStart++ = 0;
+    }
 
     Syslog.info("Os start");
 
@@ -125,11 +128,11 @@ extern (C) void dstart()
     // Allocator.callocFunc = &BlockAllocator.calloc;
     // Allocator.freeFunc = &BlockAllocator.free;
 
-    runTests;
+    // runTests;
 
-    TaskManager.initSheduler;
+    // TaskManager.initSheduler;
 
-    Critical.startCritical;
+    // Critical.startCritical;
 
     if (isTimer)
     {
@@ -141,19 +144,19 @@ extern (C) void dstart()
 
     tid = TaskManager.taskCreate(&task0, "task0");
     tid1 = TaskManager.taskCreate(&task1, "task1");
-    //tid2 = taskCreate(&task2);
+    // //tid2 = taskCreate(&task2);
 
     Interrupts.halSetGlobalMIntrOn();
 
-    int isContinue = 0x10203040;
+    // int isContinue = 0x10203040;
 
-    while (true)
-    {
-        //Syslog.trace("Sheduler start step");
-        //assert(isContinue == 0x10203040);
-        //TaskManager.roundrobinChoose;
-        //Syslog.trace("Sheduler end step");
-    }
+    // while (true)
+    // {
+    //     //Syslog.trace("Sheduler start step");
+    //     //assert(isContinue == 0x10203040);
+    //     //TaskManager.roundrobinChoose;
+    //     //Syslog.trace("Sheduler end step");
+    // }
 }
 
 import api.kernel.tasks.sync.mailbox : Mailbox;

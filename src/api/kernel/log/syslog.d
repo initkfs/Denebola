@@ -22,11 +22,11 @@ extern (C) void __ctrace()
 //TODO versions
 protected
 {
-    import Ns16650a = api.kernel.dev.ns16550a;
+    import Uart = api.hal.hal_uart;
 
     void logWrite(ubyte b)
     {
-        Ns16650a.writeTx(b);
+        Uart.halWriteTx(b);
     }
 
     void logWrite(const(char)[] s)

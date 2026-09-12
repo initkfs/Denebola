@@ -6,6 +6,16 @@ import ldc.llvmasm;
 
 extern (C):
 
+import api.arch.vers;
+
+static if (__isRiscvGen)
+{
+    __gshared extern (C) void __initMem()
+    {
+        
+    }
+}
+
 void comMemFenceRWRW()
 {
     __asm(
@@ -19,4 +29,3 @@ void comMemFenceWW()
         "fence w, w", "~{memory}"
     );
 }
-

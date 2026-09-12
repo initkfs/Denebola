@@ -3,19 +3,22 @@
  */
 module api.kstd.io.cstdio;
 
-import Uart = api.kernel.dev.uart;
+import Uart = api.hal.hal_uart;
 import Ascii = api.kstd.strings.ascii;
 
 @nogc nothrow:
 
 void print(const char ch)
 {
-    Uart.print(ch);
+    Uart.halWriteTx(ch);
 }
 
 void print(const(char)[] str)
 {
-    Uart.print(str);
+    foreach (ch; str)
+    {
+        print(ch);
+    }
 }
 
 void printa(Args...)(Args args) @nogc nothrow

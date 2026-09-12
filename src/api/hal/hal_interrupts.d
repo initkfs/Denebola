@@ -5,6 +5,7 @@ module api.hal.hal_interrupts;
 
 import api.arch.vers;
 import api.hal.inits.hal_init : halfunc;
+import ldc.attributes;
 
 public import api.arch.riscv.boards.com.com_interrupts_constants;
 
@@ -62,7 +63,7 @@ version (Qemu)
         {
             import api.arch.riscv.boards.esp32c3.с3_interrupts;
 
-            void function() halSetIntrsOn = &c3SetIntrsOn;
+            extern(C) void function() halSetIntrsOn = &c3SetIntrsOn;
         }
         else
         {

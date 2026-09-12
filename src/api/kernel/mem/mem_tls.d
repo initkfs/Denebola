@@ -9,12 +9,12 @@ import api.kernel.mem.mem_core;
 
 __gshared extern (C)
 {
-    ubyte _tdata_start;
-    ubyte _tdata_end;
-    ubyte _tbss_start;
-    ubyte _tbss_end;
-    ubyte _tls_start;
-    ubyte _tls_end;
+    size_t _tdata_start;
+    size_t _tdata_end;
+    size_t _tbss_start;
+    size_t _tbss_end;
+    size_t _tls_start;
+    size_t _tls_end;
 }
 
 size_t getTdataSize()

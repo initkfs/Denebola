@@ -22,10 +22,15 @@ int memcmp(T)(const T* addr1, const T* addr2, size_t size)
 
 T* memcpy(T)(T* dest, const T* src, size_t lenBytes)
 {
-    foreach (i; 0 .. lenBytes)
+    //TODO words
+    ubyte* d = cast(ubyte*) dest;
+    ubyte* s = cast(ubyte*) src;
+
+    while (lenBytes)
     {
-        (cast(ubyte*) dest)[i] = (cast(ubyte*) src)[i];
+        *d++ = *s++;
     }
+
     return dest;
 }
 

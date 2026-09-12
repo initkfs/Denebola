@@ -15,6 +15,7 @@ void _start() @naked @optStrategy("none") @section(".text.init")
     bnez a0, _hlt" ~
     HalUART.writeUartAsm!'N' ~
     "la sp, _stack_start
+    call __initMem
     call __initIdleTLS
     la tp, __osTaskTLS" ~
     HalUART.writeUartAsm!'T' ~

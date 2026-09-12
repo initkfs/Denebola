@@ -92,7 +92,7 @@
             "dflags-ldc": [
                 "--mtriple=riscv32-unknown-elf",
                 "--unittest",
-                "--mattr=+m,+a,+c",
+                "--mattr=+m,+a",
                 "--mabi=ilp32"
             ],
             "buildRequirements": [
