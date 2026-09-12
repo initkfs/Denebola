@@ -34,6 +34,17 @@ void halWriteTxDir(ubyte* addr, ubyte b) @nogc nothrow
 void halWriteTx(ubyte* addr, ubyte b) @nogc nothrow
 {
     Volatile.save(uartAddr, b);
+    //*addr = b;
+}
+
+template writeUartAsmStr(char sym)
+{
+    import ldc.llvmasm;
+
+    void writeUartAsmStr()
+    {
+        __asm(writeUartAsm!sym, "");
+    }
 }
 
 template writeUartAsm(char sym)

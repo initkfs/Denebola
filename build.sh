@@ -161,4 +161,4 @@ if [[ "$isGdb" == "true" ]]; then
     qemuArgs="$qemuArgs -s -S"
 fi
 #-monitor telnet:localhost:1111,server,nowait
-"$emulator" -smp 2 -m 128M -serial stdio -bios none -machine virt -kernel "$kernelBin" $qemuArgs
+"$emulator" -smp 2 -m 128M -serial stdio -icount 3 -bios none -machine virt -kernel "$kernelBin" $qemuArgs

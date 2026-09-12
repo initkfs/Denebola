@@ -72,7 +72,7 @@ void comInitTimer()
     // }
 }
 
-extern (C) size_t timerHandlerContinue(size_t epc, size_t cause)
+size_t timerHandlerContinue(size_t epc, size_t cause)
 {
     //TODO or MTIE?
     auto id = Harts.comMhartId;

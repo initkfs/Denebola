@@ -10,6 +10,16 @@ import ldc.llvmasm;
 
 enum uint INTMTRX_BASE = 0x600C2000;
 
+extern (C) void c3InitIntrs() @trusted
+{
+    auto cpu_int_enable = cast(uint*)0x600C0104; // INTERRUPT_CORE0_CPU_INT_ENABLE_REG
+    auto cpu_int_thresh = cast(uint*)0x600C0108; // INTERRUPT_CORE0_CPU_INT_THRESH_REG
+
+    *cpu_int_enable |= (1 << 1);
+    *cpu_int_thresh = 0;
+    //ComIntr.comSetExternMIntrOn;
+}
+
 enum PeripheralSource : uint
 {
     UART0 = 21,
@@ -26,9 +36,10 @@ void routePeripheralInterrupt(PeripheralSource source, ubyte cpuInterruptLine) @
 //mSetInterruptVector(cast(void*)&trap_vector);
 extern (C) void c3SetIntrsOn() @trusted
 {
-    routePeripheralInterrupt(PeripheralSource.SYSTIMER_TARGET0, 16);
-    size_t currentMie = ComIntr.comGetLocalMIntrs;
-    ComIntr.comSetLocalMIntrs(currentMie | (1 << 16));
-    ComIntr.comSetExternMIntrOn;
     ComIntr.comSetGlobalMIntrOn;
+    // routePeripheralInterrupt(PeripheralSource.SYSTIMER_TARGET0, 16);
+    // size_t currentMie = ComIntr.comGetLocalMIntrs;
+    // ComIntr.comSetLocalMIntrs(currentMie | (1 << 16));
+    // ComIntr.comSetExternMIntrOn;
+    // ComIntr.comSetGlobalMIntrOn;
 }

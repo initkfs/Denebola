@@ -16,5 +16,9 @@ _vec_table:
     j __comSwitchInterruptContext  
     .endr
     .option pop
+
+    la t0, _vector_table
+    ori t0, t0, 0x1 
+    csrw mtvec, t0
     ", "");
 }

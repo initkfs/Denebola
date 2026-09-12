@@ -99,24 +99,31 @@ __gshared extern (C)
 extern (C) void dstart()
 {
     import Interrupts = api.hal.hal_interrupts;
-    
-    Interrupts.halSetGlobalMIntrOff();
+
+    import api.hal.hal_uart;
+    Interrupts.halInitIntrs();
+    //Interrupts.halSetGlobalMIntrOff();
     Trap.halTrapInit();
     Syslog.setLoad(true);
-    Syslog.info("Init HAL layer");
+    //Syslog.info("Init HAL layer");
 
-    ubyte* bssStart = cast(ubyte*) _bss_start;
-    ubyte* bssEnd = cast(ubyte*) _bss_end;
+    writeUartAsmStr!'H';
 
-    ubyte* ptr;
-    auto a = *ptr;
+    // while(true){
 
-    while (bssStart < bssEnd)
-    {
-        *bssStart++ = 0;
-    }
+    // }
 
-    Syslog.info("Os start");
+    // ubyte* bssStart = cast(ubyte*) _bss_start;
+    // ubyte* bssEnd = cast(ubyte*) _bss_end;
+
+    // while (bssStart < bssEnd)
+    // {
+    //     *bssStart++ = 0;
+    // }
+
+    writeUartAsmStr!'B';
+
+    //Syslog.info("Os start");
 
     // import MemoryHAL = api.hal.hal_memory;
 
@@ -137,19 +144,36 @@ extern (C) void dstart()
 
     // Critical.startCritical;
 
-    if (isTimer)
-    {
-        import Timer = api.hal.hal_timer;
+    // if (isTimer)
+    // {
+    //     import Timer = api.hal.hal_timer;
 
-        Timer.halInitTimer();
-        Syslog.info("Init timers");
-    }
+    //     Timer.halInitTimer();
+    //     Syslog.info("Init timers");
+    // }
 
-    tid = TaskManager.taskCreate(&task0, "task0");
-    tid1 = TaskManager.taskCreate(&task1, "task1");
+    writeUartAsmStr!'T';
+    
+
+    //tid = TaskManager.taskCreate(&task0, "task0");
+    //tid1 = TaskManager.taskCreate(&task1, "task1");
     // //tid2 = taskCreate(&task2);
 
+    writeUartAsmStr!'E';
+
     Interrupts.halSetGlobalMIntrOn();
+
+    Syslog.info("End starting");
+
+    import ComIntr = api.arch.riscv.boards.com.com_interrupts;
+    
+    ComIntr.comTriggerExternIntr();
+
+    writeUartAsmStr!'Z';
+
+    while(true){
+        
+    }
 
     // int isContinue = 0x10203040;
 

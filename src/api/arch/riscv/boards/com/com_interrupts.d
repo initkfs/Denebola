@@ -7,28 +7,33 @@ import api.arch.riscv.boards.com.com_interrupts_constants;
 
 import ldc.llvmasm;
 
-extern(C) size_t comGetMStatus() @trusted => __asm!size_t("csrr $0, mstatus", "=r");
+extern (C) void comInitIntrs() @trusted
+{
 
-extern(C) void comSetMStatus(size_t status) @trusted
+}
+
+extern (C) size_t comGetMStatus() @trusted => __asm!size_t("csrr $0, mstatus", "=r");
+
+extern (C) void comSetMStatus(size_t status) @trusted
 {
     __asm("csrw mstatus, $0", "r", status);
 }
 
-extern(C) void comSetMExceptionCounter(size_t c) @trusted
+extern (C) void comSetMExceptionCounter(size_t c) @trusted
 {
     __asm("csrw mepc, $0", "r", c);
 }
 
-extern(C) size_t comGetMExceptionCounter() @trusted => __asm!size_t("csrr $0, mepc", "=r");
+extern (C) size_t comGetMExceptionCounter() @trusted => __asm!size_t("csrr $0, mepc", "=r");
 
-extern(C) void comSetMScratch(size_t value) @trusted
+extern (C) void comSetMScratch(size_t value) @trusted
 {
     __asm("csrw mscratch, $0", "r", value);
 }
 
-extern(C) size_t comGetMScratch() @trusted => __asm!size_t("csrr $0, mscratch", "=r");
+extern (C) size_t comGetMScratch() @trusted => __asm!size_t("csrr $0, mscratch", "=r");
 
-extern(C) bool comGlobalMIntrIsOn() @trusted
+extern (C) bool comGlobalMIntrIsOn() @trusted
 {
     auto result = __asm!size_t(
         "csrr $0, mstatus 
@@ -39,60 +44,67 @@ extern(C) bool comGlobalMIntrIsOn() @trusted
     return result != 0;
 }
 
-extern(C) size_t comGetGlobalMIntr() @trusted => __asm!size_t("csrr $0, mie", "=r");
+extern (C) size_t comGetGlobalMIntr() @trusted => __asm!size_t("csrr $0, mie", "=r");
 
-extern(C) void comSetGlobalMIntrOn() @trusted
+extern (C) void comSetGlobalMIntrOn() @trusted
 {
     //TODO or MSTATUS_MIE_BIT?
     //csrsi/csrci max 5 bits, 0..4
     __asm("csrsi mstatus, $0", "i", MSTATUS_MIE);
 }
 
-extern(C) void comSetGlobalMIntrOff() @trusted
+extern (C) void comSetGlobalMIntrOff() @trusted
 {
     //TODO or MSTATUS_MIE_BIT?
     __asm("csrci mstatus, $0", "i", MSTATUS_MIE);
 }
 
-extern(C) size_t comGetLocalMIntrs() @trusted => __asm!size_t("csrr $0, mie", "=r");
+extern (C) size_t comGetLocalMIntrs() @trusted => __asm!size_t("csrr $0, mie", "=r");
 
-extern(C) void comSetLocalMIntrs(size_t value) @trusted
+extern (C) void comSetLocalMIntrs(size_t value) @trusted
 {
     __asm("csrw mie, $0", "r", value);
 }
 
-extern(C) void comSetExternMIntrOn() @trusted
+extern (C) void comSetExternMIntrOn() @trusted
 {
     __asm("csrs mie, $0", "r", MIE_MEIE);
 }
 
-extern(C) void comSetExternMIntrOff() @trusted
+extern (C) void comSetExternMIntrOff() @trusted
 {
     __asm("csrc mie, $0", "r", MIE_MEIE);
 }
 
-extern(C) void comSetTimerMIntrOn() @trusted
+extern (C) void comTriggerExternIntr()
+{
+    enum uint MIP_MEIP = 0x800;
+
+    __asm("csrs mip, $0", "r", MIP_MEIP);
+}
+
+extern (C) void comSetTimerMIntrOn() @trusted
 {
     __asm("csrs mie, $0", "r", MIE_MTIE);
 }
 
-extern(C) void comSetTimerMIntrOff() @trusted
+extern (C) void comSetTimerMIntrOff() @trusted
 {
     __asm("csrc mie, $0", "r", MIE_MTIE);
 }
 
 // TODO bit mask 
-extern(C) void comSetSoftwareMIntrOn() @trusted
+extern (C) void comSetSoftwareMIntrOn() @trusted
 {
     __asm("csrs mie, $0", "r", MIE_MSIE);
 }
 
-extern(C) void comSetSoftwareMIntrOff() @trusted
+extern (C) void comSetSoftwareMIntrOff() @trusted
 {
     __asm("csrc mie, $0", "r", MIE_MSIE);
 }
 
-extern(C) void comMRet() @trusted
+extern (C) void comMRet() @trusted
 {
     __asm("mret", "");
 }

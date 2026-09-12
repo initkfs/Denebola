@@ -94,7 +94,9 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
                 }
                 else static if (__isC3)
                 {
+                    import C3Timer = api.arch.riscv.boards.esp32c3.c3_timer;
 
+                    C3Timer.timerHandlerContinue(epc, cause);
                 }
                 else
                 {
