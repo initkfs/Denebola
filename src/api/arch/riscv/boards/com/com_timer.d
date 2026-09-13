@@ -72,6 +72,10 @@ void comInitTimer()
     // }
 }
 
+void comDisableWdt(){
+    
+}
+
 size_t timerHandlerContinue(size_t epc, size_t cause)
 {
     //TODO or MTIE?

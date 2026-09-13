@@ -94,8 +94,15 @@ extern (C) void dstart()
 {
     import HalUart = api.hal.hal_uart;
     import HalCpu = api.hal.hal_cpu;
+    import HalTimer = api.hal.hal_timer;
 
     HalUart.halWriteTxDir!"T ";
+
+    HalTimer.halDisableWdt();
+
+    while(true){
+      
+    }
 
     import HalMem = api.hal.hal_memory;
 
@@ -148,7 +155,10 @@ extern (C) void dstart()
 
     Interrupts.halSetGlobalMIntrOn();
 
-    Syslog.info("End loading");
+    import Uart = api.hal.hal_uart;
+    Uart.halWriteTx('Z');
+
+    //Syslog.info("End loading");
 
     while (true)
     {
