@@ -3,7 +3,7 @@ module api.arch.riscv.boards.com.com_cpu;
 /**
  * Authors: initkfs
  */
-import api.hal.hal_cpu: ArchCaps;
+import api.hal.hal_cpu : ArchCaps;
 import ldc.llvmasm;
 
 enum size_t numCores = 2;
@@ -15,6 +15,13 @@ size_t m_get_misa() @trusted => __asm!size_t("csrr $0, misa", "=r");
 size_t m_get_mvendorid() @trusted => __asm!size_t("csrr $0, mvendorid", "=r");
 size_t m_get_marchid() @trusted => __asm!size_t("csrr $0, marchid", "=r");
 size_t m_get_mimpid() @trusted => __asm!size_t("csrr $0, mimpid", "=r");
+
+void comHalt() @trusted
+{
+    while (true)
+    {
+    }
+}
 
 void comWait() @trusted
 {

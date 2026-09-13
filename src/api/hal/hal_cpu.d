@@ -28,6 +28,7 @@ struct ArchCaps
         string function() halVendorId = &ComCPU.comVendorId;
         ArchCaps function() halLoadCaps = &ComCPU.comLoadCaps;
         void function() halWait = &ComCPU.comWait;
+        void function() halHalt = &ComCPU.comHalt;
     }
     else
     {

@@ -6,20 +6,22 @@ import ldc.attributes;
 
 extern (C) __gshared:
 
+//TODO move to arch.boards
 void _start() @naked @optStrategy("none") @section(".text.init")
 {
+    //la gp, __global_pointer$
     //TODO mixin, asm builder
     __asm(
-    HalUART.writeUartAsm!'E' ~ "
+    HalUART.halWriteTxTpl!'S' ~ "
     csrr a0, mhartid
-    bnez a0, _hlt" ~
-    HalUART.writeUartAsm!'N' ~
-    "la sp, _stack_start
-    call __initMem
+    bnez a0, _hlt
+    la sp, _stack_start" ~
+    HalUART.halWriteTxTpl!'T' ~
+    "call __initMem
     call __initIdleTLS
     la tp, __osTaskTLS" ~
-    HalUART.writeUartAsm!'T' ~
-    //interrupts not works >= 32, ex. HalUART.writeUartAsm!'\n' ~
+    HalUART.halWriteTxTpl!'R' ~
+    //interrupts not works >= 32, ex. HalUART.halWriteTxTpl!'\n' ~
     "call dstart
 _hlt:
     wfi

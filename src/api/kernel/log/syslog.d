@@ -104,6 +104,7 @@ private void log(LogLevel level, const(char)[] message, const(char)[] file, int 
     logWrite(message);
     logWrite(spaceChar);
     logWrite(file);
+    logWrite('\r');
     logWrite('\n');
 
     //TODO line;

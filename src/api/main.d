@@ -90,89 +90,69 @@ __gshared
     size_t tid2;
 }
 
-__gshared extern (C)
-{
-    size_t _bss_start;
-    size_t _bss_end;
-}
-
 extern (C) void dstart()
 {
+    import HalUart = api.hal.hal_uart;
+    import HalCpu = api.hal.hal_cpu;
+
+    HalUart.halWriteTxDir!"T ";
+
+    import HalMem = api.hal.hal_memory;
+
+    if (const memErr = HalMem.halMemValidate)
+    {
+        HalCpu.halHalt();
+    }
+
+    HalMem.resetBss;
+
+    auto heapStartAddr = cast(void*)(HalMem.heapStartAddr);
+    auto heapEndAddr = cast(void*)(HalMem.heapEndAddr);
+
+    Allocator.heapStartAddr = heapStartAddr;
+    Allocator.heapEndAddr = heapEndAddr;
+
+    BlockAllocator.initialize(heapStartAddr, heapEndAddr);
+    Allocator.allocFunc = &BlockAllocator.alloc;
+    Allocator.callocFunc = &BlockAllocator.calloc;
+    Allocator.freeFunc = &BlockAllocator.free;
+
+    HalUart.halWriteTxDir!"M ";
+
+    Syslog.setLoad(true);
+    Syslog.info("Init mem");
+
     import Interrupts = api.hal.hal_interrupts;
 
-    import api.hal.hal_uart;
     Interrupts.halInitIntrs();
-    //Interrupts.halSetGlobalMIntrOff();
+    Interrupts.halSetGlobalMIntrOff();
     Trap.halTrapInit();
-    Syslog.setLoad(true);
-    //Syslog.info("Init HAL layer");
+    Syslog.info("Init intrs");
 
-    writeUartAsmStr!'H';
+    if (isTimer)
+    {
+        import Timer = api.hal.hal_timer;
 
-    // while(true){
+        Timer.halInitTimer();
+        Syslog.info("Init timer");
+    }
 
-    // }
+    Syslog.info("Init HAL layer");
 
-    // ubyte* bssStart = cast(ubyte*) _bss_start;
-    // ubyte* bssEnd = cast(ubyte*) _bss_end;
+    //runTests;
 
-    // while (bssStart < bssEnd)
-    // {
-    //     *bssStart++ = 0;
-    // }
+    TaskManager.initSheduler;
 
-    writeUartAsmStr!'B';
-
-    //Syslog.info("Os start");
-
-    // import MemoryHAL = api.hal.hal_memory;
-
-    // auto heapStartAddr = cast(void*)(MemoryHAL.get_heap_start);
-    // auto heapEndAddr = cast(void*)(MemoryHAL.get_heap_end);
-
-    // Allocator.heapStartAddr = heapStartAddr;
-    // Allocator.heapEndAddr = heapEndAddr;
-
-    // BlockAllocator.initialize(heapStartAddr, heapEndAddr);
-    // Allocator.allocFunc = &BlockAllocator.alloc;
-    // Allocator.callocFunc = &BlockAllocator.calloc;
-    // Allocator.freeFunc = &BlockAllocator.free;
-
-    // runTests;
-
-    // TaskManager.initSheduler;
-
-    // Critical.startCritical;
-
-    // if (isTimer)
-    // {
-    //     import Timer = api.hal.hal_timer;
-
-    //     Timer.halInitTimer();
-    //     Syslog.info("Init timers");
-    // }
-
-    writeUartAsmStr!'T';
-    
-
-    //tid = TaskManager.taskCreate(&task0, "task0");
-    //tid1 = TaskManager.taskCreate(&task1, "task1");
-    // //tid2 = taskCreate(&task2);
-
-    writeUartAsmStr!'E';
+    tid = TaskManager.taskCreate(&task0, "task0");
+    tid1 = TaskManager.taskCreate(&task1, "task1");
 
     Interrupts.halSetGlobalMIntrOn();
 
-    Syslog.info("End starting");
+    Syslog.info("End loading");
 
-    import ComIntr = api.arch.riscv.boards.com.com_interrupts;
-    
-    ComIntr.comTriggerExternIntr();
+    while (true)
+    {
 
-    writeUartAsmStr!'Z';
-
-    while(true){
-        
     }
 
     // int isContinue = 0x10203040;

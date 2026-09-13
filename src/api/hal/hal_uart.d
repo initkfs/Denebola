@@ -19,38 +19,36 @@ else
     enum HalUARTDef = COM_UART0;
 }
 
-__gshared ubyte* uartAddr = cast(ubyte*) HalUARTDef;
+__gshared size_t* uartAddr = cast(size_t*) HalUARTDef;
 
 void halWriteTx(ubyte b) @nogc nothrow
 {
     halWriteTx(uartAddr, b);
 }
 
-void halWriteTxDir(ubyte* addr, ubyte b) @nogc nothrow
+void halWriteTx(size_t* addr, ubyte b) @nogc nothrow
 {
-    *uartAddr = b;
+    //*uartAddr = b, sw not sb
+    Volatile.save(uartAddr, cast(uint) b);
 }
 
-void halWriteTx(ubyte* addr, ubyte b) @nogc nothrow
-{
-    Volatile.save(uartAddr, b);
-    //*addr = b;
-}
-
-template writeUartAsmStr(char sym)
+template halWriteTxDir(string syms)
 {
     import ldc.llvmasm;
 
-    void writeUartAsmStr()
+    void halWriteTxDir()
     {
-        __asm(writeUartAsm!sym, "");
+        static foreach (char sym; syms)
+        {
+            __asm(halWriteTxTpl!sym, "");
+        }
     }
 }
 
-template writeUartAsm(char sym)
+template halWriteTxTpl(char sym)
 {
     enum int asciiCode = cast(int) sym;
-    enum writeUartAsm = "
+    enum halWriteTxTpl = "
          li t5, "
         ~ HalUARTDef.stringof ~ "\n
          li t6, "
