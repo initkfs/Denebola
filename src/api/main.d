@@ -100,6 +100,10 @@ extern (C) void dstart()
 
     HalTimer.halDisableWdt();
 
+    import api.arch.riscv.boards.esp32c3.с3_gpio;
+
+    blink;
+
     while(true){
       
     }
