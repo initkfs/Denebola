@@ -2,6 +2,9 @@ module api.arch.riscv.boards.com.com_volatile;
 
 version (LDC)
 {
+    alias volatileLoad = load;
+    alias volatileStore = save;
+    
     private
     {
         enum ldcLoadIntrName = "ldc.bitop.vld";
