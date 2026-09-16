@@ -56,20 +56,20 @@ private void runTests()
 
     alias testModules = AliasSeq!(
         MemCore,
-        UPtr,
-        Str,
-        Hash,
-        StackStrMod,
-        MathCore,
-        MathStrict,
-        Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
-        Ver.IfVerMods!(Ver.hasFPU, "api.kstd.util.units"),
-        MathRandom,
+        //UPtr,
+        //Str,
+        //Hash,
+        //StackStrMod,
+        //MathCore,
+        //MathStrict,
+        //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
+        //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.util.units"),
+        //MathRandom,
         Bits,
-        Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
-        Atomic,
-        Spinlock,
-        Queues
+        //Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
+        //Atomic,
+        //Spinlock,
+        //Queues
     );
 
     foreach (m; testModules)
@@ -90,6 +90,10 @@ __gshared
     size_t tid2;
 }
 
+extern(C) void plop(){
+
+}
+
 extern (C) void dstart()
 {
     import HalUart = api.hal.hal_uart;
@@ -99,14 +103,6 @@ extern (C) void dstart()
     HalUart.halWriteTxDir!"T ";
 
     HalTimer.halDisableWdt();
-
-    import api.arch.riscv.boards.esp32c3.с3_gpio;
-
-    blink;
-
-    while(true){
-      
-    }
 
     import HalMem = api.hal.hal_memory;
 
@@ -123,10 +119,11 @@ extern (C) void dstart()
     Allocator.heapStartAddr = heapStartAddr;
     Allocator.heapEndAddr = heapEndAddr;
 
-    BlockAllocator.initialize(heapStartAddr, heapEndAddr);
-    Allocator.allocFunc = &BlockAllocator.alloc;
-    Allocator.callocFunc = &BlockAllocator.calloc;
-    Allocator.freeFunc = &BlockAllocator.free;
+    //TODO error, dublinterrupts
+    //BlockAllocator.initialize(heapStartAddr, heapEndAddr);
+    // Allocator.allocFunc = &BlockAllocator.alloc;
+    // Allocator.callocFunc = &BlockAllocator.calloc;
+    // Allocator.freeFunc = &BlockAllocator.free;
 
     HalUart.halWriteTxDir!"M ";
 
@@ -150,23 +147,21 @@ extern (C) void dstart()
 
     Syslog.info("Init HAL layer");
 
-    //runTests;
+    runTests;
 
-    TaskManager.initSheduler;
+    TaskManager.initSheduler();
+    Syslog.info("End tasks");
 
     tid = TaskManager.taskCreate(&task0, "task0");
     tid1 = TaskManager.taskCreate(&task1, "task1");
 
     Interrupts.halSetGlobalMIntrOn();
 
-    import Uart = api.hal.hal_uart;
-    Uart.halWriteTx('Z');
-
-    //Syslog.info("End loading");
+    Syslog.info("End loading");
 
     while (true)
     {
-
+        HalCpu.halWait();
     }
 
     // int isContinue = 0x10203040;
@@ -208,7 +203,7 @@ void task0()
     }
 }
 
-extern (C) void plop()
+extern (C) void p1()
 {
 }
 

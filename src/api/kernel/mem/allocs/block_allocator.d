@@ -64,13 +64,18 @@ bool initialize(
     heap.top = cast(size_t)(heap.fresh + heapBlocksCount);
 
     Block* block = heap.fresh;
-    size_t i = heapMaxBlocks - 1;
-    while (i--)
+    if (block)
     {
-        block.next = block + 1;
-        block++;
+        size_t i = heapMaxBlocks - 1;
+        while (i--)
+        {
+            //TODO freeze
+            //block.next = block + 1;
+            block++;
+        }
+        block.next = null;
     }
-    block.next = null;
+
     return true;
 }
 

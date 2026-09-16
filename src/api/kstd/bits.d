@@ -5,40 +5,39 @@ module api.kstd.bits;
 
 import std.traits;
 
-bool isBitSet(T)(T bits, T n) if (isUnsigned!T)
+enum size_t startBitShift = 1;
+
+pure @safe nothrow @nogc
 {
-  return (bits & (1 << n)) != 0;
+    bool bitIsSet(size_t bits, size_t from0Bit) => (bits & (startBitShift << from0Bit)) != 0;
+    size_t bitSet(size_t bits, size_t from0Bit) => bits | (startBitShift << from0Bit);
+    size_t bitClear(size_t bits, size_t from0Bit) => bits & ~(startBitShift << from0Bit);
+
+    //TODO unittest
+    size_t bitToggle(size_t bits, size_t from0Bit) => bits ^ (startBitShift << from0Bit);
+    size_t bitWrite(size_t bits, size_t from0Bit, bool condition) =>
+        condition ? bitSet(bits, from0Bit) : bitClear(bits, from0Bit);
 }
 
 unittest
 {
-  assert(isBitSet(1u, 0u));
-  assert(isBitSet(2u, 1u));
-  assert(isBitSet(4u, 2u));
-  assert(isBitSet(128u, 7u));
-}
-
-T setBit(T)(T bits, T n) if (isUnsigned!T)
-{
-  return bits | (1 << n);
+    assert(bitIsSet(1, 0));
+    assert(bitIsSet(2, 1));
+    assert(bitIsSet(4, 2));
+    assert(bitIsSet(128, 7));
 }
 
 unittest
 {
-  assert(setBit(0u, 0u) == 1u);
-  assert(setBit(0u, 1u) == 2u);
-  assert(setBit(0u, 4u) == 16u);
-  assert(setBit(0u, 9u) == 512u);
-  assert(setBit(128u, 3u) == 136u);
-}
-
-T unsetBit(T)(T bits, T n) if (isUnsigned!T)
-{
-  return bits & ~(1 << n);
+    assert(bitSet(0, 0) == 1);
+    assert(bitSet(0, 1) == 2);
+    assert(bitSet(0, 4) == 16);
+    assert(bitSet(0, 9) == 512);
+    assert(bitSet(128, 3) == 136);
 }
 
 unittest
 {
-  assert(unsetBit(3u, 0u) == 2u);
-  assert(unsetBit(15u, 2u) == 11u);
+    assert(bitClear(3, 0) == 2);
+    assert(bitClear(15, 2) == 11);
 }
