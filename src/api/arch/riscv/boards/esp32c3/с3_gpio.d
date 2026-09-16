@@ -4,6 +4,7 @@ module api.arch.riscv.boards.esp32c3.с3_gpio;
  * Authors: initkfs
  */
 import Volatile = api.arch.riscv.boards.com.com_volatile;
+import Bit = api.kstd.bits;
 
 enum uint GPIO = 0x6000_4000;
 
@@ -42,16 +43,16 @@ enum PinMode
 enum GpioInSel : uint
 {
     pinMask = 0x1F, // [4:0] GPIO_FUNCn_IN_SEL
-    invSel = 1 << 5, // [5]   GPIO_FUNCn_IN_INV_SEL, 1 or 0
-    selEn = 1 << 6, // [6]   GPIO_SIGn_IN_SEL Bypass GPIO matrix. 1: route signals via GPIO matrix, 0: connect signals directly to peripheral configured in IO MUX.
+    invSelBit = 5, // [5]   GPIO_FUNCn_IN_INV_SEL, 1 or 0
+    selEnBit = 6, // [6]   GPIO_SIGn_IN_SEL Bypass GPIO matrix. 1: route signals via GPIO matrix, 0: connect signals directly to peripheral configured in IO MUX.
 }
 
 //IO_MUX_GPIOn_REG
 enum IoMux : uint
 {
-    funIe = 1 << 9, // [9]  
-    mcuSelMask = 0x7 << 12, // [14:12] Маска режима работы пина
-    mcuSelGpio = 1 << 12 // На ESP32-C3 режим GPIO — это функция №1
+    funIeBit = 9, // [9]  
+    mcuSelMask = 0x7 << 12,
+    mcuSelGpioBit = 12
 }
 
 /** 
@@ -70,46 +71,33 @@ bool route(SygnalId fromId, PinId toId, bool isMatrix = true, bool isInverted = 
     enum uint GPIO_FUNC_IN_SEL_CFG_BASE = 0x0154;
 
     const GPIO_FUNCn_IN_SEL_CFG_REG = GPIO + GPIO_FUNC_IN_SEL_CFG_BASE + 4 * fromId;
-    auto funcConfig = Volatile.load(cast(uint*) GPIO_FUNCn_IN_SEL_CFG_REG);
-    
+
+    size_t* GPIO_FUNCn_IN_SEL_CFG_REG_PTR = cast(size_t*) GPIO_FUNCn_IN_SEL_CFG_REG;
+    auto funcConfig = Volatile.load(GPIO_FUNCn_IN_SEL_CFG_REG_PTR);
+
     funcConfig &= ~0x1F; //11111
     funcConfig |= (toId & 0x1F);
 
-    if (isInverted)
-    {
-        funcConfig |= GpioInSel.invSel; //1<< 5
-    }
-    else
-    {
-        funcConfig &= ~GpioInSel.invSel;
-    }
+    funcConfig = Bit.bitWrite(funcConfig, GpioInSel.invSelBit, isInverted);
+    funcConfig = Bit.bitWrite(funcConfig, GpioInSel.selEnBit, isMatrix);
 
-    if (isMatrix)
-    {
-        funcConfig |= GpioInSel.selEn; 
-    }
-    else
-    {
-        funcConfig &= ~GpioInSel.selEn;
-    }
-
-    Volatile.save(cast(uint*) GPIO_FUNCn_IN_SEL_CFG_REG, funcConfig);
+    Volatile.save(GPIO_FUNCn_IN_SEL_CFG_REG_PTR, funcConfig);
 
     const uint ioMuxAddr = GPIO + 0x0004 + (4 * toId);
 
-    enum IO_MUX_GPIOn_FUN_WPD = 1 << 7;
-    enum IO_MUX_GPIOn_FUN_WPU = 1 << 8;
-    enum IO_MUX_GPIOn_FUN_IE = 1 << 9;
-    enum IO_MUX_GPIOn_FILTER_EN = 1 << 15;
+    enum IO_MUX_GPIOn_FUN_WPD_BIT = 7;
+    enum IO_MUX_GPIOn_FUN_WPU_BIT = 8;
+    enum IO_MUX_GPIOn_FUN_IE_BIT = 9;
+    enum IO_MUX_GPIOn_FILTER_EN_BIT = 15;
 
-    enum uint MCU_SEL_GPIO = 1 << 12; // switch to GPIO
-    enum uint MCU_SEL_MASK = 0x7 << 12;
+    enum uint MCU_SEL_GPIO_BIT = 12; // switch to GPIO
 
-    uint ioMuxVal =  Volatile.load(cast (uint*) ioMuxAddr);
-    ioMuxVal |= IO_MUX_GPIOn_FUN_IE;
-    ioMuxVal = (ioMuxVal & ~MCU_SEL_MASK) | MCU_SEL_GPIO;
+    uint ioMuxVal = Volatile.load(cast(uint*) ioMuxAddr);
+    ioMuxVal = Bit.bitSet(ioMuxVal, IO_MUX_GPIOn_FUN_IE_BIT);
+    ioMuxVal = Bit.bitsClear(ioMuxVal, MCU_SEL_GPIO_BIT, 13, 14);
+    ioMuxVal = Bit.bitSet(ioMuxVal, MCU_SEL_GPIO_BIT);
 
-    Volatile.save(cast(uint*)ioMuxAddr , ioMuxVal);
+    Volatile.save(cast(uint*) ioMuxAddr, ioMuxVal);
 
     return true;
 }

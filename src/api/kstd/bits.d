@@ -1,6 +1,8 @@
 /**
  * Authors: initkfs
  */
+
+//TODO move from kstd
 module api.kstd.bits;
 
 import std.traits;
@@ -12,6 +14,16 @@ pure @safe nothrow @nogc
     bool bitIsSet(size_t bits, size_t from0Bit) => (bits & (startBitShift << from0Bit)) != 0;
     size_t bitSet(size_t bits, size_t from0Bit) => bits | (startBitShift << from0Bit);
     size_t bitClear(size_t bits, size_t from0Bit) => bits & ~(startBitShift << from0Bit);
+
+    size_t bitsClear(size_t bits, size_t[] from0Bits...)
+    {
+        size_t result = bits;
+        foreach (bit; from0Bits)
+        {
+            result &= ~(startBitShift << bit);
+        }
+        return result;
+    }
 
     //TODO unittest
     size_t bitToggle(size_t bits, size_t from0Bit) => bits ^ (startBitShift << from0Bit);
