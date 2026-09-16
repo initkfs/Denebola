@@ -42,9 +42,7 @@ private
 
 extern(C) void initSheduler()
 {
-    import Syslog = api.kernel.log.syslog;
-    Syslog.info("INIT SHED");
-    //__osTask.name = "IDLE";
+    __osTask.name = "IDLE";
 }
 
 //TODO first call

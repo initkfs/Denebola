@@ -45,6 +45,9 @@ __gshared
 
 extern (C) __gshared bool isTimer = true;
 
+//TODO remove arch api
+import C3GPIO = api.arch.riscv.boards.esp32c3.с3_gpio;
+
 private void runTests()
 {
     if (Syslog.isTraceLevel)
@@ -56,6 +59,7 @@ private void runTests()
 
     alias testModules = AliasSeq!(
         MemCore,
+        C3GPIO,
         //UPtr,
         //Str,
         //Hash,
