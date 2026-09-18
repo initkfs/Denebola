@@ -160,6 +160,7 @@ extern (C) void dstart()
     tid1 = TaskManager.taskCreate(&task1, "task1");
 
     import SysClock = api.arch.riscv.boards.esp32c3.c3_clock;
+    import SysTimer = api.arch.riscv.boards.esp32c3.c3_timer;
     SysClock.enableSysTimer;
 
     Interrupts.halSetGlobalMIntrOn();
