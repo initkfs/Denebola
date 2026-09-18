@@ -14,6 +14,9 @@ pure @safe nothrow @nogc
     bool bitIsSet(size_t bits, size_t from0Bit) => (bits & (startBitShift << from0Bit)) != 0;
     size_t bitSet(size_t bits, size_t from0Bit) => bits | (startBitShift << from0Bit);
     size_t bitClear(size_t bits, size_t from0Bit) => bits & ~(startBitShift << from0Bit);
+    
+    size_t bitClearMask(size_t bits, size_t mask) => bits &~ mask; 
+    size_t bitSetMask(size_t bits, size_t mask) => bits | mask;
 
     size_t bitsClear(size_t bits, size_t[] from0Bits...)
     {

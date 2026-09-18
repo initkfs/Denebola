@@ -159,6 +159,9 @@ extern (C) void dstart()
     tid = TaskManager.taskCreate(&task0, "task0");
     tid1 = TaskManager.taskCreate(&task1, "task1");
 
+    import SysClock = api.arch.riscv.boards.esp32c3.c3_clock;
+    SysClock.enableSysTimer;
+
     Interrupts.halSetGlobalMIntrOn();
 
     Syslog.info("End loading");
