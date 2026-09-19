@@ -4,7 +4,7 @@ module api.arch.riscv.boards.esp32c3.с3_gpio;
  * Authors: initkfs
  */
 import Volatile = api.arch.riscv.boards.com.com_volatile;
-import Bit = api.kstd.bits;
+import Bit = api.hal.hal_bits;
 
 //TODO Strapping-pins (GPIO8, GPIO9), clear USB_SERIAL_JTAG_USB_PAD_ENABLE for GPIO4, GPIO5, GPIO6, GPIO7.
 //Deny for GPIO12, GPIO13, GPIO14, GPIO15, GPIO16, GPIO17 - SPI FLASH
@@ -115,7 +115,7 @@ bool route(size_t* configMatrixAddr, size_t* ioMuxAddr, SygnalId toSignalY, PinI
 
 unittest
 {
-    import api.kstd.bits;
+    import api.hal.hal_bits;
 
     size_t matrixAddr = 0b11110011;
     size_t imulAddr = 0x5 << 12;

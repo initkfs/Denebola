@@ -1,6 +1,6 @@
 module api.arch.riscv.boards.esp32c3.c3_lowpower;
 
-import Bits = api.kstd.bits;
+import Bits = api.hal.hal_bits;
 import Volatile = api.arch.riscv.boards.com.com_volatile;
 
 /**

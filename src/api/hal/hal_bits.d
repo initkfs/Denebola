@@ -2,8 +2,7 @@
  * Authors: initkfs
  */
 
-//TODO move from kstd
-module api.kstd.bits;
+module api.hal.hal_bits;
 
 import std.traits;
 

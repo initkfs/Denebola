@@ -4,7 +4,7 @@ module api.arch.riscv.boards.esp32c3.c3_timer;
  * Authors: initkfs
  */
 import Volatile = api.arch.riscv.boards.com.com_volatile;
-import Bits = api.kstd.bits;
+import Bits = api.hal.hal_bits;
 
 enum SYSTIMER = 0x60023000;
 enum SYSTIMER_CONF_REG = SYSTIMER;

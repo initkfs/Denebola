@@ -1,6 +1,6 @@
 module api.arch.riscv.boards.esp32c3.c3_clock;
 
-import Bits = api.kstd.bits;
+import Bits = api.hal.hal_bits;
 
 /**
  * Authors: initkfs
