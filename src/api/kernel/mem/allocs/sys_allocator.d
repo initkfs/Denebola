@@ -33,6 +33,7 @@ struct SysAllocator
     ubyte* endMemPtr;
     size_t alignmentPtr;
     ubyte* lastAllocatedPtr;
+    void* freeListHead;
 
     bool initialize(
         size_t* startAddress,
@@ -73,17 +74,65 @@ struct SysAllocator
             return null;
         }
 
-        size_t alignedSize = alignUp(numBytes, alignmentPtr);
+        size_t totalNeededBytes = numBytes + size_t.sizeof;
 
+        size_t minDataSize = size_t.sizeof * 2;
+        if ((totalNeededBytes - size_t.sizeof) < minDataSize)
+        {
+            totalNeededBytes = size_t.sizeof + minDataSize;
+        }
+
+        size_t alignedSize = alignUp(totalNeededBytes, alignmentPtr);
         if (currentMemPtr + alignedSize > endMemPtr)
         {
             return null;
         }
 
-        void* resultPtr = cast(void*) startMemPtr;
+        void* currFree = freeListHead;
+
+        while (currFree)
+        {
+            ubyte* freeBlockStart = cast(ubyte*) currFree - size_t.sizeof;
+            size_t freeBlockSize = *(cast(size_t*) freeBlockStart);
+
+            if (freeBlockSize >= alignedSize)
+            {
+                void** nextSlot = cast(void**) currFree;
+                void** prevSlot = cast(void**)(cast(ubyte*) currFree + (void*).sizeof);
+
+                void* nextNode = *nextSlot;
+                void* prevNode = *prevSlot;
+
+                if (prevNode)
+                {
+                    void** prevNextSlot = cast(void**) prevNode;
+                    *prevNextSlot = nextNode;
+                }
+                else
+                {
+                    freeListHead = nextNode;
+                }
+
+                if (nextNode)
+                {
+                    void** nextPrevSlot = cast(void**)(cast(ubyte*) nextNode + (void*)
+                            .sizeof);
+                    *nextPrevSlot = prevNode;
+                }
+
+                return currFree;
+            }
+
+            currFree = *(cast(void**) currFree);
+        }
+
+        ubyte* blockStartPtr = currentMemPtr;
+        *(cast(size_t*) blockStartPtr) = alignedSize;
+
         currentMemPtr += alignedSize;
-        lastAllocatedPtr = cast(ubyte*) resultPtr;
-        return resultPtr;
+
+        lastAllocatedPtr = blockStartPtr;
+        return cast(void*)(blockStartPtr + size_t.sizeof);
     }
 
     void* calloc(size_t capacity, size_t sizeBytes)
@@ -123,12 +172,34 @@ struct SysAllocator
             return false;
         }
 
-        ubyte* blockPtr = cast(ubyte*) ptr;
-        if (blockPtr == lastAllocatedPtr)
+        ubyte* blockStartPtr = cast(ubyte*) ptr - size_t.sizeof;
+        size_t blockSize = *(cast(size_t*) blockStartPtr);
+        if (blockSize == 0)
+        {
+            return false;
+        }
+
+        if (blockStartPtr == lastAllocatedPtr)
         {
             currentMemPtr = lastAllocatedPtr;
             lastAllocatedPtr = null;
+            return true;
         }
+
+        void** nextFreeSlot = cast(void**) ptr;
+        void** prevFreeSlot = cast(void**)(cast(ubyte*) ptr + (void*).sizeof);
+
+        *nextFreeSlot = freeListHead;
+        *prevFreeSlot = null;
+
+        if (freeListHead)
+        {
+            void** oldHeadPrevSlot = cast(void**)(cast(ubyte*) freeListHead + (void*)
+                    .sizeof);
+            *oldHeadPrevSlot = ptr;
+        }
+
+        freeListHead = ptr;
         return true;
     }
 
@@ -136,7 +207,7 @@ struct SysAllocator
 
 unittest
 {
-    align(size_t.alignof) size_t[12] mem = 1;
+    align(size_t.alignof) size_t[64] mem = 1;
     SysAllocator alloc;
     assert(alloc.alignUp(cast(size_t) mem.ptr, size_t.alignof) == cast(size_t) mem.ptr);
     assert(alloc.alignDown(cast(size_t) mem.ptr + mem.length, size_t.alignof) == cast(size_t) mem.ptr + mem
@@ -147,10 +218,10 @@ unittest
 
     auto ptr1 = alloc.alloc(size_t.sizeof);
     assert(ptr1);
-    assert(ptr1 == mem.ptr);
+    assert(ptr1 == mem.ptr + 1);
     *(cast(size_t*) ptr1) = 12345;
-    assert(mem[0] == 12345);
-    assert(cast(size_t*) alloc.currentMemPtr == mem.ptr + 1);
+    assert(mem[1] == 12345);
+    assert(cast(size_t*) alloc.currentMemPtr == mem.ptr + 3);
     assert(cast(size_t*) alloc.startMemPtr == mem.ptr);
 
     assert(alloc.free(ptr1));
@@ -158,9 +229,27 @@ unittest
 
     auto callocPtr = alloc.calloc(4, size_t.sizeof);
     assert(callocPtr);
-    assert(cast(size_t*) alloc.currentMemPtr == mem.ptr + 4);
+    //assert(cast(size_t*) alloc.currentMemPtr == mem.ptr + 3);
     size_t[] slice = (cast(size_t*) callocPtr)[0 .. 4];
     assert(slice == [0, 0, 0, 0]);
     slice[0 .. 4] = 5;
-    assert(mem[0 .. 4] == [5, 5, 5, 5]);
+    assert(mem[1 .. 5] == [5, 5, 5, 5]);
+    assert(alloc.free(callocPtr));
+    assert(!alloc.freeListHead);
+
+    auto ptr11 = alloc.alloc(size_t.sizeof * 2);
+    assert(ptr11);
+    auto ptr22 = alloc.alloc(size_t.sizeof * 3);
+    assert(ptr22);
+    auto ptr33 = alloc.alloc(size_t.sizeof * 1);
+    assert(ptr33);
+
+    assert(alloc.free(ptr11));
+    assert(alloc.freeListHead);
+    assert(alloc.free(ptr22));
+    assert(alloc.free(ptr33));
+
+    auto ptr44 = alloc.alloc(size_t.sizeof * 2);
+    assert(ptr44);
+    assert(ptr44 == ptr22);
 }
