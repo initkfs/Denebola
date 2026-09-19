@@ -9,7 +9,7 @@ import api.hal.hal_entry;
 import Ver = api.arch.vers;
 import Tests = api.kernel.tests;
 import Syslog = api.kernel.log.syslog;
-import BlockAllocator = api.kernel.mem.allocs.block_allocator;
+import SysAllocator = api.kernel.mem.allocs.sys_allocator;
 import MemCore = api.kernel.mem.mem_core;
 import UPtr = api.kernel.mem.unique_ptr;
 import StackStrMod = api.cstd.strings.stack_str;
@@ -60,7 +60,7 @@ private void runTests()
     alias testModules = AliasSeq!(
         MemCore,
         C3GPIO,
-        //UPtr,
+        SysAllocator,//UPtr,
         //Str,
         //Hash,
         //StackStrMod,
@@ -69,11 +69,11 @@ private void runTests()
         //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
         //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.util.units"),
         //MathRandom,
-        Bits,
-        //Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
+        Bits,//Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
         //Atomic,
         //Spinlock,
         //Queues
+    
     );
 
     foreach (m; testModules)
@@ -94,7 +94,8 @@ __gshared
     size_t tid2;
 }
 
-extern(C) void plop(){
+extern (C) void plop()
+{
 
 }
 
@@ -117,17 +118,18 @@ extern (C) void dstart()
 
     HalMem.resetBss;
 
-    auto heapStartAddr = cast(void*)(HalMem.heapStartAddr);
-    auto heapEndAddr = cast(void*)(HalMem.heapEndAddr);
+    auto heapStartAddr = cast(size_t*)(HalMem.heapStartAddr);
+    auto heapEndAddr = cast(size_t*)(HalMem.heapEndAddr);
 
-    Allocator.heapStartAddr = heapStartAddr;
-    Allocator.heapEndAddr = heapEndAddr;
+    if (!SysAllocator.alloc.initialize(heapStartAddr, heapEndAddr))
+    {
+        HalUart.halWriteTxDir!"EM";
+        HalCpu.halHalt();
+    }
 
-    //TODO error, dublinterrupts
-    //BlockAllocator.initialize(heapStartAddr, heapEndAddr);
-    // Allocator.allocFunc = &BlockAllocator.alloc;
-    // Allocator.callocFunc = &BlockAllocator.calloc;
-    // Allocator.freeFunc = &BlockAllocator.free;
+    //Allocator.allocFunc = &SysAllocator.defAllocator.alloc;
+    //Allocator.callocFunc = &SysAllocator.defAllocator.calloc;
+    //Allocator.freeFunc = &SysAllocator.defAllocator.free;
 
     HalUart.halWriteTxDir!"M ";
 
@@ -161,6 +163,7 @@ extern (C) void dstart()
 
     import SysClock = api.arch.riscv.boards.esp32c3.c3_clock;
     import SysTimer = api.arch.riscv.boards.esp32c3.c3_timer;
+
     SysClock.enableSysTimer;
 
     Interrupts.halSetGlobalMIntrOn();
