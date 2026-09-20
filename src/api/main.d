@@ -7,34 +7,34 @@ module api.main;
 import api.hal.hal_entry;
 
 import Ver = api.arch.vers;
-import Tests = api.kernel.tests;
+import Tests = api.os.tests;
 
-import Syslog = api.kernel.logs.klog;
-import MemCore = api.kernel.mem.mem_core;
-import Kallocator = api.kernel.mem.allocs.kallocator;
-import SBuffer = api.kernel.mem.sbuffer;
-import Queues = api.kernel.utils.queues;
+import Syslog = api.os.logs.klog;
+import MemCore = api.os.mem.mem_core;
+import Kallocator = api.os.mem.allocs.kallocator;
+import SBuffer = api.os.mem.sbuffer;
+import Queues = api.os.utils.queues;
 
-import Str = api.kstd.strings.str;
-import MathCore = api.kstd.math.math_core;
-import Units = api.kstd.util.units;
-import MathStrict = api.kstd.math.math_strict;
-import MathRandom = api.kstd.math.math_random;
+import Str = api.os.strings.str;
+import MathCore = api.os.math.math_core;
+import Units = api.os.utils.units;
+import MathStrict = api.os.math.math_strict;
+import MathRandom = api.os.math.math_random;
 import Bits = api.hal.hal_bits;
 import Atomic = api.hal.hal_atomic;
 import Trap = api.hal.hal_trap;
-import Spinlock = api.kernel.tasks.sync.spinlock;
-import Critical = api.kernel.tasks.critical;
+import Spinlock = api.os.tasks.sync.spinlock;
+import Critical = api.os.tasks.critical;
 
-import TaskManager = api.kernel.tasks.task_manager;
+import TaskManager = api.os.tasks.task_manager;
 
 static if (Ver.hasFPU)
 {
-    // import MathFloat = api.kstd.math.math_float;
+    // import MathFloat = api.os.math.math_float;
 }
 
-import api.kstd.io.cstdio;
-import api.kernel.tasks.task;
+import api.os.io.cstdio;
+import api.os.tasks.task;
 
 __gshared
 {
@@ -69,8 +69,8 @@ version (unittest)
             Units,
             //MathCore,
             //MathStrict,
-            //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
-            //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.util.units"),
+            //Ver.IfVerMods!(Ver.hasFPU, "api.os.math.math_float"),
+            //Ver.IfVerMods!(Ver.hasFPU, "api.os.utils.units"),
             //MathRandom,
             Bits, //Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
             //Atomic,
@@ -189,8 +189,8 @@ extern (C) void dstart()
     // }
 }
 
-import api.kernel.tasks.sync.mailbox : Mailbox;
-import Mutex = api.kernel.tasks.sync.mutexes;
+import api.os.tasks.sync.mailbox : Mailbox;
+import Mutex = api.os.tasks.sync.mutexes;
 
 __gshared Mailbox!(int, 10) box;
 __gshared Mutex.Mutex mutex;

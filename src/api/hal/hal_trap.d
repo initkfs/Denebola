@@ -14,12 +14,12 @@ else
     static assert(false, "Not supported platform");
 }
 
-import api.kstd.io.cstdio;
-import api.kernel.tasks.task;
+import api.os.io.cstdio;
+import api.os.tasks.task;
 import api.hal.hal_timer;
 import api.arch.vers;
 
-import Syslog = api.kernel.logs.klog;
+import Syslog = api.os.logs.klog;
 
 __gshared extern (C)
 {
@@ -103,7 +103,7 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
                     static assert(false, "Need timer handler");
                 }
 
-                import TaskManager = api.kernel.tasks.task_manager;
+                import TaskManager = api.os.tasks.task_manager;
                 import HaltIntr = api.hal.hal_interrupts;
 
                 TaskManager.roundrobinChoose;
@@ -179,7 +179,7 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
                 break;
         }
 
-        import api.kernel.errors : halt;
+        import api.os.errors : halt;
 
         halt;
     }
