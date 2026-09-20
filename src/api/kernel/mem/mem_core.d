@@ -3,30 +3,43 @@
  */
 module api.kernel.mem.mem_core;
 
-int memcmp(T)(const T* addr1, const T* addr2, size_t size)
+import Kallocator = api.kernel.mem.allocs.kallocator;
+
+extern (C) void* malloc(size_t size) => Kallocator.alloc.alloc(size);
+extern (C) void* calloc(size_t num, size_t size) => Kallocator.alloc.calloc(num, size);
+extern (C) void* realloc(void* ptr, size_t size) => Kallocator.alloc.realloc(ptr, size);
+extern (C) void free(void* ptr)
 {
-    const ubyte* addr1Ptr = cast(const(ubyte*)) addr1;
-    const ubyte* addr2Ptr = cast(const(ubyte*)) addr2;
+    Kallocator.alloc.free(ptr);
+}
 
-    foreach (i; 0 .. size)
+extern (C) pure nothrow @nogc:
+
+//TODO align access on RISCV
+
+int memcmp(void* ptr1, void* ptr2, size_t num)
+{
+    ubyte* p1 = cast(ubyte*) ptr1;
+    ubyte* p2 = cast(ubyte*) ptr2;
+
+    while (num--)
     {
-        const int cmpRes = addr1Ptr[i] - addr2Ptr[i];
-        if (cmpRes)
+        if (*p1 != *p2)
         {
-            return cmpRes;
+            return *p1 - *p2;
         }
+        p1++;
+        p2++;
     }
-
     return 0;
 }
 
-T* memcpy(T)(T* dest, const T* src, size_t lenBytes)
+void* memcpy(void* dest, void* src, size_t len)
 {
-    //TODO words
     ubyte* d = cast(ubyte*) dest;
     ubyte* s = cast(ubyte*) src;
 
-    while (lenBytes)
+    while (len)
     {
         *d++ = *s++;
     }
@@ -34,53 +47,12 @@ T* memcpy(T)(T* dest, const T* src, size_t lenBytes)
     return dest;
 }
 
-//not int c
-T* memset(T)(T* dest, ubyte c, size_t lenBytes)
+void* memset(void* ptr, int value, size_t num)
 {
-    foreach (i; 0 .. lenBytes)
+    ubyte* p = cast(ubyte*) ptr;
+    while (num--)
     {
-        ubyte* ptr = cast(ubyte*) dest;
-        ptr[i] = c;
+        *p++ = cast(ubyte) value;
     }
-    return dest;
-}
-
-bool memeqs(T)(const(T)[] s1, const(T)[] s2)
-{
-    if (!s1 || !s2 || (s1.length != s2.length))
-    {
-        return false;
-    }
-
-    if (s1.length == 0 && s2.length == 0)
-    {
-        return true;
-    }
-
-    foreach (i, v1; s1)
-    {
-        auto v2 = s2[i];
-        if (v1 != v2)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-import ldc.llvmasm;
-
-void memoryFenceRWRW()
-{
-    __asm(
-        "fence rw, rw", "~{memory}"
-    );
-}
-
-void memoryFenceWW()
-{
-    __asm(
-        "fence w, w", "~{memory}"
-    );
+    return ptr;
 }

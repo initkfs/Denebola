@@ -16,11 +16,35 @@ immutable
 
 import std.traits : isSomeChar;
 
+bool memeqs(T)(const(T)[] s1, const(T)[] s2)
+{
+    if (!s1 || !s2 || (s1.length != s2.length))
+    {
+        return false;
+    }
+
+    if (s1.length == 0 && s2.length == 0)
+    {
+        return true;
+    }
+
+    foreach (i, v1; s1)
+    {
+        auto v2 = s2[i];
+        if (v1 != v2)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool isEqual(T)(const(T)[] s1, const(T)[] s2) if (isSomeChar!T)
 {
     import MemCore = api.kernel.mem.mem_core;
 
-    return MemCore.memeqs(s1, s2);
+    return memeqs(s1, s2);
 }
 
 unittest

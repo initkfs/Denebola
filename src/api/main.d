@@ -12,7 +12,6 @@ import Syslog = api.kernel.log.syslog;
 import Kallocator = api.kernel.mem.allocs.kallocator;
 import MemCore = api.kernel.mem.mem_core;
 import StackStrMod = api.cstd.strings.stack_str;
-import Allocator = api.kernel.mem.allocs.allocator;
 import Str = api.kstd.strings.str;
 import Hash = api.kstd.strings.hash;
 import MathCore = api.kstd.math.math_core;

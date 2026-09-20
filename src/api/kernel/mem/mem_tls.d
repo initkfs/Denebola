@@ -11,26 +11,17 @@ __gshared extern (C)
 {
     size_t _tdata_start;
     size_t _tdata_end;
+
     size_t _tbss_start;
     size_t _tbss_end;
+
     size_t _tls_start;
     size_t _tls_end;
 }
 
-size_t getTdataSize()
-{
-    return cast(size_t)(&_tdata_end - &_tdata_start);
-}
-
-size_t getTbssSize()
-{
-    return cast(size_t)(&_tbss_end - &_tbss_start);
-}
-
-size_t getTotalTlsSize()
-{
-    return cast(size_t)(&_tls_end - &_tls_start);
-}
+size_t tdataSize() => cast(size_t)(&_tdata_end - &_tdata_start);
+size_t tbssSize() => cast(size_t)(&_tbss_end - &_tbss_start);
+size_t tlsSize() => cast(size_t)(&_tls_end - &_tls_start);
 
 extern (C) void __initIdleTLS()
 {
