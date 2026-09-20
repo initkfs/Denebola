@@ -144,6 +144,8 @@ C[] ttoa(T, C = char)(T targetValue, C[] buff, const size_t base = 10)
     return buff[index .. $];
 }
 
+alias itoa = atoa;
+
 char[] atoa(int value, char[] buff, const size_t base = 10) => ttoa(value, buff, base);
 
 //TODO compiler-rt

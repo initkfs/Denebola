@@ -17,6 +17,7 @@ import Queues = api.kernel.utils.queues;
 
 import Str = api.kstd.strings.str;
 import MathCore = api.kstd.math.math_core;
+import Units = api.kstd.util.units;
 import MathStrict = api.kstd.math.math_strict;
 import MathRandom = api.kstd.math.math_random;
 import Bits = api.hal.hal_bits;
@@ -30,7 +31,6 @@ import TaskManager = api.kernel.tasks.task_manager;
 static if (Ver.hasFPU)
 {
     // import MathFloat = api.kstd.math.math_float;
-    // import Units = api.kstd.util.units;
 }
 
 import api.kstd.io.cstdio;
@@ -66,6 +66,7 @@ version (unittest)
             C3GPIO,
 
             Str,
+            Units,
             //MathCore,
             //MathStrict,
             //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),

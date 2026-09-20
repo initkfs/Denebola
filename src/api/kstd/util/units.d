@@ -3,10 +3,6 @@
  */
 module api.kstd.util.units;
 
-// dfmt off
-version (VerFPU):
-// dfmt on
-
 import Strings = api.kstd.strings.str;
 import MathCore = api.kstd.math.math_core;
 import MathFloat = api.kstd.math.math_float;
@@ -19,67 +15,85 @@ enum UnitType
 
 //TODO round, 1000 TB max
 char[] formatBytes(T)(T bytes, char[] buff, UnitType type = UnitType.SI)
-        if (__traits(isFloating, T))
 {
     if (bytes == 0)
     {
-        enum zeroBytesStr = "0B";
-        buff[] = zeroBytesStr;
-        return buff[0 .. zeroBytesStr.length];
+        if (buff.length >= 2)
+        {
+            buff[0 .. 2] = "0B";
+            return buff[0 .. 2];
+        }
+        return null;
     }
 
-    float oneKInBytes;
-    switch (type)
+    uint intBytes = cast(uint) bytes;
+    uint oneKInBytes = (type == UnitType.Binary) ? 1024 : 1000;
+
+    static immutable char[5] sizePostfixes = "BKMGT";
+
+    int postfixIndex = 0;
+    uint remainder = 0;
+
+    while (intBytes >= oneKInBytes && postfixIndex < sizePostfixes.length - 1)
     {
-        case UnitType.SI:
-            oneKInBytes = 1000;
-            break;
-        case UnitType.Binary:
-            oneKInBytes = 1024;
-            break;
-        default:
-            break;
+        remainder = intBytes % oneKInBytes;
+        intBytes /= oneKInBytes;
+        postfixIndex++;
     }
-
-    const invalidValue = "N/A";
-
-    if (oneKInBytes == 0)
-    {
-        buff[] = invalidValue;
-        return buff[0 .. invalidValue.length];
-    }
-
-    //TODO SI kB in lower case
-    enum sizePostfixes = "BKMGT";
-
-    immutable int postfixIndex = cast(int)(MathFloat.log10(bytes) / MathFloat.log10(oneKInBytes));
-    if (postfixIndex >= sizePostfixes.length)
-    {
-        buff[] = invalidValue;
-        return buff[0 .. invalidValue.length];
-    }
-
-    immutable float sizeValue = bytes / MathFloat.pow(oneKInBytes, postfixIndex);
-    immutable char sizePostfix = sizePostfixes[postfixIndex];
-    immutable char binaryBytePrefix = 'i';
-    immutable char bytePostfix = 'B';
 
     size_t buffIndex;
+    uint mainPart = intBytes;
 
-    //TODO round 3
-    auto ftoaSlice = Strings.ftoa(sizeValue, buff);
-    buff[] = ftoaSlice;
-    buffIndex += ftoaSlice.length;
+    char[11] temp;
+    size_t tempIdx = 0;
 
-    buff[buffIndex++] = sizePostfix;
+    uint tempNum = mainPart;
+    while (tempNum > 0)
+    {
+        temp[tempIdx++] = cast(char)('0' + (tempNum % 10));
+        tempNum /= 10;
+    }
 
-    if (sizePostfix != bytePostfix)
+    while (tempIdx > 0)
+    {
+        buff[buffIndex++] = temp[--tempIdx];
+    }
+
+    if (postfixIndex > 0)
+    {
+        uint fractionPart = (remainder * 100) / oneKInBytes;
+        if (fractionPart > 0)
+        {
+            buff[buffIndex++] = '.';
+            if (fractionPart < 10)
+            {
+                buff[buffIndex++] = '0';
+            }
+
+            uint tempFrac = fractionPart;
+            char[5] tempF;
+            size_t tempFIdx = 0;
+            while (tempFrac > 0)
+            {
+                tempF[tempFIdx++] = cast(char)('0' + (tempFrac % 10));
+                tempFrac /= 10;
+            }
+            while (tempFIdx > 0)
+            {
+                buff[buffIndex++] = tempF[--tempFIdx];
+            }
+        }
+    }
+
+    buff[buffIndex++] = sizePostfixes[postfixIndex];
+
+    if (postfixIndex > 0)
     {
         if (type == UnitType.Binary)
         {
-            buff[buffIndex++] = binaryBytePrefix;
+            buff[buffIndex++] = 'i';
         }
-        buff[buffIndex++] = bytePostfix;
+        buff[buffIndex++] = 'B';
     }
 
     return buff[0 .. buffIndex];
@@ -89,16 +103,19 @@ unittest
 {
     char[256] buff = 0;
 
-    assert(formatBytes(0f, buff) == "0B");
-    assert(formatBytes(1f, buff) == "1B");
-    assert(formatBytes(999f, buff, UnitType.SI) == "999B");
-    assert(formatBytes(1000f, buff, UnitType.SI) == "1KB");
-    assert(formatBytes(5000f, buff, UnitType.SI) == "5KB");
-    assert(formatBytes(100_000f, buff, UnitType.SI) == "100KB");
-    assert(formatBytes(1_000_000f, buff, UnitType.SI) == "1MB");
+    import Syslog = api.kernel.logs.klog;
 
-    assert(formatBytes(999f, buff, UnitType.Binary) == "999B");
-    assert(formatBytes(1023f, buff, UnitType.Binary) == "1023B");
-    assert(formatBytes(1024f, buff, UnitType.Binary) == "1KiB");
-    assert(formatBytes(1_048_576f, buff, UnitType.Binary) == "1MiB");
+    assert(formatBytes(0, buff) == "0B");
+    assert(formatBytes(1, buff) == "1B");
+    assert(formatBytes(999, buff, UnitType.SI) == "999B");
+    assert(formatBytes(1000, buff, UnitType.SI) == "1KB");
+    assert(formatBytes(5000, buff, UnitType.SI) == "5KB");
+    assert(formatBytes(100_000, buff, UnitType.SI) == "100KB");
+    assert(formatBytes(475_999, buff, UnitType.SI) == "475.99KB");
+    assert(formatBytes(1_000_000, buff, UnitType.SI) == "1MB");
+
+    assert(formatBytes(999, buff, UnitType.Binary) == "999B");
+    assert(formatBytes(1023, buff, UnitType.Binary) == "1023B");
+    assert(formatBytes(1024, buff, UnitType.Binary) == "1KiB");
+    assert(formatBytes(1_048_576, buff, UnitType.Binary) == "1MiB");
 }
