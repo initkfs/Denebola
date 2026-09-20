@@ -11,7 +11,6 @@ import Tests = api.kernel.tests;
 import Syslog = api.kernel.log.syslog;
 import Kallocator = api.kernel.mem.allocs.kallocator;
 import MemCore = api.kernel.mem.mem_core;
-import UPtr = api.kernel.mem.unique_ptr;
 import StackStrMod = api.cstd.strings.stack_str;
 import Allocator = api.kernel.mem.allocs.allocator;
 import Str = api.kstd.strings.str;
