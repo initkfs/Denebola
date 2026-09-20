@@ -16,17 +16,6 @@ enum : char
 	SPACE = ' '
 }
 
-bool isDecimalDigit(const char c) @nogc pure @safe
-{
-	return c >= '0' && c <= '9';
-}
-
-bool isAlpha(const char c) @nogc pure @safe
-{
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-}
-
-bool isSpace(const char c) @nogc pure @safe
-{
-	return c == SPACE || c == TAB || c == LF || c == VT || c == FF || c == CR;
-}
+bool isDecimalDigit(const char c) @nogc pure @safe => c >= '0' && c <= '9';
+bool isAlpha(const char c) @nogc pure @safe => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+bool isSpace(const char c) @nogc pure @safe => c == SPACE || c == TAB || c == LF || c == VT || c == FF || c == CR;

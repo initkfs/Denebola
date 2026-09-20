@@ -12,11 +12,10 @@ import Tests = api.kernel.tests;
 import Syslog = api.kernel.logs.klog;
 import MemCore = api.kernel.mem.mem_core;
 import Kallocator = api.kernel.mem.allocs.kallocator;
+import SBuffer = api.kernel.mem.sbuffer;
 import Queues = api.kernel.utils.queues;
 
-import StackStrMod = api.cstd.strings.stack_str;
 import Str = api.kstd.strings.str;
-import Hash = api.kstd.strings.hash;
 import MathCore = api.kstd.math.math_core;
 import MathStrict = api.kstd.math.math_strict;
 import MathRandom = api.kstd.math.math_random;
@@ -62,11 +61,12 @@ version (VerTest)
         alias testModules = AliasSeq!(
             MemCore,
             Kallocator,
+            SBuffer,
             Queues,
             C3GPIO,
             //Str,
             //Hash,
-            //StackStrMod,
+            //,
             //MathCore,
             //MathStrict,
             //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
