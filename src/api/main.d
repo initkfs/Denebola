@@ -64,9 +64,8 @@ version (VerTest)
             SBuffer,
             Queues,
             C3GPIO,
-            //Str,
-            //Hash,
-            //,
+
+            Str,
             //MathCore,
             //MathStrict,
             //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
@@ -75,7 +74,9 @@ version (VerTest)
             Bits, //Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
             //Atomic,
             //Spinlock,
+
             
+
         );
 
         foreach (m; testModules)

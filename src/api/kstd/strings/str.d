@@ -4,95 +4,10 @@
 module api.kstd.strings.str;
 
 import Ver = api.arch.vers;
-import api.kernel.errors;
 
-immutable
-{
-    string strEmpty = "";
-    string strFormatError = "_formaterror_";
-    char strNullByte = '\0';
-    size_t strBuffSize = 256;
-}
+enum NullByte = '\0';
 
 import std.traits : isSomeChar;
-
-bool memeqs(T)(const(T)[] s1, const(T)[] s2)
-{
-    if (!s1 || !s2 || (s1.length != s2.length))
-    {
-        return false;
-    }
-
-    if (s1.length == 0 && s2.length == 0)
-    {
-        return true;
-    }
-
-    foreach (i, v1; s1)
-    {
-        auto v2 = s2[i];
-        if (v1 != v2)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool isEqual(T)(const(T)[] s1, const(T)[] s2) if (isSomeChar!T)
-{
-    import MemCore = api.kernel.mem.mem_core;
-
-    return memeqs(s1, s2);
-}
-
-unittest
-{
-    assert(isEqual("", ""));
-    assert(isEqual(" ", " "));
-    assert(!isEqual("", " "));
-    assert(!isEqual(" ", ""));
-    assert(!isEqual(null, ""));
-    assert(!isEqual("", null));
-    assert(!(isEqual!char(null, null)));
-
-    assert(isEqual("a", "a"));
-    assert(isEqual("foo bar", "foo bar"));
-    assert(!isEqual("a", "A"));
-
-    assert(isEqual(cast(string)['a'], cast(string)['a']));
-}
-
-bool isEqual(T)(T s1, const(T)[] s2) if (isSomeChar!T)
-{
-    if (s2.length != 1)
-    {
-        return false;
-    }
-
-    return s1 == s2[0];
-}
-
-bool isEmpty(T)(const(T)[] str) if (isSomeChar!T)
-{
-    return str.length == 0;
-}
-
-unittest
-{
-    assert(isEmpty(""));
-}
-
-bool isEmptyz(T)(const T* str) if (isSomeChar!T)
-{
-    return strlenz(str) == 0;
-}
-
-unittest
-{
-    assert(isEmptyz("".ptr));
-}
 
 bool isBlank(T)(const(T)[] str) if (isSomeChar!T)
 {
@@ -132,13 +47,11 @@ size_t strlenz(T)(const T* str) if (isSomeChar!T)
 
     //TODO add length limit
     size_t lengthIndex;
-    while (str[lengthIndex] != strNullByte)
+    while (str[lengthIndex] != NullByte)
     {
         if (lengthIndex == size_t.max)
         {
-            import api.kernel.errors;
-
-            panic("Overflow string length");
+            return 0;
         }
 
         lengthIndex++;
@@ -160,14 +73,9 @@ unittest
 C[] ttoa(T, C = char)(T targetValue, C[] buff, const size_t base = 10)
         if (__traits(isIntegral, T) && isSomeChar!C)
 {
-    if (buff.length < 2)
+    if (buff.length < 2 || base == 0)
     {
-        panic("Buffer size must be equal or greater than 2 to convert any number to string ");
-    }
-
-    if (base == 0)
-    {
-        panic("Number base must not be 0");
+        return null;
     }
 
     if (targetValue == 0)
@@ -193,7 +101,7 @@ C[] ttoa(T, C = char)(T targetValue, C[] buff, const size_t base = 10)
         }
     }
 
-    immutable C[16] alphabet = "0123456789ABCDEF";
+    static immutable C[16] alphabet = "0123456789ABCDEF";
 
     auto value = targetValue;
 
@@ -236,10 +144,7 @@ C[] ttoa(T, C = char)(T targetValue, C[] buff, const size_t base = 10)
     return buff[index .. $];
 }
 
-char[] atoa(int value, char[] buff, const size_t base = 10)
-{
-    return ttoa(value, buff, base);
-}
+char[] atoa(int value, char[] buff, const size_t base = 10) => ttoa(value, buff, base);
 
 //TODO compiler-rt
 static if (size_t.sizeof >= long.sizeof)
@@ -252,159 +157,78 @@ static if (size_t.sizeof >= long.sizeof)
 
 unittest
 {
-    import api.kstd.io.cstdio;
-
     char[64] buff = 0;
 
     //Decimal
-    auto sd = atoa(0, buff);
-    assert(isEqual(sd, "0"));
-    assert(sd.length == 1);
+    assert(atoa(0, buff) == "0");
+    assert(atoa(-0, buff) == "0");
+    assert(atoa(1, buff) == "1");
+    assert(atoa(-1, buff) == "-1");
 
-    auto negZero = atoa(-0, buff);
-    assert(isEqual(negZero, "0"));
-    assert(negZero.length == 1);
+    assert(atoa(101, buff) == "101");
+    assert(atoa(-101, buff) == "-101");
+    assert(atoa(10_000_000, buff) == "10000000");
+    assert(atoa(648_356, buff) == "648356");
 
-    auto sd1 = atoa(1, buff);
-    assert(isEqual(sd1, "1"));
-    assert(sd1.length == 1);
-
-    auto sdneg1 = atoa(-1, buff);
-    assert(isEqual(sdneg1, "-1"));
-
-    auto sd101 = atoa(101, buff);
-    assert(isEqual(sd101, "101"));
-
-    auto sd101neg = atoa(-101, buff);
-    assert(isEqual(sd101neg, "-101"));
-
-    auto sd100x = atoa(10_000_000, buff);
-    assert(isEqual(sd100x, "10000000"));
-
-    auto sd64x = atoa(648_356, buff);
-    assert(isEqual(sd64x, "648356"));
-
-    auto sdmax = atoa(int.max, buff);
-    assert(isEqual(sdmax, "2147483647"));
-
-    auto sdmin = atoa(int.min, buff);
-    assert(isEqual(sdmin, "-2147483648"));
+    assert(atoa(int.max, buff) == "2147483647");
+    assert(atoa(int.min, buff) == "-2147483648");
 
     //Negative tests
     char[2] minBuff = 0;
-    auto minMin = atoa(int.min, minBuff);
-    assert(isEqual(minMin, "-0"));
+    assert(atoa(int.min, minBuff) == "-0");
 
-    auto numOverflow = atoa(1234, minBuff);
-    assert(isEqual(numOverflow, "4"));
-
-    auto numNegOverflow = atoa(-1234, minBuff);
-    assert(isEqual(numNegOverflow, "-4"));
+    //Overflows
+    assert(atoa(1234, minBuff) == "4");
+    assert(atoa(-1234, minBuff) == "-4");
 
     //Bin
     enum binBase = 2;
-    auto binZero = atoa(0, buff, binBase);
-    assert(isEqual(binZero, "0"));
-
-    auto binOne = atoa(1, buff, binBase);
-    assert(isEqual(binOne, "1"));
-
-    auto bin2 = atoa(2, buff, binBase);
-    assert(isEqual(bin2, "10"));
-
-    auto bin10 = atoa(10, buff, binBase);
-    assert(isEqual(bin10, "1010"));
-
-    auto bin10neg = atoa(-10, buff, binBase);
-    assert(isEqual(bin10neg, "-1010"));
-
-    auto bin64x = atoa(648356, buff, binBase);
-    assert(isEqual(bin64x, "10011110010010100100"));
+    assert(atoa(0, buff, binBase) == "0");
+    assert(atoa(1, buff, binBase) == "1");
+    assert(atoa(2, buff, binBase) == "10");
+    assert(atoa(10, buff, binBase) == "1010");
+    assert(atoa(-10, buff, binBase) == "-1010");
+    assert(atoa(648356, buff, binBase) == "10011110010010100100");
 
     //Hex
     enum hexBase = 16;
-    auto hZero = atoa(0, buff, hexBase);
-    assert(isEqual(hZero, "0"));
-
-    auto hOne = atoa(1, buff, hexBase);
-    assert(isEqual(hOne, "1"));
-
-    auto hOneNeg = atoa(-1, buff, hexBase);
-    assert(isEqual(hOneNeg, "-1"));
-
-    auto h10 = atoa(10, buff, hexBase);
-    assert(isEqual(h10, "A"));
-
-    auto h4573 = atoa(4573, buff, hexBase);
-    assert(isEqual(h4573, "11DD"));
-
-    auto h0x7f = atoa(int.max, buff, hexBase);
-    assert(isEqual(h0x7f, "7FFFFFFF"));
-
-    auto h0x7fMin = atoa(int.min, buff, hexBase);
-    //TODO correct hex min value
-    assert(isEqual(h0x7fMin, "-2147483648"));
+    assert(atoa(0, buff, hexBase) == "0");
+    assert(atoa(1, buff, hexBase) == "1");
+    assert(atoa(-1, buff, hexBase) == "-1");
+    assert(atoa(10, buff, hexBase) == "A");
+    assert(atoa(4573, buff, hexBase) == "11DD");
+    assert(atoa(int.max, buff, hexBase) == "7FFFFFFF");
+    assert(atoa(int.min, buff, hexBase) == "-2147483648");
 
     //Long
     static if (size_t.sizeof >= long.sizeof)
     {
-        auto lMax = ltoa(long.max, buff);
-        assert(isEqual(lMax, "9223372036854775807"));
-
-        auto lMin = ltoa(long.min, buff);
+        assert(ltoa(long.max, buff) == "9223372036854775807");
         //TODO cast
-        assert(isEqual(lMin, "cast(long)-9223372036854775808"));
+        assert(ltoa(long.min, buff) == "cast(long)-9223372036854775808");
     }
 }
 
-B[] transform(T, B)(const(T)[] str, B[] buff, scope T delegate(T) onChar)
-        if (isSomeChar!T && isSomeChar!B)
+bool transform(T)(T[] str, scope T delegate(T) onChar)
 {
-    if (!onChar)
+    if (!onChar || str.length == 0)
     {
-        panic("Transform delegate must not be null");
+        return false;
     }
 
-    if (buff.length == 0)
+    foreach (i, ref ch; str)
     {
-        panic("Buffer length must be greater than zero");
+        ch = onChar(ch);
     }
-
-    if (str.length == 0)
-    {
-        buff[0] = strNullByte;
-        return buff[0 .. 1];
-    }
-
-    size_t buffLength;
-    foreach (i, ch; str)
-    {
-        if (i >= buff.length)
-        {
-            panic("Buffer index is greater than receiver capacity");
-        }
-
-        buff[i] = onChar ? onChar(ch) : ch;
-
-        buffLength++;
-    }
-
-    return buff[0 .. buffLength];
+    return true;
 }
 
-unittest
+bool toLower(T)(T[] str)
 {
-    char[64] buff = 0;
-    assert(isEqual('\0', transform("", buff, (char ch) => ch)));
-    assert(isEqual("HELLO", transform("hello", buff, (char ch) => cast(char)(ch - 32))));
-}
-
-B[] toLower(T, B)(const(T)[] str, B[] buff) if (isSomeChar!T && isSomeChar!B)
-{
-    return transform!(T, B)(str, buff, (T ch) {
+    return transform(str, (T ch) {
         if (ch >= 'A' && ch <= 'Z')
         {
-            return cast(char)(ch + 32);
+            return cast(T)(ch + 32);
         }
         return ch;
     });
@@ -412,15 +236,14 @@ B[] toLower(T, B)(const(T)[] str, B[] buff) if (isSomeChar!T && isSomeChar!B)
 
 unittest
 {
-    char[64] buff = 0;
-    assert(isEqual("foobar", toLower("foobar", buff)));
-    assert(isEqual("foobar", toLower("FooBar", buff)));
-    assert(isEqual("foobar", toLower("FOOBAR", buff)));
+    char[$] buff = "foFooBarobar";
+    assert(buff.toLower);
+    assert(buff == "fofoobarobar");
 }
 
-B[] toUpper(T, B)(const(T)[] str, B[] buff) if (isSomeChar!T && isSomeChar!B)
+bool toUpper(T)(T[] str)
 {
-    return transform!(T, B)(str, buff, (T ch) {
+    return transform(str, (T ch) {
         if (ch >= 'a' && ch <= 'z')
         {
             return cast(char)(ch - 32);
@@ -431,45 +254,9 @@ B[] toUpper(T, B)(const(T)[] str, B[] buff) if (isSomeChar!T && isSomeChar!B)
 
 unittest
 {
-    char[64] buff = 0;
-    assert(isEqual("FOOBAR", toUpper("foobar", buff)));
-    assert(isEqual("FOOBAR", toUpper("FooBar", buff)));
-    assert(isEqual("FOOBAR", toUpper("FOOBAR", buff)));
-}
-
-T[] reverse(T, B)(const(T)[] str, B[] buff) if (isSomeChar!T && isSomeChar!B)
-{
-    if (buff.length == 0)
-    {
-        panic("Buffer length must not be 0");
-    }
-
-    if (str.length == 0)
-    {
-        buff[0] = strNullByte;
-        return buff[0 .. 1];
-    }
-
-    size_t bufferLength;
-    size_t strLength = str.length;
-    foreach_reverse (i, ch; str)
-    {
-        if (i >= buff.length)
-        {
-            panic("Buffer overflow");
-        }
-        buff[strLength - i - 1] = ch;
-        bufferLength++;
-    }
-
-    return buff[0 .. bufferLength];
-}
-
-unittest
-{
-    char[64] buff = 0;
-    assert(isEqual('\0', reverse("", buff)));
-    assert(isEqual("raboof", reverse("foobar", buff)));
+    char[$] buff = "fooBar";
+    assert(buff.toUpper);
+    assert(buff == "FOOBAR");
 }
 
 static if (Ver.hasFPU)
@@ -669,7 +456,8 @@ const(char[]) formatb(char placeholder = '%', Args...)(const(char[]) pattern, ch
         {
             if (argIndex >= argsSize)
             {
-                panic("Not enough arguments to format string");
+                //panic("Not enough arguments to format string");
+                return null;
             }
             formatter(argIndex, patternChar, args);
             argIndex++;
