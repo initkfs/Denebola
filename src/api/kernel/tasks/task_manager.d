@@ -6,7 +6,7 @@ import api.kernel.tasks.task;
 
 import api.kstd.io.cstdio;
 
-import Syslog = api.kernel.log.syslog;
+import Syslog = api.kernel.logs.klog;
 import Critical = api.kernel.tasks.critical;
 import ComContext = api.hal.hal_context;
 

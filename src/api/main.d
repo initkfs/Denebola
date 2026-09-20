@@ -8,7 +8,7 @@ import api.hal.hal_entry;
 
 import Ver = api.arch.vers;
 import Tests = api.kernel.tests;
-import Syslog = api.kernel.log.syslog;
+import Syslog = api.kernel.logs.klog;
 import Kallocator = api.kernel.mem.allocs.kallocator;
 import MemCore = api.kernel.mem.mem_core;
 import StackStrMod = api.cstd.strings.stack_str;
@@ -129,7 +129,7 @@ extern (C) void dstart()
 
     HalUart.halWriteTxDir!"M ";
 
-    Syslog.setLoad(true);
+    Syslog.isLoad = true;
     Syslog.info("Init mem");
 
     import Interrupts = api.hal.hal_interrupts;

@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module api.kernel.log.logger_core;
+module api.kernel.logs.klog_core;
 
 enum LogLevel
 {
@@ -12,7 +12,7 @@ enum LogLevel
     error
 }
 
-string getLevelName(const LogLevel level) @nogc nothrow pure @safe
+string levelName(const LogLevel level) @nogc nothrow pure @safe
 {
     string levelName = "undefined.level";
 
@@ -30,7 +30,7 @@ string getLevelName(const LogLevel level) @nogc nothrow pure @safe
 }
 
 //minimal logger level >= global logger level
-bool isForLogLevel(const LogLevel level, const LogLevel loggerLevel) @nogc nothrow pure @safe
+bool isForLevel(const LogLevel level, const LogLevel loggerLevel) @nogc nothrow pure @safe
 {
     if (loggerLevel == LogLevel.all)
     {

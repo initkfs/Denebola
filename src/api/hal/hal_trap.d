@@ -19,7 +19,7 @@ import api.kernel.tasks.task;
 import api.hal.hal_timer;
 import api.arch.vers;
 
-import Syslog = api.kernel.log.syslog;
+import Syslog = api.kernel.logs.klog;
 
 __gshared extern (C)
 {

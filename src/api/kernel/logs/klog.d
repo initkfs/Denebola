@@ -1,17 +1,17 @@
 /**
  * Authors: initkfs
  */
-module api.kernel.log.syslog;
+module api.kernel.logs.klog;
 
 import Inspector = api.kernel.support.inspector;
-import api.kernel.log.logger_core;
+import api.kernel.logs.klog_core;
 
 import std.traits;
 
-private __gshared
+__gshared
 {
     LogLevel logLevel;
-    bool load;
+    bool isLoad;
 }
 
 extern (C) void __ctrace()
@@ -19,7 +19,6 @@ extern (C) void __ctrace()
     trace("Trace extern(C)");
 }
 
-//TODO versions
 protected
 {
     import Uart = api.hal.hal_uart;
@@ -38,50 +37,18 @@ protected
     }
 }
 
-void setLoad(bool isLoad) @nogc nothrow
+const(char)[] logLevelName() @nogc nothrow
 {
-    load = isLoad;
+    return levelName(logLevel);
 }
 
-bool isLoad() @nogc nothrow
-{
-    return load;
-}
+bool isForSyslogLevel(LogLevel level) @nogc nothrow => isForLevel(level, logLevel);
 
-void setLogLevel(LogLevel level = LogLevel.all) @nogc nothrow
-{
-    logLevel = level;
-}
+bool isErrorLevel() @nogc nothrow => isForSyslogLevel(LogLevel.error);
+bool isWarnLevel() @nogc nothrow => isForSyslogLevel(LogLevel.warn);
+bool isInfoLevel() @nogc nothrow => isForSyslogLevel(LogLevel.info);
+bool isTraceLevel() @nogc nothrow => isForSyslogLevel(LogLevel.trace);
 
-const(char)[] getLogLevelName() @nogc nothrow
-{
-    return getLevelName(logLevel);
-}
-
-bool isErrorLevel() @nogc nothrow
-{
-    return isForSyslogLevel(LogLevel.error);
-}
-
-bool isWarnLevel() @nogc nothrow
-{
-    return isForSyslogLevel(LogLevel.warn);
-}
-
-bool isInfoLevel() @nogc nothrow
-{
-    return isForSyslogLevel(LogLevel.info);
-}
-
-bool isTraceLevel() @nogc nothrow
-{
-    return isForSyslogLevel(LogLevel.trace);
-}
-
-bool isForSyslogLevel(LogLevel level) @nogc nothrow
-{
-    return isForLogLevel(level, logLevel);
-}
 
 private void log(LogLevel level, const(char)[] message, const(char)[] file, int line)
 {
@@ -90,12 +57,12 @@ private void log(LogLevel level, const(char)[] message, const(char)[] file, int 
         Inspector.setErrors;
     }
 
-    if (!isForLogLevel(level, logLevel))
+    if (!isForLevel(level, logLevel))
     {
         return;
     }
 
-    immutable levelName = getLevelName(level);
+    immutable levelName = levelName(level);
     immutable spaceChar = ' ';
 
     logWrite(levelName);
@@ -113,7 +80,7 @@ private void log(LogLevel level, const(char)[] message, const(char)[] file, int 
 private void logf(T)(LogLevel level, const(char)[] pattern, T[] args,
     const(char)[] file, int line)
 {
-    if (!isForLogLevel(level, logLevel))
+    if (!isForLevel(level, logLevel))
     {
         return;
     }
@@ -132,11 +99,6 @@ void trace(const(char)[] message, const const(char)[] file = __FILE__, const int
     log(LogLevel.trace, message, file, line);
 }
 
-// void trace(char* message, const const(char)[] file = __FILE__, const int line = __LINE__)
-// {
-//     trace(const(char)[]s.toconst(char)[](message), file, line);
-// }
-
 void infof(T)(const(char)[] pattern, T[] args, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
     logf(LogLevel.info, pattern, args, file, line);
@@ -146,11 +108,6 @@ void info(const(char)[] message, const const(char)[] file = __FILE__, const int 
 {
     log(LogLevel.info, message, file, line);
 }
-
-// void info(char* message, const const(char)[] file = __FILE__, const int line = __LINE__)
-// {
-//     info(const(char)[]s.toconst(char)[](message), file, line);
-// }
 
 void warnf(T)(const(char)[] pattern, T[] args, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
@@ -162,11 +119,6 @@ void warn(const(char)[] message, const const(char)[] file = __FILE__, const int 
     log(LogLevel.warn, message, file, line);
 }
 
-// void warn(char* message, const const(char)[] file = __FILE__, const int line = __LINE__)
-// {
-//     warn(const(char)[]s.toconst(char)[](message), file, line);
-// }
-
 void errorf(T)(const(char)[] pattern, T[] args, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
     logf(LogLevel.error, pattern, args, file, line);
@@ -176,8 +128,3 @@ void error(const(char)[] message, const const(char)[] file = __FILE__, const int
 {
     log(LogLevel.error, message, file, line);
 }
-
-// void error(char* message, const const(char)[] file = __FILE__, const int line = __LINE__)
-// {
-//     error(const(char)[]s.toconst(char)[](message), file, line);
-// }
