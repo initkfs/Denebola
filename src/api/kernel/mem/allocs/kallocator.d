@@ -347,10 +347,6 @@ struct Kallocator
 
 }
 
-// dfmt off
-version (VerTest):
-// dfmt on
-
 unittest
 {
     align(size_t.alignof) size_t[64] mem = 1;

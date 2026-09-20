@@ -62,10 +62,6 @@ void* memset(void* ptr, int value, size_t num)
     return ptr;
 }
 
-//dfmt off
-version(VerTest):
-//dfmt on
-
 unittest
 {
     align(size_t.alignof) ubyte[8] mem;

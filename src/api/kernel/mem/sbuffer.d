@@ -149,38 +149,35 @@ struct SBuffer(size_t Len, T = char)
     }
 }
 
-version (VerTest)
+unittest
 {
-    unittest
-    {
-        auto str1 = SBuffer!4("98765");
-        assert(str1.length == 4);
-        assert(str1.isOverflow);
-        assert(str1[] == "9876");
+    auto str1 = SBuffer!4("98765");
+    assert(str1.length == 4);
+    assert(str1.isOverflow);
+    assert(str1[] == "9876");
 
-        str1 = SBuffer!4("123");
-        assert(!str1.isOverflow);
-        assert(str1[] == "123");
+    str1 = SBuffer!4("123");
+    assert(!str1.isOverflow);
+    assert(str1[] == "123");
 
-        assert(str1.add("4") == 1);
-        assert(str1[] == "1234");
-        assert(!str1.add("1"));
-        assert(!str1.add(""));
+    assert(str1.add("4") == 1);
+    assert(str1[] == "1234");
+    assert(!str1.add("1"));
+    assert(!str1.add(""));
 
-        str1.clear;
-        assert(str1.length == 0);
-        str1 ~= "A";
-        assert(str1.length == 1);
-        assert(str1[] == "A");
-        str1 ~= "BCDE";
-        assert(str1.length == 4);
-        assert(str1[] == "ABCD");
+    str1.clear;
+    assert(str1.length == 0);
+    str1 ~= "A";
+    assert(str1.length == 1);
+    assert(str1[] == "A");
+    str1 ~= "BCDE";
+    assert(str1.length == 4);
+    assert(str1[] == "ABCD");
 
-        assert(str1.pop);
-        assert(str1[] == "ABC");
+    assert(str1.pop);
+    assert(str1[] == "ABC");
 
-        assert(str1.addz);
-        assert(str1[] == "ABC\0");
+    assert(str1.addz);
+    assert(str1[] == "ABC\0");
 
-    }
 }

@@ -36,29 +36,26 @@ bool addExact(T)(T a, T b, out T sum) if (isIntegral!T)
     }
 }
 
-version (VerTest)
+unittest
 {
-    unittest
-    {
-        ushort sumu;
-        assert(!addExact(ushort.max, cast(ushort) 1, sumu));
+    ushort sumu;
+    assert(!addExact(ushort.max, cast(ushort) 1, sumu));
 
-        uint sum1;
-        assert(!addExact(uint.max, 1u, sum1));
+    uint sum1;
+    assert(!addExact(uint.max, 1u, sum1));
 
-        int sum2;
-        assert(!addExact(int.max, 1, sum2));
+    int sum2;
+    assert(!addExact(int.max, 1, sum2));
 
-        long sum3;
-        assert(addExact(long.max - 1, 1, sum3));
-        assert(sum3 == long.max);
+    long sum3;
+    assert(addExact(long.max - 1, 1, sum3));
+    assert(sum3 == long.max);
 
-        long sum4;
-        assert(!addExact(long.max, 1, sum4));
+    long sum4;
+    assert(!addExact(long.max, 1, sum4));
 
-        ulong sum5;
-        assert(!addExact(ulong.max, 1u, sum5));
-    }
+    ulong sum5;
+    assert(!addExact(ulong.max, 1u, sum5));
 }
 
 bool subtractExact(T)(T a, T b, out T sub) if (isIntegral!T)
@@ -88,18 +85,15 @@ bool subtractExact(T)(T a, T b, out T sub) if (isIntegral!T)
 
 }
 
-version (VerTest)
+unittest
 {
-    unittest
-    {
-        ushort sub1;
-        assert(subtractExact(ushort.min, ushort.min, sub1));
-        assert(!subtractExact(ushort.min, ushort.max, sub1));
+    ushort sub1;
+    assert(subtractExact(ushort.min, ushort.min, sub1));
+    assert(!subtractExact(ushort.min, ushort.max, sub1));
 
-        long sub2;
-        assert(subtractExact(long.min, long.min, sub2));
-        assert(!subtractExact(long.min, long.max, sub2));
-    }
+    long sub2;
+    assert(subtractExact(long.min, long.min, sub2));
+    assert(!subtractExact(long.min, long.max, sub2));
 }
 
 //TODO unsigned, long with __divdi3
@@ -115,13 +109,10 @@ bool multiplyExact(T)(T a, T b, out T result) if (is(T == int))
     return true;
 }
 
-version (VerTest)
+unittest
 {
-    unittest
-    {
-        int mul1;
-        assert(!multiplyExact(int.max, int.max, mul1));
-    }
+    int mul1;
+    assert(!multiplyExact(int.max, int.max, mul1));
 }
 
 bool castExact(T, C)(T n, out C result) if (isIntegral!T && isIntegral!C)

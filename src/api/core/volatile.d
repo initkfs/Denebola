@@ -37,20 +37,17 @@ version (LDC)
     pragma(LDC_intrinsic, ldcSaveIntrName)
     void save(ulong* ptr, ulong value) @nogc nothrow;
 
-    version (VerTest)
+    unittest
     {
-        unittest
-        {
-            import std.meta : AliasSeq;
+        import std.meta : AliasSeq;
 
-            foreach (Type; AliasSeq!(ubyte, ushort, uint, ulong))
-            {
-                Type t;
-                Type* tptr = &t;
-                save(tptr, 147);
-                Type result = load(tptr);
-                assert(t == result);
-            }
+        foreach (Type; AliasSeq!(ubyte, ushort, uint, ulong))
+        {
+            Type t;
+            Type* tptr = &t;
+            save(tptr, 147);
+            Type result = load(tptr);
+            assert(t == result);
         }
     }
 }

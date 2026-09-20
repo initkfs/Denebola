@@ -47,7 +47,7 @@ extern (C) __gshared bool isTimer = true;
 //TODO remove arch api
 import C3GPIO = api.arch.riscv.boards.esp32c3.с3_gpio;
 
-version (VerTest)
+version (unittest)
 {
     private void runTests()
     {
@@ -152,7 +152,7 @@ extern (C) void dstart()
 
     Syslog.info("Init HAL layer");
 
-    version (VerTest)
+    version (unittest)
     {
         runTests;
     }

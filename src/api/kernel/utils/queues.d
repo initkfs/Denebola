@@ -183,10 +183,6 @@ struct StaticQueue(T, size_t Size = 10, bool isUseLock = false, bool isForCacheL
     }
 }
 
-//dfmt off
-version(VerTest):
-//dfmt on
-
 unittest
 {
     StaticQueue!(int, 5) queue;

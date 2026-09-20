@@ -78,7 +78,7 @@
         "--relocation-model=static"
     ],
     "versions": [
-        "RiscvGeneric", "VerTest"
+        "RiscvGeneric"
     ],
     "targetType": "library",
     "targetName": "kernel",

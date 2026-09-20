@@ -31,10 +31,6 @@ pure @safe nothrow @nogc
         condition ? bitSet(bits, from0Bit) : bitClear(bits, from0Bit);
 }
 
-//dfmt off
-version(VerTest):
-//dfmt on
-
 unittest
 {
     assert(bitIsSet(1, 0));
