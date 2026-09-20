@@ -222,17 +222,17 @@ T parse(T = float, C = char)(const(C)[] str, const char separator = '.')
     import Strings = api.kstd.strings.str;
     import Ascii = api.kstd.strings.ascii;
 
-    if (Strings.isEqual(str, "NaN"))
+    if (str == "NaN")
     {
         return T.nan;
     }
 
-    if (Strings.isEqual(str, "inf") || Strings.isEqual(str, "+Infinity"))
+    if (str == "inf" || str == "+Infinity")
     {
         return T.infinity;
     }
 
-    if (Strings.isEqual(str, "-inf") || Strings.isEqual(str, "-Infinity"))
+    if (str == "-inf" || str == "-Infinity")
     {
         return -T.infinity;
     }
