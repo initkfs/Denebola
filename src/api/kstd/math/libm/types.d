@@ -3,6 +3,10 @@
  */
 module api.kstd.math.libm.types;
 
+//dfmt off
+version(VerFPU):
+//dfmt on
+
 /** 
  * Ported from OpenLibm https://github.com/JuliaMath/openlibm
  * Under https://github.com/JuliaMath/openlibm/blob/master/LICENSE.md

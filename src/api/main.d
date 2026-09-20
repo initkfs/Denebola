@@ -8,9 +8,12 @@ import api.hal.hal_entry;
 
 import Ver = api.arch.vers;
 import Tests = api.kernel.tests;
+
 import Syslog = api.kernel.logs.klog;
-import Kallocator = api.kernel.mem.allocs.kallocator;
 import MemCore = api.kernel.mem.mem_core;
+import Kallocator = api.kernel.mem.allocs.kallocator;
+import Queues = api.kernel.utils.queues;
+
 import StackStrMod = api.cstd.strings.stack_str;
 import Str = api.kstd.strings.str;
 import Hash = api.kstd.strings.hash;
@@ -22,7 +25,6 @@ import Atomic = api.hal.hal_atomic;
 import Trap = api.hal.hal_trap;
 import Spinlock = api.kernel.tasks.sync.spinlock;
 import Critical = api.kernel.tasks.critical;
-import Queues = api.kernel.utils.queues;
 
 import TaskManager = api.kernel.tasks.task_manager;
 
@@ -60,6 +62,7 @@ version (VerTest)
         alias testModules = AliasSeq!(
             MemCore,
             Kallocator,
+            Queues,
             C3GPIO,
             //Str,
             //Hash,
@@ -72,7 +75,6 @@ version (VerTest)
             Bits, //Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
             //Atomic,
             //Spinlock,
-            //Queues
             
         );
 

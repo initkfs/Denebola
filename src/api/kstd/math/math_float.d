@@ -14,68 +14,68 @@ import MathFloatExterns = api.kstd.math.math_float_externs;
 
 import ldc.llvmasm;
 
-bool isPositiveInf(T)(T x) if (__traits(isFloating, T))
+bool isPositiveInf(T)(T x) if (__traits(isFloating, T)) => x == x.infinity;
+
+version (VerTest)
 {
-    return x == x.infinity;
+    unittest
+    {
+        assert(!isPositiveInf(0.0f));
+        assert(isPositiveInf(float.infinity));
+        assert(!isPositiveInf(-float.infinity));
+    }
 }
 
-unittest
+bool isNegativeInf(T)(T x) if (__traits(isFloating, T)) => x == -x.infinity;
+
+version (VerTest)
 {
-    assert(!isPositiveInf(0.0f));
-    assert(isPositiveInf(float.infinity));
-    assert(!isPositiveInf(-float.infinity));
+    unittest
+    {
+        assert(!isNegativeInf(0.0f));
+        assert(isNegativeInf(-float.infinity));
+        assert(!isNegativeInf(float.infinity));
+    }
 }
 
-bool isNegativeInf(T)(T x) if (__traits(isFloating, T))
+bool isInf(T)(T x) if (__traits(isFloating, T)) => isPositiveInf(x) || isNegativeInf(x);
+
+version (VerTest)
 {
-    return x == -x.infinity;
+    unittest
+    {
+        assert(!isInf(0.0f));
+        assert(isInf(float.infinity));
+        assert(isInf(3.4f / 0f));
+    }
 }
 
-unittest
+bool isNaN(T)(T value) if (__traits(isFloating, T)) => value != value;
+
+version (VerTest)
 {
-    assert(!isNegativeInf(0.0f));
-    assert(isNegativeInf(-float.infinity));
-    assert(!isNegativeInf(float.infinity));
+    unittest
+    {
+        assert(!isNaN(0.0f));
+        assert(!isNaN(1.0f));
+        assert(!isNaN(float.infinity));
+        assert(!isNaN(-float.infinity));
+        assert(isNaN(float.nan));
+    }
 }
 
-bool isInf(T)(T x) if (__traits(isFloating, T))
-{
-    return isPositiveInf(x) || isNegativeInf(x);
-}
+bool isFinite(T)(T x) if (__traits(isFloating, T)) => !isNaN(x) && !isInf(x);
 
-unittest
+version (VerTest)
 {
-    assert(!isInf(0.0f));
-    assert(isInf(float.infinity));
-    assert(isInf(3.4f / 0f));
-}
-
-bool isNaN(T)(T value) if (__traits(isFloating, T))
-{
-    return value != value;
-}
-
-unittest
-{
-    assert(!isNaN(0.0f));
-    assert(!isNaN(1.0f));
-    assert(!isNaN(float.infinity));
-    assert(!isNaN(-float.infinity));
-    assert(isNaN(float.nan));
-}
-
-bool isFinite(T)(T x) if (__traits(isFloating, T))
-{
-    return !isNaN(x) && !isInf(x);
-}
-
-unittest
-{
-    assert(isFinite(0.0f));
-    assert(isFinite(0.00000000001f));
-    assert(!isFinite(float.nan));
-    assert(!isFinite(float.infinity));
-    assert(!isFinite(-float.infinity));
+    unittest
+    {
+        assert(isFinite(0.0f));
+        assert(isFinite(0.00000000001f));
+        assert(!isFinite(float.nan));
+        assert(!isFinite(float.infinity));
+        assert(!isFinite(-float.infinity));
+    }
 }
 
 bool isEqualEps(T)(T x, T y, T epsilon = T.epsilon) if (__traits(isArithmetic, T))
@@ -100,12 +100,15 @@ version (PTS64)
     }
 }
 
-unittest
+version (VerTest)
 {
-    assert(isEqual(0.0f, 0.0f));
-    assert(!isEqual(0.0f, 0.1f));
-    assert(!isEqual(0.3f, 0.3000004f));
-    assert(isEqual(0.3f, 0.30000004f));
+    unittest
+    {
+        assert(isEqual(0.0f, 0.0f));
+        assert(!isEqual(0.0f, 0.1f));
+        assert(!isEqual(0.3f, 0.3000004f));
+        assert(isEqual(0.3f, 0.30000004f));
+    }
 }
 
 auto sqrt(T)(T value) if (__traits(isArithmetic, T))
@@ -138,18 +141,21 @@ auto sqrt(T)(T value) if (__traits(isArithmetic, T))
     }
 }
 
-unittest
+version (VerTest)
 {
-    assert(isEqual(sqrt(0.0f), 0f));
-    assert(isNaN(sqrt(-1.0f)));
-    assert(isEqual(sqrt(1.0f), 1.0f));
-    assert(isEqual(sqrt(4f), 2f));
-    assert(isEqual(sqrt(16f), 4f));
-    assert(isEqual(sqrt(169f), 13f));
-    assert(isEqual(sqrt(0.0004f), 0.02f));
-    assert(isEqual(sqrt(9.6f), 3.0983866769659336f));
+    unittest
+    {
+        assert(isEqual(sqrt(0.0f), 0f));
+        assert(isNaN(sqrt(-1.0f)));
+        assert(isEqual(sqrt(1.0f), 1.0f));
+        assert(isEqual(sqrt(4f), 2f));
+        assert(isEqual(sqrt(16f), 4f));
+        assert(isEqual(sqrt(169f), 13f));
+        assert(isEqual(sqrt(0.0004f), 0.02f));
+        assert(isEqual(sqrt(9.6f), 3.0983866769659336f));
 
-    assert(sqrt(4) == 2);
+        assert(sqrt(4) == 2);
+    }
 }
 
 auto pow(T, Exp = int)(T base, Exp exponent)
@@ -216,16 +222,19 @@ auto pow(T, Exp = int)(T base, Exp exponent)
     return result * result;
 }
 
-unittest
+version (VerTest)
 {
-    assert(pow(0, 0) == 0);
-    assert(pow(1, 1) == 1);
-    assert(pow(2, 2) == 4);
-    assert(pow(2, 3) == 8);
-    assert(isEqual(pow(2.5f, 3), 15.625f));
-    assert(isEqual(pow(10f, -1), 0.1f));
-    assert(isEqual(pow(10f, -2), 0.01f));
-    assert(isEqual(pow(10f, -3), 0.001f));
+    unittest
+    {
+        assert(pow(0, 0) == 0);
+        assert(pow(1, 1) == 1);
+        assert(pow(2, 2) == 4);
+        assert(pow(2, 3) == 8);
+        assert(isEqual(pow(2.5f, 3), 15.625f));
+        assert(isEqual(pow(10f, -1), 0.1f));
+        assert(isEqual(pow(10f, -2), 0.01f));
+        assert(isEqual(pow(10f, -3), 0.001f));
+    }
 }
 
 //TODO e-notation
@@ -308,28 +317,31 @@ T parse(T = float, C = char)(const(C)[] str, const char separator = '.')
     return isNeg ? -result : result;
 }
 
-unittest
+version (VerTest)
 {
-    assert(isNaN(parse("NaN")));
-    assert(isPositiveInf(parse!float("+Infinity")));
-    assert(isNegativeInf(parse!float("-Infinity")));
-    assert(isEqual(parse("0.0"), 0.0f));
-    //FIXME
-    // assert(isEqual(parse("3.556"), 3.556f));
-    // assert(isEqual(parse!float("564.63333"), 564.63333000f));
+    unittest
+    {
+        assert(isNaN(parse("NaN")));
+        assert(isPositiveInf(parse!float("+Infinity")));
+        assert(isNegativeInf(parse!float("-Infinity")));
+        assert(isEqual(parse("0.0"), 0.0f));
+        //FIXME
+        // assert(isEqual(parse("3.556"), 3.556f));
+        // assert(isEqual(parse!float("564.63333"), 564.63333000f));
+    }
 }
 
-T fabs(T)(T x) if (__traits(isFloating, T))
-{
-    return MathFloatExterns._fabs(x);
-}
+T fabs(T)(T x) if (__traits(isFloating, T)) => MathFloatExterns._fabs(x);
 
-unittest
+version (VerTest)
 {
-    float a = -15.5;
-    assert(isEqual(fabs(-0f), 0f));
-    assert(isEqual(fabs(a), 15.5f));
-    assert(isNaN(fabs(float.nan)));
+    unittest
+    {
+        float a = -15.5;
+        assert(isEqual(fabs(-0f), 0f));
+        assert(isEqual(fabs(a), 15.5f));
+        assert(isNaN(fabs(float.nan)));
+    }
 }
 
 T fac(T = float)(size_t num)
@@ -342,10 +354,13 @@ T fac(T = float)(size_t num)
     return r;
 }
 
-unittest
+version (VerTest)
 {
-    assert(isEqual(fac(5), 120f));
-    assert(isEqual(fac(7), 5040f));
+    unittest
+    {
+        assert(isEqual(fac(5), 120f));
+        assert(isEqual(fac(7), 5040f));
+    }
 }
 
 /** 
@@ -362,10 +377,14 @@ T exp(T = float)(T x, size_t steps = 25) if (__traits(isArithmetic, T))
     return r;
 }
 
-unittest
+version (VerTest)
 {
-    assert(isEqual(exp(2.5f), 12.182493960f));
-    assert(cast(int) exp(10f) == 22025);
+    unittest
+    {
+        assert(isEqual(exp(2.5f), 12.182493960f));
+        assert(cast(int) exp(10f) == 22025);
+    }
+
 }
 
 auto ln(T)(T x) if (__traits(isArithmetic, T))
@@ -419,42 +438,43 @@ auto ln(T)(T x) if (__traits(isArithmetic, T))
     }
 }
 
-unittest
+version (VerTest)
 {
-    assert(isEqual(ln(1f), 0f));
-    assert(isEqual(ln(1f), 0f));
-    assert(isNaN(ln(-1f)));
-    assert(isEqual(ln(5f), 1.6094379124f));
-    assert(isEqual(ln(2.5f), 0.9162907318f));
-    assert(isEqual(ln(1234567f), 14.026230859f));
+    unittest
+    {
+        assert(isEqual(ln(1f), 0f));
+        assert(isEqual(ln(1f), 0f));
+        assert(isNaN(ln(-1f)));
+        assert(isEqual(ln(5f), 1.6094379124f));
+        assert(isEqual(ln(2.5f), 0.9162907318f));
+        assert(isEqual(ln(1234567f), 14.026230859f));
+    }
 }
 
-T powf(T)(T value, T base) if (__traits(isFloating, T))
+T powf(T)(T value, T base) if (__traits(isFloating, T)) => exp(base * ln(value));
+
+version (VerTest)
 {
-    return exp(base * ln(value));
+    unittest
+    {
+        assert(isEqual(powf(2.5f, 2.5f), 9.882118f));
+    }
 }
 
-unittest
+T log10(T)(T x) if (__traits(isFloating, T)) => ln(x) / ln(cast(T) 10);
+
+version (VerTest)
 {
-    assert(isEqual(powf(2.5f, 2.5f), 9.882118f));
+    unittest
+    {
+        assert(isEqual(log10(1f), 0f));
+        assert(isEqual(log10(2.5f), 0.397940f));
+        assert(isEqual(log10(1024f), 3.01029995663f));
+    }
+
 }
 
-T log10(T)(T x) if (__traits(isFloating, T))
-{
-    return ln(x) / ln(cast(T) 10);
-}
-
-unittest
-{
-    assert(isEqual(log10(1f), 0f));
-    assert(isEqual(log10(2.5f), 0.397940f));
-    assert(isEqual(log10(1024f), 3.01029995663f));
-}
-
-T log(T)(T x, T n) if (__traits(isFloating, T))
-{
-    return ln(x) / ln(n);
-}
+T log(T)(T x, T n) if (__traits(isFloating, T)) => ln(x) / ln(n);
 
 T floor(T)(T x) if (__traits(isArithmetic, T))
 {
@@ -475,14 +495,17 @@ T floor(T)(T x) if (__traits(isArithmetic, T))
     return (isEqual(cast(T) intValue, x)) ? intValue : intValue - 1;
 }
 
-unittest
+version (VerTest)
 {
-    assert(isEqual(floor(0.0f), 0f));
-    assert(isEqual(floor(1.0f), 1.0f));
-    assert(isEqual(floor(-2.0f), -2.0f));
-    assert(isEqual(floor(12.567f), 12.0f));
-    assert(isEqual(floor(4.3f), 4f));
-    assert(isEqual(floor(2.55f / 1.0f), 2f));
+    unittest
+    {
+        assert(isEqual(floor(0.0f), 0f));
+        assert(isEqual(floor(1.0f), 1.0f));
+        assert(isEqual(floor(-2.0f), -2.0f));
+        assert(isEqual(floor(12.567f), 12.0f));
+        assert(isEqual(floor(4.3f), 4f));
+        assert(isEqual(floor(2.55f / 1.0f), 2f));
+    }
 }
 
 T modf(T)(T x, T y)

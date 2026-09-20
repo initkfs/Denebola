@@ -3,6 +3,10 @@
  */
 module api.kstd.math.libm.logf;
 
+//dfmt off
+version(VerFPU):
+//dfmt on
+
 import api.kstd.math.libm.types;
 import Floats = api.kstd.math.libm.floats;
 
