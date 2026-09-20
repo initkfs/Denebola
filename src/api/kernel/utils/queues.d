@@ -9,7 +9,7 @@ struct StaticQueue(T, size_t Size = 10, bool isUseLock = false, bool isForCacheL
 {
     private
     {
-        T[Size] _data;
+        align(size_t.alignof) T[Size] _data;
 
         static if (!isForCacheLine)
         {
@@ -182,6 +182,10 @@ struct StaticQueue(T, size_t Size = 10, bool isUseLock = false, bool isForCacheL
         }
     }
 }
+
+//dfmt off
+version(VerTest):
+//dfmt on
 
 unittest
 {
