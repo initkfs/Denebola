@@ -59,8 +59,8 @@ version (VerTest)
 
         alias testModules = AliasSeq!(
             MemCore,
+            Kallocator,
             C3GPIO,
-            Kallocator, //UPtr,
             //Str,
             //Hash,
             //StackStrMod,

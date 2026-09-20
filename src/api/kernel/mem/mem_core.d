@@ -36,10 +36,14 @@ int memcmp(void* ptr1, void* ptr2, size_t num)
 
 void* memcpy(void* dest, void* src, size_t len)
 {
+    //import ldc.intrinsics : llvm_memcpy;
+    //sbyte* <dest>, sbyte* <src>, uint <len>, uint <align>
+    //llvm_memcpy(dest, src, cast(uint) len, 1);
+
     ubyte* d = cast(ubyte*) dest;
     ubyte* s = cast(ubyte*) src;
 
-    while (len)
+    while (len--)
     {
         *d++ = *s++;
     }
@@ -49,10 +53,38 @@ void* memcpy(void* dest, void* src, size_t len)
 
 void* memset(void* ptr, int value, size_t num)
 {
+    //import ldc.intrinsics : llvm_memset, but jalr to memset
     ubyte* p = cast(ubyte*) ptr;
     while (num--)
     {
         *p++ = cast(ubyte) value;
     }
     return ptr;
+}
+
+//dfmt off
+version(VerTest):
+//dfmt on
+
+unittest
+{
+    align(size_t.alignof) ubyte[8] mem;
+    enum arrayValue = 12;
+    memset(mem.ptr, arrayValue, mem.sizeof);
+    foreach (ubyte v; mem)
+    {
+        assert(v == arrayValue);
+    }
+
+    align(size_t.alignof) ubyte[8] mem1 = 0;
+    assert(memcmp(mem.ptr, mem1.ptr, mem.sizeof) > 0);
+
+    memcpy(mem1.ptr, mem.ptr, mem.sizeof);
+
+    assert(memcmp(mem.ptr, mem1.ptr, mem.sizeof) == 0);
+
+    foreach (ubyte v; mem1)
+    {
+        assert(v == arrayValue);
+    }
 }
