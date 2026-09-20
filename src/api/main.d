@@ -9,7 +9,7 @@ import api.hal.hal_entry;
 import Ver = api.arch.vers;
 import Tests = api.kernel.tests;
 import Syslog = api.kernel.log.syslog;
-import SysAllocator = api.kernel.mem.allocs.sys_allocator;
+import Kallocator = api.kernel.mem.allocs.kallocator;
 import MemCore = api.kernel.mem.mem_core;
 import UPtr = api.kernel.mem.unique_ptr;
 import StackStrMod = api.cstd.strings.stack_str;
@@ -48,42 +48,45 @@ extern (C) __gshared bool isTimer = true;
 //TODO remove arch api
 import C3GPIO = api.arch.riscv.boards.esp32c3.с3_gpio;
 
-private void runTests()
+version (VerTest)
 {
-    if (Syslog.isTraceLevel)
+    private void runTests()
     {
-        Syslog.trace("Start testing modules");
-    }
+        if (Syslog.isTraceLevel)
+        {
+            Syslog.trace("Start testing modules");
+        }
 
-    import std.meta : AliasSeq;
+        import std.meta : AliasSeq;
 
-    alias testModules = AliasSeq!(
-        MemCore,
-        C3GPIO,
-        SysAllocator,//UPtr,
-        //Str,
-        //Hash,
-        //StackStrMod,
-        //MathCore,
-        //MathStrict,
-        //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
-        //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.util.units"),
-        //MathRandom,
-        Bits,//Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
-        //Atomic,
-        //Spinlock,
-        //Queues
-    
-    );
+        alias testModules = AliasSeq!(
+            MemCore,
+            C3GPIO,
+            Kallocator, //UPtr,
+            //Str,
+            //Hash,
+            //StackStrMod,
+            //MathCore,
+            //MathStrict,
+            //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.math.math_float"),
+            //Ver.IfVerMods!(Ver.hasFPU, "api.kstd.util.units"),
+            //MathRandom,
+            Bits, //Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
+            //Atomic,
+            //Spinlock,
+            //Queues
+            
+        );
 
-    foreach (m; testModules)
-    {
-        Tests.runTest!(m);
-    }
+        foreach (m; testModules)
+        {
+            Tests.runTest!(m);
+        }
 
-    if (Syslog.isTraceLevel)
-    {
-        Syslog.trace("End of testing modules");
+        if (Syslog.isTraceLevel)
+        {
+            Syslog.trace("End of testing modules");
+        }
     }
 }
 
@@ -92,11 +95,6 @@ __gshared
     size_t tid;
     size_t tid1;
     size_t tid2;
-}
-
-extern (C) void plop()
-{
-
 }
 
 extern (C) void dstart()
@@ -121,15 +119,15 @@ extern (C) void dstart()
     auto heapStartAddr = cast(size_t*)(HalMem.heapStartAddr);
     auto heapEndAddr = cast(size_t*)(HalMem.heapEndAddr);
 
-    if (!SysAllocator.alloc.initialize(heapStartAddr, heapEndAddr))
+    if (!Kallocator.alloc.initialize(heapStartAddr, heapEndAddr))
     {
         HalUart.halWriteTxDir!"EM";
         HalCpu.halHalt();
     }
 
-    //Allocator.allocFunc = &SysAllocator.defAllocator.alloc;
-    //Allocator.callocFunc = &SysAllocator.defAllocator.calloc;
-    //Allocator.freeFunc = &SysAllocator.defAllocator.free;
+    //Allocator.allocFunc = &Kallocator.defAllocator.alloc;
+    //Allocator.callocFunc = &Kallocator.defAllocator.calloc;
+    //Allocator.freeFunc = &Kallocator.defAllocator.free;
 
     HalUart.halWriteTxDir!"M ";
 
@@ -153,7 +151,10 @@ extern (C) void dstart()
 
     Syslog.info("Init HAL layer");
 
-    runTests;
+    version (VerTest)
+    {
+        runTests;
+    }
 
     TaskManager.initSheduler();
     Syslog.info("End tasks");

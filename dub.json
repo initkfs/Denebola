@@ -28,25 +28,6 @@
             ]
         },
         {
-            "name": "riscv32-release",
-            "versions": [
-                "Qemu",
-                "Riscv32",
-                "RiscvGen",
-                "VerFPU",
-                "VerAtomic"
-            ],
-            "dflags-ldc": [
-                "-mattr=+m,+a,+c,+f",
-                "-mtriple=riscv32-unknown-elf",
-                "-Oz",
-                "--mabi=ilp32f",
-                "-L-Wl,--gc-sections",
-                "--function-sections",
-                "--data-sections"
-            ]
-        },
-        {
             "name": "riscv64",
             "versions": [
                 "Qemu",
@@ -60,23 +41,6 @@
             "dflags-ldc": [
                 "-mtriple=riscv64-unknown-none",
                 "--unittest",
-                "-mattr=+m,+a,+c,+f,+d",
-                "--mabi=lp64d"
-            ]
-        },
-        {
-            "name": "riscv64-release",
-            "versions": [
-                "Qemu",
-                "Riscv64",
-                "VerFPU",
-                "VerAtomic",
-                "RiscvGen",
-                "PTS64"
-            ],
-            "dflags-ldc": [
-                "-mtriple=riscv64-unknown-elf",
-                "-Oz",
                 "-mattr=+m,+a,+c,+f,+d",
                 "--mabi=lp64d"
             ]
@@ -114,7 +78,7 @@
         "--relocation-model=static"
     ],
     "versions": [
-        "RiscvGeneric"
+        "RiscvGeneric", "VerTest"
     ],
     "targetType": "library",
     "targetName": "kernel",
