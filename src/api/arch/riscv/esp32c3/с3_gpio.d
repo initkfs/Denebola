@@ -6,10 +6,13 @@ module api.arch.riscv.esp32c3.с3_gpio;
 import Volatile = api.arch.riscv.rbase.rb_volatile;
 import Bit = api.hal.hal_bits;
 
+alias PinId = ubyte;
+alias SygnalId = ubyte;
+
 //TODO Strapping-pins (GPIO8, GPIO9), clear USB_SERIAL_JTAG_USB_PAD_ENABLE for GPIO4, GPIO5, GPIO6, GPIO7.
 //Deny for GPIO12, GPIO13, GPIO14, GPIO15, GPIO16, GPIO17 - SPI FLASH
 //Low poser gpio GPIO0, GPIO1, GPIO2, GPIO3, GPIO4, GPIO5
-enum : size_t
+enum : PinId
 {
     PIN_LED_D4 = 12,
     PIN_LED_D5 = 13,
@@ -17,7 +20,7 @@ enum : size_t
 
 enum : size_t
 {
-    GPIO = 0x6000_4000,
+    GPIO = 0x60004000,
 
     GPIO_ENABLE_REG = GPIO + 0x0020,
     GPIO_OUT_W1TS_REG = GPIO + 0x0008, // 1 (HIGH)
@@ -46,9 +49,6 @@ enum : ubyte
 
 enum ubyte[3] MCU_SEL_GPIO_BITS = [12, 13, 14];
 
-alias PinId = ubyte;
-alias SygnalId = ubyte;
-
 enum PinInMode
 {
     z,
@@ -68,7 +68,7 @@ size_t* calcImuxAddr(PinId pin) => cast(size_t*)(GPIO + IO_MUX_GPIOn_REG + 4 * p
 bool route(SygnalId toSignalY, PinId fromPinX, bool isMatrix = true, bool isInverted = false, bool isFilter = false)
 {
     enum size_t GPIO_FUNC_IN_SEL_CFG_BASE = 0x0154;
-    size_t* GPIO_FUNCn_IN_SEL_CFG_REG = cast(size_t*) (GPIO + GPIO_FUNC_IN_SEL_CFG_BASE + 4 * toSignalY);
+    size_t* GPIO_FUNCn_IN_SEL_CFG_REG = cast(size_t*)(GPIO + GPIO_FUNC_IN_SEL_CFG_BASE + 4 * toSignalY);
 
     size_t* ioMuxAddr = calcImuxAddr(fromPinX);
     return route(GPIO_FUNCn_IN_SEL_CFG_REG, ioMuxAddr, toSignalY, fromPinX, isMatrix, isInverted, isFilter);
@@ -135,21 +135,46 @@ unittest
     assert(mcuSelValue == 1);
 }
 
-bool digitalWrite(PinId pin, bool level) nothrow @nogc
+void c3enablePinOut(PinId pin)
+{
+    size_t* reg = cast(size_t*) GPIO_ENABLE_REG;
+    auto conf = Volatile.load(reg);
+    conf = Bit.bitSet(conf, pin);
+    Volatile.save(reg, conf);
+}
+
+bool c3Led1(bool level) => digitalWrite(PIN_LED_D4, level);
+void c3Led1Enable()
+{
+    c3enablePinOut(PIN_LED_D4);
+}
+
+bool c3Led2(bool level) => digitalWrite(PIN_LED_D5, level);
+void c3Led2Enable()
+{
+    c3enablePinOut(PIN_LED_D5);
+}
+
+bool digitalWrite(PinId pin, bool level)
 {
     if (pin > 21)
         return false;
 
-    const size_t bitMask = (cast(size_t) 1) << pin;
-
+    size_t* reg;
     if (level)
     {
-        Volatile.save(cast(size_t*)(GPIO + GPIO_OUT_W1TS_REG), bitMask);
+        reg = cast(size_t*)(GPIO_OUT_W1TS_REG);
     }
     else
     {
-        Volatile.save(cast(size_t*)(GPIO + GPIO_OUT_W1TC_REG), bitMask);
+        reg = cast(size_t*)(GPIO_OUT_W1TC_REG);
     }
+
+    auto conf = Volatile.load(reg);
+
+    import Bits = api.hal.hal_bits;
+    conf = Bits.bitSet(conf, pin);
+    Volatile.save(reg, conf);
     return true;
 }
 

@@ -3,14 +3,14 @@
  */
 module api.os.logs.klog;
 
-import Inspector = api.os.support.inspector;
+import Sysmon = api.os.mon.sysmon;
 import api.os.logs.klog_core;
 
 import std.traits;
 
 __gshared
 {
-    LogLevel logLevel;
+    Level logLevel;
     bool isLoad;
 }
 
@@ -42,19 +42,19 @@ const(char)[] logLevelName() @nogc nothrow
     return levelName(logLevel);
 }
 
-bool isForSyslogLevel(LogLevel level) @nogc nothrow => isForLevel(level, logLevel);
+bool isForSyslogLevel(Level level) @nogc nothrow => isForLevel(level, logLevel);
 
-bool isErrorLevel() @nogc nothrow => isForSyslogLevel(LogLevel.error);
-bool isWarnLevel() @nogc nothrow => isForSyslogLevel(LogLevel.warn);
-bool isInfoLevel() @nogc nothrow => isForSyslogLevel(LogLevel.info);
-bool isTraceLevel() @nogc nothrow => isForSyslogLevel(LogLevel.trace);
+bool isErrorLevel() @nogc nothrow => isForSyslogLevel(Level.error);
+bool isWarnLevel() @nogc nothrow => isForSyslogLevel(Level.warn);
+bool isInfoLevel() @nogc nothrow => isForSyslogLevel(Level.info);
+bool isTraceLevel() @nogc nothrow => isForSyslogLevel(Level.trace);
 
 
-private void log(LogLevel level, const(char)[] message, const(char)[] file, int line)
+private void log(Level level, const(char)[] message, const(char)[] file, int line)
 {
-    if (level == LogLevel.error && !Inspector.isErrors)
+    if (level == Level.error)
     {
-        Inspector.setErrors;
+        Sysmon.sysmonErr;
     }
 
     if (!isForLevel(level, logLevel))
@@ -71,13 +71,19 @@ private void log(LogLevel level, const(char)[] message, const(char)[] file, int 
     logWrite(message);
     logWrite(spaceChar);
     logWrite(file);
+    logWrite(':');
+
+    import Str = api.os.strings.str;
+    char[16] lineBuff;
+    logWrite(Str.atoa(line, lineBuff));
+
     logWrite('\r');
     logWrite('\n');
 
     //TODO line;
 }
 
-private void logf(T)(LogLevel level, const(char)[] pattern, T[] args,
+private void logf(T)(Level level, const(char)[] pattern, T[] args,
     const(char)[] file, int line)
 {
     if (!isForLevel(level, logLevel))
@@ -85,46 +91,51 @@ private void logf(T)(LogLevel level, const(char)[] pattern, T[] args,
         return;
     }
 
+    import Str = api.os.strings.str;
+
+    char[64] buff = 0;
+    auto res = Str.formatb(pattern, buff, args);
+
     //TODO format
-    log(level, pattern, file, line);
+    log(level, res, file, line);
 }
 
 void tracef(T)(const(char)[] pattern, T[] args, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
-    logf(LogLevel.trace, pattern, args, file, line);
+    logf(Level.trace, pattern, args, file, line);
 }
 
 void trace(const(char)[] message, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
-    log(LogLevel.trace, message, file, line);
+    log(Level.trace, message, file, line);
 }
 
 void infof(T)(const(char)[] pattern, T[] args, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
-    logf(LogLevel.info, pattern, args, file, line);
+    logf(Level.info, pattern, args, file, line);
 }
 
 void info(const(char)[] message, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
-    log(LogLevel.info, message, file, line);
+    log(Level.info, message, file, line);
 }
 
 void warnf(T)(const(char)[] pattern, T[] args, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
-    logf(LogLevel.warn, pattern, args, file, line);
+    logf(Level.warn, pattern, args, file, line);
 }
 
 void warn(const(char)[] message, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
-    log(LogLevel.warn, message, file, line);
+    log(Level.warn, message, file, line);
 }
 
 void errorf(T)(const(char)[] pattern, T[] args, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
-    logf(LogLevel.error, pattern, args, file, line);
+    logf(Level.error, pattern, args, file, line);
 }
 
 void error(const(char)[] message, const const(char)[] file = __FILE__, const int line = __LINE__)
 {
-    log(LogLevel.error, message, file, line);
+    log(Level.error, message, file, line);
 }

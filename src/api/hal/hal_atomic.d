@@ -1,5 +1,9 @@
 module api.hal.hal_atomic;
 
+/**
+ * Authors: initkfs
+ */
+
 // dfmt off
 version (VerAtomic):
 // dfmt on

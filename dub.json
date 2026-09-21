@@ -77,9 +77,6 @@
         "--code-model=small",
         "--relocation-model=static"
     ],
-    "versions": [
-        "RiscvGeneric"
-    ],
     "targetType": "library",
     "targetName": "kernel",
     "targetPath": "./build",

@@ -64,10 +64,13 @@ uint readXTALFreq()
 
 uint calcXtalPreDiv(uint targetMhz, uint xtalMhz)
 {
-    if (targetMhz == 0) return 1;
+    if (targetMhz == 0)
+        return 1;
     enum maxFreq = 1023;
-    if (targetMhz > maxFreq) return maxFreq;
-    if (targetMhz > xtalMhz) targetMhz = xtalMhz; 
+    if (targetMhz > maxFreq)
+        return maxFreq;
+    if (targetMhz > xtalMhz)
+        targetMhz = xtalMhz;
     return (xtalMhz / targetMhz) - 1;
 }
 

@@ -3,7 +3,7 @@
  */
 module api.os.logs.klog_core;
 
-enum LogLevel
+enum Level
 {
     all,
     trace,
@@ -12,13 +12,13 @@ enum LogLevel
     error
 }
 
-string levelName(const LogLevel level) @nogc nothrow pure @safe
+string levelName(const Level level) @nogc nothrow pure @safe
 {
-    string levelName = "undefined.level";
+    string levelName = "undef";
 
     import std.traits: EnumMembers;
 
-    foreach (l; EnumMembers!LogLevel)
+    foreach (l; EnumMembers!Level)
     {
         if (level == l)
         {
@@ -30,9 +30,9 @@ string levelName(const LogLevel level) @nogc nothrow pure @safe
 }
 
 //minimal logger level >= global logger level
-bool isForLevel(const LogLevel level, const LogLevel loggerLevel) @nogc nothrow pure @safe
+bool isForLevel(const Level level, const Level loggerLevel) @nogc nothrow pure @safe
 {
-    if (loggerLevel == LogLevel.all)
+    if (loggerLevel == Level.all)
     {
         return true;
     }

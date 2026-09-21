@@ -5,15 +5,7 @@ import api.arch.vers;
 /**
  * Authors: initkfs
  */
-version (RiscvGeneric)
-{
-    import Interrupts = api.hal.hal_interrupts;
-}
-else
-{
-    static assert(false, "Not supported platform");
-}
-
+ 
 import api.os.io.cstdio;
 import api.os.tasks.task;
 import api.hal.hal_timer;

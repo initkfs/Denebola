@@ -26,6 +26,7 @@ import MathRandom = api.os.math.math_random;
 import Trap = api.hal.hal_trap;
 import Spinlock = api.os.tasks.sync.spinlock;
 import Critical = api.os.tasks.critical;
+import Sysmon = api.os.mon.sysmon;
 
 import TaskManager = api.os.tasks.task_manager;
 
@@ -57,7 +58,7 @@ version (unittest)
         alias testModules = AliasSeq!(
             Bits,
             Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
-            
+
             MemCore,
             Ver.IfVerMods!(Ver.hasFPU, "api.os.math.math_float"),
             MathStrict,
@@ -94,10 +95,13 @@ extern (C) void dstart()
     import HalUart = api.hal.hal_uart;
     import HalCpu = api.hal.hal_cpu;
     import HalTimer = api.hal.hal_timer;
+    import HalGpio = api.hal.hal_gpio;
 
     HalUart.halWriteTxDir!"T ";
 
     HalTimer.halDisableWdt();
+
+    Sysmon.sysmonInit;
 
     import HalMem = api.hal.hal_memory;
 
@@ -117,6 +121,8 @@ extern (C) void dstart()
         HalCpu.halHalt();
     }
 
+    import MemInfo = api.os.mem.mem_info;
+
     //Allocator.allocFunc = &Kallocator.defAllocator.alloc;
     //Allocator.callocFunc = &Kallocator.defAllocator.calloc;
     //Allocator.freeFunc = &Kallocator.defAllocator.free;
@@ -124,7 +130,7 @@ extern (C) void dstart()
     HalUart.halWriteTxDir!"M ";
 
     Syslog.isLoad = true;
-    Syslog.info("Init mem");
+    MemInfo.logMemInfo;
 
     import Interrupts = api.hal.hal_interrupts;
 
@@ -157,26 +163,21 @@ extern (C) void dstart()
     import SysClock = api.arch.riscv.esp32c3.c3_clock;
     import SysTimer = api.arch.riscv.esp32c3.c3_timer;
 
+    Sysmon.sysmonTest;
+
     SysClock.enableSysTimer;
 
     Interrupts.halSetGlobalMIntrOn();
 
     Syslog.info("End loading");
 
+    enum LocalPointVal = 0x10203040;
+    int localPoint = LocalPointVal;
     while (true)
     {
         HalCpu.halWait();
+        assert(localPoint == LocalPointVal);
     }
-
-    // int isContinue = 0x10203040;
-
-    // while (true)
-    // {
-    //     //Syslog.trace("Sheduler start step");
-    //     //assert(isContinue == 0x10203040);
-    //     //TaskManager.roundrobinChoose;
-    //     //Syslog.trace("Sheduler end step");
-    // }
 }
 
 import api.os.tasks.sync.mailbox : Mailbox;

@@ -28,6 +28,14 @@ void comWait() @trusted
     __asm("wfi", "");
 }
 
+void comDelayTicks(uint ticks) @trusted
+{
+    foreach (_; 0 .. ticks)
+    {
+        __asm("nop", "");
+    }
+}
+
 ArchCaps comLoadCaps() @trusted
 {
     size_t misa = m_get_misa();

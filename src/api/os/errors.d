@@ -5,25 +5,15 @@ module api.os.errors;
 
 void halt()
 {
-    version (RiscvGeneric)
-    {
-        import Interrupts = api.hal.hal_interrupts;
-    }
-    else
-    {
-        static assert(false, "Not supported platform");
-    }
-
     import HalIntr = api.hal.hal_interrupts;
+    import HalCpu = api.hal.hal_cpu;
 
     if (HalIntr.halSetGlobalMIntrOff)
     {
         HalIntr.halSetGlobalMIntrOff();
     }
 
-    while (true)
-    {
-    }
+    HalCpu.halWait;
 }
 
 void panic(const string message = "Assertion failure", const string file = __FILE__, const int line = __LINE__)

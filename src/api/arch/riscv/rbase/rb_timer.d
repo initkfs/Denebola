@@ -96,8 +96,8 @@ private void writeIntevalToTimer(size_t comHartId)
     ulong currTimeValue = Volatile.load(cast(ulong*) mTime());
     const timeValue = currTimeValue + interval;
 
-    version (RiscvGeneric)
-    {
+    //version (RiscvGeneric)
+    //{
         version (Riscv32)
         {
             version (RiscvGenericSMP)
@@ -149,9 +149,9 @@ private void writeIntevalToTimer(size_t comHartId)
         {
             Volatile.save(mtimeCmpPtr, timeValue);
         }
-    }
-    else
-    {
-        static assert(false, "Not supported platform");
-    }
+    // }
+    // else
+    // {
+    //     static assert(false, "Not supported platform");
+    // }
 }

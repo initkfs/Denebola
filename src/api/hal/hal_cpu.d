@@ -29,6 +29,7 @@ struct ArchCaps
         ArchCaps function() halLoadCaps = &ComCPU.comLoadCaps;
         void function() halWait = &ComCPU.comWait;
         void function() halHalt = &ComCPU.comHalt;
+        void function(uint) halDelayTicks = &ComCPU.comDelayTicks;
     }
     else
     {

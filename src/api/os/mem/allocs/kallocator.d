@@ -238,6 +238,8 @@ struct Kallocator
         return ptr;
     }
 
+    size_t freeMem() => (cast(size_t) endMem) - (cast(size_t) currMem);
+
     alias callocl = callocMem!true;
     alias calloc = callocMem!false;
 

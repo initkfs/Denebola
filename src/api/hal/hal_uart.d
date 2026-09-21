@@ -21,6 +21,14 @@ else
 
 __gshared size_t* uartAddr = cast(size_t*) HalUARTDef;
 
+void halWriteTx(const(char)[] str) @nogc nothrow
+{
+    foreach (ubyte ch; str)
+    {
+        halWriteTx(ch);
+    }
+}
+
 void halWriteTx(ubyte b) @nogc nothrow
 {
     halWriteTx(uartAddr, b);
