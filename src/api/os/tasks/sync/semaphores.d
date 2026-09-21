@@ -1,6 +1,6 @@
 module api.os.tasks.sync.semaphores;
 
-import api.os.utils.queues : StaticQueue;
+import api.os.utils.squeue : SQueue;
 import api.os.tasks.task : Task, TaskState;
 import TaskManager = api.os.tasks.task_manager;
 import Critical = api.os.tasks.critical;
@@ -13,7 +13,7 @@ struct Semaphore
 {
     ushort count;
     ushort maxCount;
-    StaticQueue!(Task*, 8) waitingTasks;
+    SQueue!(Task*, 8) waitingTasks;
 }
 
 bool lock(Semaphore* sem)

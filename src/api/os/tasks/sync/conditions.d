@@ -1,6 +1,6 @@
 module api.os.tasks.sync.conditions;
 
-import api.os.utils.queues : StaticQueue;
+import api.os.utils.squeue : SQueue;
 import api.os.tasks.task : Task, TaskState;
 import TaskManager = api.os.tasks.task_manager;
 import Critical = api.os.tasks.critical;
@@ -14,7 +14,7 @@ struct Condition
 {
     private
     {
-        StaticQueue!(Task*, 10) waitingTasks;
+        SQueue!(Task*, 10) waitingTasks;
     }
 
     void wait(Mutex* userMutex)

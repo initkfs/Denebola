@@ -1,10 +1,10 @@
-module api.os.utils.queues;
+module api.os.utils.squeue;
 
 /**
  * Authors: initkfs
  */
 
-struct StaticQueue(T, size_t Size = 10, bool isUseLock = false, bool isForCacheLine = false)
+struct SQueue(T, size_t Size = 10, bool isUseLock = false, bool isForCacheLine = false)
         if (Size > 0)
 {
     private
@@ -185,7 +185,7 @@ struct StaticQueue(T, size_t Size = 10, bool isUseLock = false, bool isForCacheL
 
 unittest
 {
-    StaticQueue!(int, 5) queue;
+    SQueue!(int, 5) queue;
 
     assert(queue.empty);
     assert(!queue.full);
@@ -222,7 +222,7 @@ unittest
     assert(queue.count() == 1);
 
     // Test push overwrite
-    StaticQueue!(int, 3) smallQueue;
+    SQueue!(int, 3) smallQueue;
     smallQueue.push(1);
     smallQueue.push(2);
     assert(smallQueue.full);
@@ -237,7 +237,7 @@ unittest
 
 unittest
 {
-    StaticQueue!(int, 5, true) queue;
+    SQueue!(int, 5, true) queue;
     assert(queue.emptySync);
     assert(!queue.fullSync);
     assert(queue.countSync == 0);

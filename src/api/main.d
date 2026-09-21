@@ -7,21 +7,22 @@ module api.main;
 import api.hal.hal_entry;
 
 import Ver = api.arch.vers;
-import Tests = api.os.tests;
+import Tests = api.os.test.test_runner;
+
+import Bits = api.hal.hal_bits;
 
 import Syslog = api.os.logs.klog;
 import MemCore = api.os.mem.mem_core;
 import Kallocator = api.os.mem.allocs.kallocator;
 import SBuffer = api.os.mem.sbuffer;
-import Queues = api.os.utils.queues;
+import Queues = api.os.utils.squeue;
 
 import Str = api.os.strings.str;
 import MathCore = api.os.math.math_core;
 import Units = api.os.utils.units;
 import MathStrict = api.os.math.math_strict;
 import MathRandom = api.os.math.math_random;
-import Bits = api.hal.hal_bits;
-import Atomic = api.hal.hal_atomic;
+
 import Trap = api.hal.hal_trap;
 import Spinlock = api.os.tasks.sync.spinlock;
 import Critical = api.os.tasks.critical;
@@ -51,33 +52,22 @@ version (unittest)
 {
     private void runTests()
     {
-        if (Syslog.isTraceLevel)
-        {
-            Syslog.trace("Start testing modules");
-        }
-
         import std.meta : AliasSeq;
 
         alias testModules = AliasSeq!(
+            Bits,
+            Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
+            
             MemCore,
+            Ver.IfVerMods!(Ver.hasFPU, "api.os.math.math_float"),
+            MathStrict,
             Kallocator,
             SBuffer,
             Queues,
-            C3GPIO,
-
             Str,
             Units,
-            //MathCore,
-            //MathStrict,
-            //Ver.IfVerMods!(Ver.hasFPU, "api.os.math.math_float"),
-            //Ver.IfVerMods!(Ver.hasFPU, "api.os.utils.units"),
-            //MathRandom,
-            Bits, //Ver.IfVerMods!(Ver.hasAtomic, "api.hal.hal_atomic"),
-            //Atomic,
-            //Spinlock,
 
-            
-
+            C3GPIO
         );
 
         foreach (m; testModules)
