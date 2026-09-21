@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module api.os.logs.klog_core;
+module api.os.log.syslog_core;
 
 enum Level
 {

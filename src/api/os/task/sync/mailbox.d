@@ -1,12 +1,12 @@
-module api.os.tasks.sync.mailbox;
+module api.os.task.sync.mailbox;
 
-import api.os.utils.squeue : SQueue;
-import api.os.tasks.task : Task, TaskState;
-import TaskManager = api.os.tasks.task_manager;
-import Critical = api.os.tasks.critical;
-import api.os.tasks.sync.conditions: Condition;
-import api.os.utils.squeue: SQueue;
-import api.os.tasks.sync.mutexes;
+import api.os.util.squeue : SQueue;
+import api.os.task.sftask : SfTask, TaskState;
+import TaskManager = api.os.task.task_manager;
+import Critical = api.os.task.critical;
+import api.os.task.sync.conditions: Condition;
+import api.os.util.squeue: SQueue;
+import api.os.task.sync.mutexes;
 
 /**
  * Authors: initkfs

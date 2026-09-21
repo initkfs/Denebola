@@ -1,9 +1,9 @@
-module api.os.tasks.sync.mutexes;
+module api.os.task.sync.mutexes;
 
-import api.os.utils.squeue : SQueue;
-import api.os.tasks.task : Task, TaskState;
-import TaskManager = api.os.tasks.task_manager;
-import Critical = api.os.tasks.critical;
+import api.os.util.squeue : SQueue;
+import api.os.task.sftask : SfTask, TaskState;
+import TaskManager = api.os.task.task_manager;
+import Critical = api.os.task.critical;
 
 /**
  * Authors: initkfs
@@ -11,8 +11,8 @@ import Critical = api.os.tasks.critical;
 
 struct Mutex
 {
-    Task* owner;
-    SQueue!(Task*, 5) waitingTasks;
+    SfTask* owner;
+    SQueue!(SfTask*, 5) waitingTasks;
     ubyte priority;
     bool isRecursive;
     ubyte lockCount;
@@ -86,7 +86,7 @@ void unlock(Mutex* mutex)
 
     if (!mutex.waitingTasks.empty)
     {
-        Task* nextTask;
+        SfTask* nextTask;
         mutex.waitingTasks.pop(nextTask);
         mutex.owner = nextTask;
         mutex.priority = nextTask.priority;

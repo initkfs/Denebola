@@ -1,10 +1,10 @@
 /**
  * Authors: initkfs
  */
-module api.os.logs.klog;
+module api.os.log.syslog;
 
 import Sysmon = api.os.mon.sysmon;
-import api.os.logs.klog_core;
+import api.os.log.syslog_core;
 
 import std.traits;
 
@@ -73,7 +73,7 @@ private void log(Level level, const(char)[] message, const(char)[] file, int lin
     logWrite(file);
     logWrite(':');
 
-    import Str = api.os.strings.str;
+    import Str = api.os.str.strings;
     char[16] lineBuff;
     logWrite(Str.atoa(line, lineBuff));
 
@@ -91,7 +91,7 @@ private void logf(T)(Level level, const(char)[] pattern, T[] args,
         return;
     }
 
-    import Str = api.os.strings.str;
+    import Str = api.os.str.strings;
 
     char[64] buff = 0;
     auto res = Str.formatb(pattern, buff, args);

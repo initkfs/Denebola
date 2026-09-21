@@ -1,9 +1,9 @@
 /**
  * Authors: initkfs
  */
-module api.os.utils.units;
+module api.os.util.units;
 
-import Strings = api.os.strings.str;
+import Strings = api.os.str.strings;
 import MathCore = api.os.math.math_core;
 import MathFloat = api.os.math.math_float;
 
@@ -103,7 +103,7 @@ unittest
 {
     char[256] buff = 0;
 
-    import Syslog = api.os.logs.klog;
+    import Syslog = api.os.log.syslog;
 
     assert(formatBytes(0, buff) == "0B");
     assert(formatBytes(1, buff) == "1B");

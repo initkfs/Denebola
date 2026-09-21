@@ -1,4 +1,4 @@
-module api.os.utils.squeue;
+module api.os.util.squeue;
 
 /**
  * Authors: initkfs
@@ -30,7 +30,7 @@ struct SQueue(T, size_t Size = 10, bool isUseLock = false, bool isForCacheLine =
 
         static if (isUseLock)
         {
-            import api.os.tasks.sync.spinlock : Lock;
+            import api.os.task.sync.spinlock : Lock;
 
             Lock lock;
 

@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module api.os.strings.ascii;
+module api.os.str.ascii;
 
 enum : char
 {

@@ -3,7 +3,7 @@
  */
 module api.os.test.test_runner;
 
-import Syslog = api.os.logs.klog;
+import Syslog = api.os.log.syslog;
 
 void runTest(alias testModule)()
 {

@@ -1,13 +1,13 @@
 /**
  * Authors: initkfs
  */
-module api.os.tasks.task_manager;
-import api.os.tasks.task;
+module api.os.task.task_manager;
+import api.os.task.sftask;
 
 import api.os.io.cstdio;
 
-import Syslog = api.os.logs.klog;
-import Critical = api.os.tasks.critical;
+import Syslog = api.os.log.syslog;
+import Critical = api.os.task.critical;
 import ComContext = api.hal.hal_context;
 
 import ldc.attributes;
@@ -19,14 +19,14 @@ enum taskTlsSize = 256;
 
 extern (C) __gshared
 {
-    Task* __currentTask;
+    SfTask* __currentTask;
     
-    Task __osTask;
+    SfTask __osTask;
     align(4) ubyte[taskTlsSize] __osTaskTLS;
 
     ubyte[taskStacksSize][taskMaxCount] taskStacks;
     ubyte[taskTlsSize][taskMaxCount] taskTls;
-    Task[taskMaxCount] tasks;
+    SfTask[taskMaxCount] tasks;
 
     bool isInitOsTask;
     size_t taskIndex;
@@ -58,7 +58,7 @@ size_t taskCreate(void function() t, string name)
     auto i = taskCount;
     assert(i < tasks.length);
 
-    Task* taskPtr = &tasks[i];
+    SfTask* taskPtr = &tasks[i];
     assert(taskPtr.state == TaskState.none);
 
     taskPtr.name = name;
@@ -87,7 +87,7 @@ void switchToFirstTask()
     switchToTask(&tasks[0]);
 }
 
-extern (C) void switchToTask(Task* task)
+extern (C) void switchToTask(SfTask* task)
 {
     assert(task);
 
@@ -122,7 +122,7 @@ bool hasStateTask(TaskState state)
 
     foreach (ti; 0 .. taskCount)
     {
-        Task* task = &tasks[ti];
+        SfTask* task = &tasks[ti];
         if (task is __currentTask)
         {
             continue;
@@ -140,7 +140,7 @@ bool hasReadyTasks() => hasStateTask(TaskState.ready);
 
 protected void roundrobin()
 {
-    Task* next;
+    SfTask* next;
     size_t attempts;
 
     while (attempts < taskCount)
@@ -150,7 +150,7 @@ protected void roundrobin()
             taskIndex = 0;
         }
 
-        Task* mustBeNext = &tasks[taskIndex];
+        SfTask* mustBeNext = &tasks[taskIndex];
         taskIndex++;
 
         if ((mustBeNext.state == TaskState.waitSignal) &&
@@ -178,7 +178,7 @@ protected void roundrobin()
 
 extern (C) void roundrobinChoose()
 {
-    Task* next;
+    SfTask* next;
 
     foreach (ti; 0 .. taskCount)
     {
@@ -187,7 +187,7 @@ extern (C) void roundrobinChoose()
             taskIndex = 0;
         }
 
-        Task* mustBeNext = &tasks[taskIndex];
+        SfTask* mustBeNext = &tasks[taskIndex];
 
         // if ((mustBeNext.state == TaskState.waitSignal) &&
         //     (mustBeNext.pendingSignals & mustBeNext.waitingMask))
@@ -322,7 +322,7 @@ protected void callSignalHandlers(uint mask)
     }
 }
 
-protected bool signalsInit(Task* task)
+protected bool signalsInit(SfTask* task)
 {
     assert(task);
     task.pendingSignals = 0;
@@ -342,7 +342,7 @@ bool signalSend(size_t tid, ubyte signal)
 
     assert(tid < taskCount);
 
-    Task* targetTask = &tasks[tid];
+    SfTask* targetTask = &tasks[tid];
     if (!targetTask || targetTask == __currentTask)
     {
         return false;

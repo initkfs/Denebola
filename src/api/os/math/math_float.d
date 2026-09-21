@@ -219,8 +219,8 @@ T parse(T = float, C = char)(const(C)[] str, const char separator = '.')
         return T.nan;
     }
 
-    import Strings = api.os.strings.str;
-    import Ascii = api.os.strings.ascii;
+    import Strings = api.os.str.strings;
+    import Ascii = api.os.str.ascii;
 
     if (str == "NaN")
     {

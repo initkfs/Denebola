@@ -11,24 +11,24 @@ import Tests = api.os.test.test_runner;
 
 import Bits = api.hal.hal_bits;
 
-import Syslog = api.os.logs.klog;
+import Syslog = api.os.log.syslog;
 import MemCore = api.os.mem.mem_core;
 import Kallocator = api.os.mem.allocs.kallocator;
 import SBuffer = api.os.mem.sbuffer;
-import Queues = api.os.utils.squeue;
+import Queues = api.os.util.squeue;
 
-import Str = api.os.strings.str;
+import Str = api.os.str.strings;
 import MathCore = api.os.math.math_core;
-import Units = api.os.utils.units;
+import Units = api.os.util.units;
 import MathStrict = api.os.math.math_strict;
 import MathRandom = api.os.math.math_random;
 
 import Trap = api.hal.hal_trap;
-import Spinlock = api.os.tasks.sync.spinlock;
-import Critical = api.os.tasks.critical;
+import Spinlock = api.os.task.sync.spinlock;
+import Critical = api.os.task.critical;
 import Sysmon = api.os.mon.sysmon;
 
-import TaskManager = api.os.tasks.task_manager;
+import TaskManager = api.os.task.task_manager;
 
 static if (Ver.hasFPU)
 {
@@ -36,7 +36,7 @@ static if (Ver.hasFPU)
 }
 
 import api.os.io.cstdio;
-import api.os.tasks.task;
+import api.os.task.sftask;
 
 __gshared
 {
@@ -180,8 +180,8 @@ extern (C) void dstart()
     }
 }
 
-import api.os.tasks.sync.mailbox : Mailbox;
-import Mutex = api.os.tasks.sync.mutexes;
+import api.os.task.sync.mailbox : Mailbox;
+import Mutex = api.os.task.sync.mutexes;
 
 __gshared Mailbox!(int, 10) box;
 __gshared Mutex.Mutex mutex;

@@ -5,7 +5,7 @@ module api.os.object;
 
 extern (C) void __assert(const(char)* msg, const(char)* file, int line)
 {
-    import Str = api.os.strings.str;
+    import Str = api.os.str.strings;
 
     string smsg = cast(string) msg[0 .. Str.strlenz(msg)];
     string sfile = cast(string) file[0 .. Str.strlenz(file)];

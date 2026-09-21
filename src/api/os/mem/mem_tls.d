@@ -1,6 +1,6 @@
 module api.os.mem.mem_tls;
 
-import api.os.tasks.task_manager;
+import api.os.task.task_manager;
 import api.os.mem.mem_core;
 
 /**

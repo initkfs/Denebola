@@ -13,7 +13,7 @@ void halt()
         HalIntr.halSetGlobalMIntrOff();
     }
 
-    HalCpu.halWait;
+    HalCpu.halWait();
 }
 
 void panic(const string message = "Assertion failure", const string file = __FILE__, const int line = __LINE__)
@@ -26,7 +26,7 @@ void panic(lazy bool expression, const string message = "Assertion failure", con
     if (!expression())
     {
         import api.os.io.cstdio;
-        import Str = api.os.strings.str;
+        import Str = api.os.str.strings;
 
         char[64] buff = 0;
         const buffPtr = Str.atoa(line, buff);

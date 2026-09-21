@@ -1,9 +1,9 @@
-module api.os.tasks.sync.semaphores;
+module api.os.task.sync.semaphores;
 
-import api.os.utils.squeue : SQueue;
-import api.os.tasks.task : Task, TaskState;
-import TaskManager = api.os.tasks.task_manager;
-import Critical = api.os.tasks.critical;
+import api.os.util.squeue : SQueue;
+import api.os.task.sftask : SfTask, TaskState;
+import TaskManager = api.os.task.task_manager;
+import Critical = api.os.task.critical;
 
 /**
  * Authors: initkfs
@@ -13,7 +13,7 @@ struct Semaphore
 {
     ushort count;
     ushort maxCount;
-    SQueue!(Task*, 8) waitingTasks;
+    SQueue!(SfTask*, 8) waitingTasks;
 }
 
 bool lock(Semaphore* sem)
@@ -54,7 +54,7 @@ void unlock(Semaphore* sem)
 
     if (!sem.waitingTasks.empty)
     {
-        Task* task;
+        SfTask* task;
         if (!sem.waitingTasks.pop(task))
         {
             //TODO log

@@ -1,4 +1,4 @@
-module api.os.tasks.critical;
+module api.os.task.critical;
 
 import HalIntrs = api.hal.hal_interrupts;
 

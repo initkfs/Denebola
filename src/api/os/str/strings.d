@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module api.os.strings.str;
+module api.os.str.strings;
 
 import Ver = api.arch.vers;
 
@@ -11,7 +11,7 @@ import std.traits : isSomeChar;
 
 bool isBlank(T)(const(T)[] str) if (isSomeChar!T)
 {
-    import Ascii = api.os.strings.ascii;
+    import Ascii = api.os.str.ascii;
 
     if (!str || str.length == 0)
     {

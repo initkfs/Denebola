@@ -1,13 +1,14 @@
 /**
  * Authors: initkfs
  */
-module api.os.tasks.task;
+module api.os.task.sftask;
 
 alias reg_t = size_t;
 
 alias SignalSet = uint;
 
-struct Task
+//Stateful task
+struct SfTask
 {
     RegContext context;
 

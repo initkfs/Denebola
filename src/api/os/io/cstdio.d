@@ -4,7 +4,7 @@
 module api.os.io.cstdio;
 
 import Uart = api.hal.hal_uart;
-import Ascii = api.os.strings.ascii;
+import Ascii = api.os.str.ascii;
 
 @nogc nothrow:
 

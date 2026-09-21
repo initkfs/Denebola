@@ -7,11 +7,11 @@ import api.arch.vers;
  */
  
 import api.os.io.cstdio;
-import api.os.tasks.task;
+import api.os.task.sftask;
 import api.hal.hal_timer;
 import api.arch.vers;
 
-import Syslog = api.os.logs.klog;
+import Syslog = api.os.log.syslog;
 
 __gshared extern (C)
 {
@@ -95,7 +95,7 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
                     static assert(false, "Need timer handler");
                 }
 
-                import TaskManager = api.os.tasks.task_manager;
+                import TaskManager = api.os.task.task_manager;
                 import HaltIntr = api.hal.hal_interrupts;
 
                 TaskManager.roundrobinChoose;

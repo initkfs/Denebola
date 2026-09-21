@@ -1,10 +1,10 @@
-module api.os.tasks.sync.conditions;
+module api.os.task.sync.conditions;
 
-import api.os.utils.squeue : SQueue;
-import api.os.tasks.task : Task, TaskState;
-import TaskManager = api.os.tasks.task_manager;
-import Critical = api.os.tasks.critical;
-import api.os.tasks.sync.mutexes;
+import api.os.util.squeue : SQueue;
+import api.os.task.sftask : SfTask, TaskState;
+import TaskManager = api.os.task.task_manager;
+import Critical = api.os.task.critical;
+import api.os.task.sync.mutexes;
 
 /**
  * Authors: initkfs
@@ -14,17 +14,17 @@ struct Condition
 {
     private
     {
-        SQueue!(Task*, 10) waitingTasks;
+        SQueue!(SfTask*, 10) waitingTasks;
     }
 
     void wait(Mutex* userMutex)
     {
         Critical.startCritical;
 
-        Task* currentTask = TaskManager.__currentTask;
+        SfTask* currentTask = TaskManager.__currentTask;
         if (waitingTasks.full)
         {
-            assert(0, "Task queue must not be full");
+            assert(0, "SfTask queue must not be full");
         }
 
         waitingTasks.push(currentTask);
@@ -46,7 +46,7 @@ struct Condition
         if (waitingTasks.empty)
             return;
 
-        Task* nextTask;
+        SfTask* nextTask;
         waitingTasks.pop(nextTask);
         assert(nextTask);
 
@@ -63,7 +63,7 @@ struct Condition
         //TODO "Thundering Herd"
         while (!waitingTasks.empty)
         {
-            Task* nextTask;
+            SfTask* nextTask;
             waitingTasks.pop(nextTask);
 
             nextTask.state = TaskState.ready;
