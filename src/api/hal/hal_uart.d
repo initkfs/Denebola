@@ -14,7 +14,7 @@ version (Esp32C3)
 }
 else
 {
-    import api.arch.riscv.com.com_uart;
+    import api.arch.riscv.rbase.rb_uart;
 
     enum HalUARTDef = COM_UART0;
 }

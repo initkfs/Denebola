@@ -11,7 +11,7 @@ import api.arch.vers;
 {
     static if (__isRiscv)
     {
-        import ComAtomic = api.arch.riscv.com.com_atomic;
+        import ComAtomic = api.arch.riscv.rbase.rb_atomic;
 
         bool function(size_t* addr, int expectedInAddr, int newValueIfAddrEqvExpected) halCas = &ComAtomic
             .comCas;

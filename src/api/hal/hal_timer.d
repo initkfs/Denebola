@@ -9,7 +9,7 @@ __gshared
 {
     static if (__isRiscvGen)
     {
-        import Com = api.arch.riscv.com.com_timer;
+        import Com = api.arch.riscv.rbase.rb_timer;
 
         void function() halInitTimer = &Com.comInitTimer;
         void function() halDisableWdt = &Com.comDisableWdt;

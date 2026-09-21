@@ -1,9 +1,9 @@
 /**
  * Authors: initkfs
  */
-module api.arch.riscv.com.com_interrupts;
+module api.arch.riscv.rbase.rb_interrupts;
 
-import api.arch.riscv.com.com_interrupts_constants;
+import api.arch.riscv.rbase.rb_interrupts_constants;
 
 import ldc.llvmasm;
 

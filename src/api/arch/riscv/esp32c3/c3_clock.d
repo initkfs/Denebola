@@ -5,7 +5,7 @@ import Bits = api.hal.hal_bits;
 /**
  * Authors: initkfs
  */
-import Volatile = api.arch.riscv.com.com_volatile;
+import Volatile = api.arch.riscv.rbase.rb_volatile;
 
 enum SYSTEM_BASE = 0x600c0000;
 enum SYSTEM_SYSCLK_CONF_REG = SYSTEM_BASE + 0x0058;

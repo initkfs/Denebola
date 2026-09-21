@@ -7,7 +7,7 @@ import api.arch.vers;
 
 static if (__isRiscv)
 {
-    public import api.arch.riscv.com.com_bits;
+    public import api.arch.riscv.rbase.rb_bits;
 }
 else
 {

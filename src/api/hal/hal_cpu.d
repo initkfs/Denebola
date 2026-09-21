@@ -22,7 +22,7 @@ struct ArchCaps
 {
     static if (__isRiscv)
     {
-        import ComCPU = api.arch.riscv.com.com_cpu;
+        import ComCPU = api.arch.riscv.rbase.rb_cpu;
 
         size_t function() halHartId = &ComCPU.comMhartId;
         string function() halVendorId = &ComCPU.comVendorId;

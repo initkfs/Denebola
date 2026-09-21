@@ -7,7 +7,7 @@ import api.arch.vers;
 import api.hal.inits.hal_init : halfunc;
 import ldc.attributes;
 
-public import api.arch.riscv.com.com_interrupts_constants;
+public import api.arch.riscv.rbase.rb_interrupts_constants;
 
 version (Qemu)
 {
@@ -18,7 +18,7 @@ version (Qemu)
 {
     static if (__isRiscv)
     {
-        import Com = api.arch.riscv.com.com_interrupts;
+        import Com = api.arch.riscv.rbase.rb_interrupts;
 
         extern (C) @trusted
         {

@@ -3,7 +3,7 @@ module api.arch.riscv.esp32c3.с3_gpio;
 /**
  * Authors: initkfs
  */
-import Volatile = api.arch.riscv.com.com_volatile;
+import Volatile = api.arch.riscv.rbase.rb_volatile;
 import Bit = api.hal.hal_bits;
 
 //TODO Strapping-pins (GPIO8, GPIO9), clear USB_SERIAL_JTAG_USB_PAD_ENABLE for GPIO4, GPIO5, GPIO6, GPIO7.

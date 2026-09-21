@@ -1,4 +1,4 @@
-module api.arch.riscv.com.com_uart;
+module api.arch.riscv.rbase.rb_uart;
 
 /**
  * Authors: initkfs

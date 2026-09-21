@@ -1,4 +1,4 @@
-module api.arch.riscv.com.com_atomic;
+module api.arch.riscv.rbase.rb_atomic;
 
 /**
  * Authors: initkfs
