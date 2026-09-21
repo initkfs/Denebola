@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module api.arch.riscv.boards.qemu.qemu_interrupts_constants;
+module api.arch.riscv.qemu.qemu_interrupts_constants;
 
 enum clintBase = 0x2000000;
 enum clintCompareRegHurtOffset = 0x4000;

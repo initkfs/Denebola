@@ -1,4 +1,4 @@
-module api.core.volatile;
+module api.arch.core.volatile;
 /**
  * Authors: initkfs
  */

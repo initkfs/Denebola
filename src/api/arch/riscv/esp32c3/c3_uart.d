@@ -1,4 +1,4 @@
-module api.arch.riscv.boards.esp32c3.c3_uart;
+module api.arch.riscv.esp32c3.c3_uart;
 
 /**
  * Authors: initkfs

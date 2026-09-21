@@ -7,18 +7,18 @@ import api.arch.vers;
 import api.hal.inits.hal_init : halfunc;
 import ldc.attributes;
 
-public import api.arch.riscv.boards.com.com_interrupts_constants;
+public import api.arch.riscv.com.com_interrupts_constants;
 
 version (Qemu)
 {
-    public import api.arch.riscv.boards.qemu.qemu_interrupts_constants;
+    public import api.arch.riscv.qemu.qemu_interrupts_constants;
 }
 
 @halfunc __gshared @trusted
 {
     static if (__isRiscv)
     {
-        import Com = api.arch.riscv.boards.com.com_interrupts;
+        import Com = api.arch.riscv.com.com_interrupts;
 
         extern (C) @trusted
         {
@@ -61,7 +61,7 @@ version (Qemu)
         }
         else static if (__isC3)
         {
-            import C3 = api.arch.riscv.boards.esp32c3.с3_interrupts;
+            import C3 = api.arch.riscv.esp32c3.с3_interrupts;
 
             extern (C) void function() halInitIntrs = &C3.c3InitIntrs;
         }

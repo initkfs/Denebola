@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module api.arch.riscv.boards.com.com_interrupts_constants;
+module api.arch.riscv.com.com_interrupts_constants;
 
 extern(C):
 

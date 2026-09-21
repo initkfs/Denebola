@@ -13,9 +13,9 @@ import ComContext = api.hal.hal_context;
 import ldc.attributes;
 import ldc.llvmasm;
 
-enum taskMaxCount = 16;
-enum taskStacksSize = 2048;
-enum taskTlsSize = 512; 
+enum taskMaxCount = 4;
+enum taskStacksSize = 1024;
+enum taskTlsSize = 256; 
 
 extern (C) __gshared
 {

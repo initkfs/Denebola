@@ -2,7 +2,7 @@
  * Authors: initkfs
  */
 
-module api.core.bits;
+module api.arch.core.bits;
 
 enum size_t startBitShift = 1;
 

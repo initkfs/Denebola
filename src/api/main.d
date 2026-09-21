@@ -45,7 +45,7 @@ __gshared
 extern (C) __gshared bool isTimer = true;
 
 //TODO remove arch api
-import C3GPIO = api.arch.riscv.boards.esp32c3.с3_gpio;
+import C3GPIO = api.arch.riscv.esp32c3.с3_gpio;
 
 version (unittest)
 {
@@ -164,8 +164,8 @@ extern (C) void dstart()
     tid = TaskManager.taskCreate(&task0, "task0");
     tid1 = TaskManager.taskCreate(&task1, "task1");
 
-    import SysClock = api.arch.riscv.boards.esp32c3.c3_clock;
-    import SysTimer = api.arch.riscv.boards.esp32c3.c3_timer;
+    import SysClock = api.arch.riscv.esp32c3.c3_clock;
+    import SysTimer = api.arch.riscv.esp32c3.c3_timer;
 
     SysClock.enableSysTimer;
 

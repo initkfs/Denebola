@@ -1,10 +1,10 @@
 /**
  * Authors: initkfs
  */
-module api.arch.riscv.boards.esp32c3.с3_interrupts;
+module api.arch.riscv.esp32c3.с3_interrupts;
 
-import ComIntr = api.arch.riscv.boards.com.com_interrupts;
-import api.arch.riscv.boards.com.com_interrupts_constants;
+import ComIntr = api.arch.riscv.com.com_interrupts;
+import api.arch.riscv.com.com_interrupts_constants;
 import Volatile = api.hal.hal_volatile;
 import ldc.llvmasm;
 

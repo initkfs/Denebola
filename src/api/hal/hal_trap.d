@@ -25,13 +25,13 @@ __gshared extern (C)
 {
     static if (__isRiscv)
     {
-        import ComTrap = api.arch.riscv.boards.com.com_trap;
+        import ComTrap = api.arch.riscv.com.com_trap;
 
         void function() halTrapInit = &ComTrap.comTrapInit;
     }
     else static if (__isC3)
     {
-        import C3Trap = api.arch.riscv.boards.esp32c3.c3_trap;
+        import C3Trap = api.arch.riscv.esp32c3.c3_trap;
 
         void function() halTrapInit = &C3Trap.c3TrapInit;
     }
@@ -88,13 +88,13 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
 
                 static if (__isRiscvGen)
                 {
-                    import ComTimer = api.arch.riscv.boards.com.com_timer;
+                    import ComTimer = api.arch.riscv.com.com_timer;
 
                     ComTimer.timerHandlerContinue(epc, cause);
                 }
                 else static if (__isC3)
                 {
-                    import C3Timer = api.arch.riscv.boards.esp32c3.c3_timer;
+                    import C3Timer = api.arch.riscv.esp32c3.c3_timer;
 
                     C3Timer.timerHandlerContinue(epc, cause);
                 }

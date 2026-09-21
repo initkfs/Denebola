@@ -1,7 +1,7 @@
-module api.arch.riscv.boards.esp32c3.c3_dbgassist;
+module api.arch.riscv.esp32c3.c3_dbgassist;
 
 import Bits = api.hal.hal_bits;
-import Volatile = api.arch.riscv.boards.com.com_volatile;
+import Volatile = api.arch.riscv.com.com_volatile;
 
 /**
  * Authors: initkfs

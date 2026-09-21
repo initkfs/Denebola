@@ -1,4 +1,4 @@
-module api.arch.riscv.boards.com.com_cpu;
+module api.arch.riscv.com.com_cpu;
 
 /**
  * Authors: initkfs

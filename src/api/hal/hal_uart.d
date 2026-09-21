@@ -8,13 +8,13 @@ import ldc.llvmasm;
 
 version (Esp32C3)
 {
-    import api.arch.riscv.boards.esp32c3.c3_uart;
+    import api.arch.riscv.esp32c3.c3_uart;
 
     enum HalUARTDef = C3_UART0;
 }
 else
 {
-    import api.arch.riscv.boards.com.com_uart;
+    import api.arch.riscv.com.com_uart;
 
     enum HalUARTDef = COM_UART0;
 }

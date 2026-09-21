@@ -1,4 +1,4 @@
-module api.arch.riscv.boards.esp32c3.c3_trap;
+module api.arch.riscv.esp32c3.c3_trap;
 
 import ldc.llvmasm;
 

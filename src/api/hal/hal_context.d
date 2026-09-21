@@ -10,7 +10,7 @@ import api.arch.vers;
 {
     static if (__isRiscv)
     {
-        import ComContext = api.arch.riscv.boards.com.com_context;
+        import ComContext = api.arch.riscv.com.com_context;
 
         extern (C)
         {

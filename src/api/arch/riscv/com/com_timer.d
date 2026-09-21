@@ -1,12 +1,12 @@
-module api.arch.riscv.boards.com.com_timer;
+module api.arch.riscv.com.com_timer;
 /**
  * Authors: initkfs
  */
-import api.arch.riscv.boards.com.com_clint;
+import api.arch.riscv.com.com_clint;
 
-import Harts = api.arch.riscv.boards.com.com_cpu;
-import Interrupts = api.arch.riscv.boards.com.com_interrupts;
-import Volatile = api.arch.riscv.boards.com.com_volatile;
+import Harts = api.arch.riscv.com.com_cpu;
+import Interrupts = api.arch.riscv.com.com_interrupts;
+import Volatile = api.arch.riscv.com.com_volatile;
 
 ulong mTimeRegCmpAddr(size_t hartid) @trusted
 {
@@ -102,11 +102,11 @@ private void writeIntevalToTimer(size_t comHartId)
         {
             version (RiscvGenericSMP)
             {
-                import MemCore = api.arch.riscv.boards.com.com_memory;
+                import MemCore = api.arch.riscv.com.com_memory;
 
                 //Interrupts.mInterruptsDisable;
 
-                import Atomic = api.arch.riscv.boards.com.com_atomic;
+                import Atomic = api.arch.riscv.com.com_atomic;
                 import ldc.llvmasm : __asm;
 
                 uint spinCount = 0;

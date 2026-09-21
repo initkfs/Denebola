@@ -141,7 +141,7 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-"$riscvElfSize" "$kernelElf"
+"$riscvElfSize" --radix=10 "$kernelElf"
 
 "$riscvElfObjcopy" -O binary "$kernelElf" "$kernelBin"
 if [[ $? -ne 0 ]]; then
