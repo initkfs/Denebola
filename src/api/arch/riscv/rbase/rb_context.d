@@ -1,6 +1,7 @@
 module api.arch.riscv.rbase.rb_context;
 /**
  * Authors: initkfs
+ * TODO fence rw, rw before mret
  */
 
 import ldc.llvmasm;

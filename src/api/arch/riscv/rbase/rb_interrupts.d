@@ -12,6 +12,11 @@ extern (C) void comInitIntrs() @trusted
 
 }
 
+extern (C) void comInitPerIntrs() @trusted
+{
+
+}
+
 extern (C) size_t comGetMStatus() @trusted => __asm!size_t("csrr $0, mstatus", "=r");
 
 extern (C) void comSetMStatus(size_t status) @trusted

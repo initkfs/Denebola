@@ -1,13 +1,14 @@
 module api.arch.riscv.esp32c3.c3_trap;
 
 import ldc.llvmasm;
+import ldc.attributes;
 
-extern (C) void c3TrapInit() @trusted
+//TODO align9(256)
+extern (C) void c3TrapInit()  @section(".text.init")
 {
     __asm("
+    j 2f
     .balign 0x100
-    .global _vec_table
-    .type _vec_table, @function
 _vec_table:
     .option push
     .option norvc
@@ -16,8 +17,8 @@ _vec_table:
     j __comSwitchInterruptContext  
     .endr
     .option pop
-
-    la t0, _vector_table
+2:
+    la t0, _vec_table
     ori t0, t0, 0x1 
     csrw mtvec, t0
     ", "");

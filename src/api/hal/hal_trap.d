@@ -5,7 +5,7 @@ import api.arch.vers;
 /**
  * Authors: initkfs
  */
- 
+
 import api.os.io.cstdio;
 import api.os.task.sftask;
 import api.hal.hal_timer;
@@ -15,17 +15,24 @@ import Syslog = api.os.log.syslog;
 
 __gshared extern (C)
 {
-    static if (__isRiscv)
+    static if (__isRiscvGen)
     {
         import ComTrap = api.arch.riscv.rbase.rb_trap;
 
-        void function() halTrapInit = &ComTrap.comTrapInit;
+        //void function() halTrapInit = &ComTrap.comTrapInit;
+        void halTrapInit()
+        {
+            ComTrap.comTrapInit;
+        }
     }
     else static if (__isC3)
     {
         import C3Trap = api.arch.riscv.esp32c3.c3_trap;
 
-        void function() halTrapInit = &C3Trap.c3TrapInit;
+        void halTrapInit()
+        {
+            C3Trap.c3TrapInit;
+        }
     }
     else
     {

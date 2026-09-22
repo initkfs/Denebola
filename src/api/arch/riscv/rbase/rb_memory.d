@@ -16,6 +16,20 @@ static if (__isRiscvGen)
     }
 }
 
+void comMemFenceInstr()
+{
+    __asm(
+        "fence.i", "~{memory}"
+    );
+}
+
+void comMemFenceWRW()
+{
+    __asm(
+        "fence w, rw", "~{memory}"
+    );
+}
+
 void comMemFenceRWRW()
 {
     __asm(

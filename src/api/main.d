@@ -166,6 +166,7 @@ extern (C) void dstart()
     Sysmon.sysmonTest;
 
     SysClock.enableSysTimer;
+    Interrupts.halInitPerIntrs();
 
     Interrupts.halSetGlobalMIntrOn();
 
@@ -251,8 +252,7 @@ void task2()
 
 void delayTicks(int count = 1000)
 {
-    long counter = count * 50000;
-    while (counter--)
+    while (count--)
     {
     }
 }

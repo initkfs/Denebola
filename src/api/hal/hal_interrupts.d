@@ -56,14 +56,16 @@ version (Qemu)
                 void function() halSetSoftwareMIntrOff = &Com.comSetSoftwareMIntrOff;
 
                 extern (C) void function() halInitIntrs = &Com.comInitIntrs;
+                extern (C) void function() halInitPerIntrs = &Com.comInitPerIntrs;
             }
 
         }
         else static if (__isC3)
         {
-            import C3 = api.arch.riscv.esp32c3.с3_interrupts;
+            import C3 = api.arch.riscv.esp32c3.c3_interrupts;
 
             extern (C) void function() halInitIntrs = &C3.c3InitIntrs;
+            extern (C) void function() halInitPerIntrs = &C3.c3InitPerIntrs;
         }
         else
         {
