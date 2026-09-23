@@ -25,6 +25,16 @@ pure @safe nothrow @nogc
         return result;
     }
 
+    size_t bitsSet(size_t bits, size_t[] from0Bits...)
+    {
+        size_t result = bits;
+        foreach (bit; from0Bits)
+        {
+            result |= (startBitShift << bit);
+        }
+        return result;
+    }
+
     //TODO unittest
     size_t bitToggle(size_t bits, size_t from0Bit) => bits ^ (startBitShift << from0Bit);
     size_t bitWrite(size_t bits, size_t from0Bit, bool condition) =>

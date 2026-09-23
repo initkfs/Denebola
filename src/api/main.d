@@ -92,6 +92,8 @@ __gshared
 
 extern (C) void dstart()
 {
+    import api.arch.riscv.esp32c3.c3_lowpower;
+
     import HalUart = api.hal.hal_uart;
     import HalCpu = api.hal.hal_cpu;
     import HalTimer = api.hal.hal_timer;
@@ -167,13 +169,9 @@ extern (C) void dstart()
 
     SysClock.enableSysTimer;
     Interrupts.halInitPerIntrs();
-
     Interrupts.halSetGlobalMIntrOff();
 
     Syslog.info("End loading");
-
-    import api.arch.riscv.esp32c3.c3_lowpower;
-    deepSleep;
 
     enum LocalPointVal = 0x10203040;
     int localPoint = LocalPointVal;
