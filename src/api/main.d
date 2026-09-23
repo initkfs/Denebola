@@ -168,9 +168,12 @@ extern (C) void dstart()
     SysClock.enableSysTimer;
     Interrupts.halInitPerIntrs();
 
-    Interrupts.halSetGlobalMIntrOn();
+    Interrupts.halSetGlobalMIntrOff();
 
     Syslog.info("End loading");
+
+    import api.arch.riscv.esp32c3.c3_lowpower;
+    deepSleep;
 
     enum LocalPointVal = 0x10203040;
     int localPoint = LocalPointVal;
