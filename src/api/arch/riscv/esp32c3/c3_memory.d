@@ -6,9 +6,15 @@ static if (__isC3)
 {
     __gshared extern (C) void __initMem()
     {
-        import ldc.llvmasm;
+        version (VerRAM)
+        {
 
-        __asm("
+        }
+        else
+        {
+            import ldc.llvmasm;
+
+            __asm("
         
         .option push
         .option norelax
@@ -27,5 +33,7 @@ static if (__isC3)
         2:
         .option pop
         ", "");
+        }
+
     }
 }

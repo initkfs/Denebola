@@ -135,7 +135,7 @@ fi
 # fi
 
 #https://github.com/riscv-collab/riscv-gnu-toolchain/issues/356
-"$riscvElfLd" -m "$linkerMarchType" --gc-sections -T $scriptDir/src/api/arch/riscv/boards/qemu/tools/qemu.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 
+"$riscvElfLd" -m "$linkerMarchType" --gc-sections -T $scriptDir/src/api/arch/riscv/boards/qemu/ld/qemu.ld -o "$kernelElf" "$buildDir"/*.o* "$buildDir"/*.a* 
 if [[ $? -ne 0 ]]; then
     echo "Linker error" >&2
     exit 1

@@ -177,7 +177,9 @@ extern (C) void dstart()
     int localPoint = LocalPointVal;
     while (true)
     {
-        HalCpu.halWait();
+        delayTicks(10000000);
+        Syslog.info("Test");
+        ///HalCpu.halWait();
         assert(localPoint == LocalPointVal);
     }
 }
