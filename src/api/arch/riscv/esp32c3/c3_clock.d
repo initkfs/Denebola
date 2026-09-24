@@ -25,6 +25,9 @@ enum SYSTEM_SYSTIMER_CLK_EN_BIT = 29;
 enum SYSTEM_PERIP_RST_EN0_REG = SYSTEM_BASE + 0x0018;
 enum SYSTEM_SYSTIMER_RST_BIT = 29;
 
+enum XTAL_MHZ = 40;
+enum RC_FAST_CLK = 18; //17.5
+
 size_t* calcSYSTEM_PERIP_CLK_EN0_REG() => cast(size_t*) SYSTEM_PERIP_CLK_EN0_REG;
 size_t* calcSYSTEM_PERIP_RST_EN0_REG() => cast(size_t*) SYSTEM_PERIP_RST_EN0_REG;
 
@@ -46,9 +49,81 @@ enum SYSTEM_SOC_CLK_SEL
     XTAL_CLK = 0,
     PLL_CLK = 1,
     RC_FAST_CLK = 2,
+    INVALID = 3,
 }
 
 size_t* calcSYSTEM_SYSCLK_CONF_REG() => cast(size_t*) SYSTEM_SYSCLK_CONF_REG;
+
+SYSTEM_SOC_CLK_SEL getClockType()
+{
+    auto v = Volatile.load(calcSYSTEM_SYSCLK_CONF_REG);
+    enum SYSTEM_SOC_CLK_SEL_FIRST_BIT = 10;
+    ubyte clkSel = cast(ubyte)((v >> SYSTEM_SOC_CLK_SEL_FIRST_BIT) & 0x03);
+    final switch (clkSel) with (SYSTEM_SOC_CLK_SEL)
+    {
+        case XTAL_CLK:
+            return SYSTEM_SOC_CLK_SEL.XTAL_CLK;
+        case PLL_CLK:
+            return SYSTEM_SOC_CLK_SEL.PLL_CLK;
+        case RC_FAST_CLK:
+            return SYSTEM_SOC_CLK_SEL.RC_FAST_CLK;
+        case INVALID:
+            return SYSTEM_SOC_CLK_SEL.INVALID;
+    }
+    return SYSTEM_SOC_CLK_SEL.INVALID;
+}
+
+uint c3clockCpuFreq()
+{
+    auto clockType = getClockType;
+
+    uint clockFreq;
+    if (clockType == SYSTEM_SOC_CLK_SEL.XTAL_CLK)
+    {
+        //CPU_CLK = XTAL_CLK/(SYSTEM_PRE_DIV_CNT + 1), SYSTEM_PRE_DIV_CNT ranges from 0 ~ 1023. Default is 1
+        auto reg = calcSYSTEM_SYSCLK_CONF_REG;
+        enum SYSTEM_CLK_XTAL_FREQ_FIRST_BIT = 12; //12 to 18
+        auto val = Volatile.load(reg);
+        auto xtalFreq = (val >> SYSTEM_CLK_XTAL_FREQ_FIRST_BIT) & 0x7F;
+        auto xtalDiv = val & 0x3FF;
+        if (xtalFreq == 0)
+        {
+            xtalFreq = XTAL_MHZ;
+        }
+
+        //TODO but 40 / (1 + 1) = 20?
+        clockFreq = xtalFreq / (xtalDiv + 1);
+    }
+
+    if (clockType == SYSTEM_SOC_CLK_SEL.PLL_CLK)
+    {
+        auto selV = Volatile.load(cast(size_t*) SYSTEM_CPU_PER_CONF_REG);
+        //enum SYSTEM_CPUPERIOD_SEL_FIRST_BIT = 0; //0..1;
+        auto isCuperCell = (selV & 0x1) == 1;
+        enum SYSTEM_PLL_FREQ_SEL = 2;
+        bool isPllFreqSel = Bits.bitIsSet(selV, SYSTEM_PLL_FREQ_SEL);
+
+        if (isPllFreqSel)
+        {
+            enum PLL_CLK = 480;
+            clockFreq = isCuperCell ? PLL_CLK / 3 : PLL_CLK / 6;
+        }
+        else
+        {
+            enum PLL_CLK = 320;
+            clockFreq = isCuperCell ? PLL_CLK / 2 : PLL_CLK / 4;
+        }
+    }
+
+    if (clockType == SYSTEM_SOC_CLK_SEL.RC_FAST_CLK)
+    {
+        //CPU_CLK = RC_FAST_CLK/(SYSTEM_PRE_DIV_CNT + 1)
+        auto divVal = Volatile.load(calcSYSTEM_SYSCLK_CONF_REG) & 0x7F;
+        //TODO calibration, but TIMG_RTCCALICFG1_REG only for slow\fast\xtl32 rtc clock
+        clockFreq = RC_FAST_CLK / (divVal + 1);
+    }
+    return clockFreq;
+}
 
 uint readXTALFreq()
 {
@@ -103,6 +178,8 @@ void setClockSoc(SYSTEM_SOC_CLK_SEL mode)
         case RC_FAST_CLK:
             clockConf = Bits.bitSetMask(clockConf, 0x00000800); //2
             break;
+        case INVALID:
+            return;
     }
 
     Volatile.save(SYSTEM_SYSCLK_CONF_REG_ADDR, clockConf);

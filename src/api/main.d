@@ -27,6 +27,7 @@ import Trap = api.hal.hal_trap;
 import Spinlock = api.os.task.sync.spinlock;
 import Critical = api.os.task.critical;
 import Sysmon = api.os.mon.sysmon;
+import Sysclock = api.os.sys.sys_clock;
 
 import TaskManager = api.os.task.task_manager;
 
@@ -173,11 +174,13 @@ extern (C) void dstart()
 
     Syslog.info("End loading");
 
+    import api.arch.riscv.esp32c3.c3_clock;
+
     enum LocalPointVal = 0x10203040;
     int localPoint = LocalPointVal;
     while (true)
     {
-        delayTicks(10000000);
+        Sysclock.sysRoughMs(1000);
         Syslog.info("Test");
         ///HalCpu.halWait();
         assert(localPoint == LocalPointVal);
