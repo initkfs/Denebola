@@ -48,7 +48,7 @@ __gshared
 extern (C) __gshared bool isTimer = true;
 
 //TODO remove arch api
-import C3GPIO = api.arch.riscv.esp32c3.с3_gpio;
+import C3GPIO = api.arch.riscv.esp32c3.c3_gpio;
 
 version (unittest)
 {
@@ -146,7 +146,7 @@ extern (C) void dstart()
     {
         import Timer = api.hal.hal_timer;
 
-        Timer.halInitTimer();
+        //Timer.halInitTimer();
         Syslog.info("Init timer");
     }
 
@@ -170,18 +170,30 @@ extern (C) void dstart()
 
     SysClock.enableSysTimer;
     Interrupts.halInitPerIntrs();
-    Interrupts.halSetGlobalMIntrOff();
+    //Interrupts.halSetGlobalMIntrOff();
 
     Syslog.info("End loading");
 
     import api.arch.riscv.esp32c3.c3_clock;
+    import api.arch.riscv.esp32c3.c3_adc;
+    import api.arch.riscv.esp32c3.c3_gpio;
+
+    Interrupts.halSetGlobalMIntrOn();
+
+    import api.arch.riscv.esp32c3.c3_gpio;
+
+
+    //c3initAdc1;
+    char[64] buff = 0;
 
     enum LocalPointVal = 0x10203040;
     int localPoint = LocalPointVal;
     while (true)
     {
-        Sysclock.sysRoughMs(1000);
-        Syslog.info("Test");
+        Sysclock.sysRoughMs(2000);
+        //auto res = readAdc1;
+        //Syslog.info("End ADC1");
+        //Syslog.info(Str.atoa(res, buff));
         ///HalCpu.halWait();
         assert(localPoint == LocalPointVal);
     }

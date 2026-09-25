@@ -44,6 +44,9 @@ enum TIMG_RTCCALICFG1_REG = TIMG + 0x006C;
 
 enum RTC_CNTL_SLP_WAKEUP_CAUSE_REG = RTC + 0x00F8;
 
+enum RTC_CNTL_SENSOR_CTRL_REG = RTC + 0x011C;
+enum RTC_CNTL_ANA_CONF_REG = RTC + 0x0034;
+
 size_t* calcRTC() => cast(size_t*) RTC;
 
 uint getWakeupCause()

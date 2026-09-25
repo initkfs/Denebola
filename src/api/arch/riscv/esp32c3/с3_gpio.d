@@ -1,4 +1,4 @@
-module api.arch.riscv.esp32c3.с3_gpio;
+module api.arch.riscv.esp32c3.c3_gpio;
 
 /**
  * Authors: initkfs
@@ -63,7 +63,7 @@ enum PinOutMode
     down
 }
 
-size_t* calcImuxAddr(PinId pin) => cast(size_t*)(GPIO + IO_MUX_GPIOn_REG + 4 * pin);
+size_t* calcImuxAddr(PinId pin) => cast(size_t*)(IO_MUX + IO_MUX_GPIOn_REG + 4 * pin);
 
 bool route(SygnalId toSignalY, PinId fromPinX, bool isMatrix = true, bool isInverted = false, bool isFilter = false)
 {

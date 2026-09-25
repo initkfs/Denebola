@@ -46,7 +46,7 @@ static if (__isRiscvGen)
 }
 else static if (__isC3)
 {
-    import C3 = api.arch.riscv.esp32c3.с3_gpio;
+    import C3 = api.arch.riscv.esp32c3.c3_gpio;
 
     bool halLed1(bool val) => C3.c3Led1(val);
     void halLed1Enable()
