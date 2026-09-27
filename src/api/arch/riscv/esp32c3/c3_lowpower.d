@@ -48,6 +48,7 @@ enum RTC_CNTL_SENSOR_CTRL_REG = RTC + 0x011C;
 enum RTC_CNTL_ANA_CONF_REG = RTC + 0x0034;
 
 size_t* calcRTC() => cast(size_t*) RTC;
+size_t* calcRTC_CNTL_DIG_PWC_REG() => cast(size_t*) RTC_CNTL_DIG_PWC_REG;
 
 uint getWakeupCause()
 {

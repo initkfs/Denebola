@@ -76,7 +76,13 @@ void c3initAdc1()
     auto clockRstReg = C3clock.calcSYSTEM_PERIP_RST_EN0_REG;
     enum SYSTEM_APB_SARADC_RST = 28;
     clockV = Volatile.load(clockRstReg);
+    //Or set and clear?
+    clockV = Bits.bitSet(clockV, SYSTEM_APB_SARADC_RST);
+    Volatile.save(clockRstReg, clockV);
+    //TODO delay?
+    clockV = Volatile.load(clockRstReg);
     clockV = Bits.bitClear(clockV, SYSTEM_APB_SARADC_RST);
+    Volatile.save(clockRstReg, clockV);
 
     auto inreg = cast(size_t*) APB_SARADC_INT_ENA_REG;
     auto inv = Volatile.load(inreg);

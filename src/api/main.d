@@ -182,20 +182,65 @@ extern (C) void dstart()
 
     import api.arch.riscv.esp32c3.c3_gpio;
 
-
     //c3initAdc1;
     char[64] buff = 0;
 
+    import api.arch.riscv.esp32c3.c3_pwm;
+    import api.arch.riscv.esp32c3.c3_gpio;
+
+    // c3enablePinOut(LED1);
+    // c3enablePinOut(LED2);
+    // c3enablePinOut(LED3);
+
+    // pinModeOut(LED1);
+    // pinModeOut(LED2);
+    // pinModeOut(LED3);
+
+    // digitalWrite(LED1, false);
+    // digitalWrite(LED2, false);
+    // digitalWrite(LED3, false);
+
+    initPwm(LED1, PWMs.PWM0, Timers.Timer0);
+
+    //digitalWrite(12, true);
+
     enum LocalPointVal = 0x10203040;
     int localPoint = LocalPointVal;
+    bool isVal;
+
+    ubyte[3] pins = [LED1, LED2, LED3];
+
+    pwmBrightness(PWMs.PWM0, 0);
+
+    ubyte led;
+    int br = 0;
+    bool isInc = true;
     while (true)
     {
-        Sysclock.sysRoughMs(2000);
+        Sysclock.sysRoughMs(100);
+        br = isInc ? br + 50 : br - 50;
+        if (br > 1023)
+        {
+            isInc = false;
+        }
+        else if (br <= 0)
+        {
+            br = 0;
+            isInc = true;
+        }
+        pwmBrightness(PWMs.PWM0, br);
+        //digitalWrite(pins[led], true);
+        // led++;
+        // if (led >= pins.length)
+        // {
+        //     led = 0;
+        // }
+
         //auto res = readAdc1;
         //Syslog.info("End ADC1");
-        //Syslog.info(Str.atoa(res, buff));
+        //Syslog.info(Str.atoa(br, buff));
         ///HalCpu.halWait();
-        assert(localPoint == LocalPointVal);
+        //assert(localPoint == LocalPointVal);
     }
 }
 
