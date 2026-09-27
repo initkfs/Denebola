@@ -37,9 +37,9 @@ size_t* calcLEDC_CHn_DUTY_REG(PWMs n) => cast(size_t*)(PWM + 0x0008 + 20 * n); /
 size_t* calcLEDC_TIMERx_CONF_REG(Timers x) => cast(size_t*)(PWM + 0x00A0 + 8 * x);
 size_t* calcLEDC_TIMERx_VALUE_REG(Timers x) => cast(size_t*)(PWM + 0x00A4 + 8 * x);
 
-enum LED1 = 4; //green
-enum LED2 = 5; //red
-enum LED3 = 7; //blue
+enum LED1 = 2; //green
+enum LED2 = 3; //red
+enum LED3 = 10; //blue
 
 uint ledcVer() => Volatile.load(cast(size_t*) LEDC_DATE_REG);
 
@@ -190,6 +190,33 @@ bool initPwm(ubyte pin, PWMs chan, Timers timer)
 
     enum ledc_ls_sig_out0 = 45; //45
     C3Gpio.routeTo(ledc_ls_sig_out0, pin);
+
+    return true;
+
+}
+
+bool attachPwm(ubyte pin, PWMs chan, Timers timer)
+{
+    auto confReg = calcLEDC_CHn_CONF0_REG(chan);
+    auto confV = Volatile.load(confReg);
+    //enum LEDC_TIMER_SEL_CHn = 0; //0..1, 0: select Timer0; 1: select Timer1; 2: select Timer2; 3: select Timer3
+    confV &= ~0x3;
+    confV |= (cast(uint) timer & 0x3);
+
+    enum LEDC_SIG_OUT_EN_CHn = 2;
+    confV = Bits.bitSet(confV, LEDC_SIG_OUT_EN_CHn);
+
+    enum LEDC_PARA_UP_CHn = 4;
+    confV = Bits.bitSet(confV, LEDC_PARA_UP_CHn);
+
+    Volatile.save(confReg, confV);
+
+    import C3Gpio = api.arch.riscv.esp32c3.c3_gpio;
+
+    ubyte signal;
+
+    enum ledc_ls_sig_out0 = 45; //45
+    C3Gpio.routeTo(cast(C3Gpio.SygnalId) (ledc_ls_sig_out0 + chan), pin);
 
     return true;
 

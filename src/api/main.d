@@ -201,6 +201,8 @@ extern (C) void dstart()
     // digitalWrite(LED3, false);
 
     initPwm(LED1, PWMs.PWM0, Timers.Timer0);
+    attachPwm(LED2, PWMs.PWM1, Timers.Timer0);
+    attachPwm(LED3, PWMs.PWM2, Timers.Timer0);
 
     //digitalWrite(12, true);
 
@@ -210,25 +212,36 @@ extern (C) void dstart()
 
     ubyte[3] pins = [LED1, LED2, LED3];
 
-    pwmBrightness(PWMs.PWM0, 0);
+    import api.os.graph.colors.os_color;
 
     ubyte led;
     int br = 0;
     bool isInc = true;
+    ubyte hue;
     while (true)
     {
         Sysclock.sysRoughMs(100);
-        br = isInc ? br + 50 : br - 50;
-        if (br > 1023)
-        {
-            isInc = false;
+        // br = isInc ? br + 50 : br - 50;
+        // if (br > 1023)
+        // {
+        //     isInc = false;
+        // }
+        // else if (br <= 0)
+        // {
+        //     br = 0;
+        //     isInc = true;
+        // }
+        //pwmBrightness(PWMs.PWM0, br);
+
+        hue +=1;
+        if(hue > 255){
+            hue = 0;
         }
-        else if (br <= 0)
-        {
-            br = 0;
-            isInc = true;
-        }
-        pwmBrightness(PWMs.PWM0, br);
+        const rgb = hueToRGB10Bit(hue);
+        pwmBrightness(PWMs.PWM0, rgb.r);
+        pwmBrightness(PWMs.PWM1, rgb.g);
+        pwmBrightness(PWMs.PWM2, rgb.b);
+
         //digitalWrite(pins[led], true);
         // led++;
         // if (led >= pins.length)
