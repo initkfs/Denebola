@@ -50,18 +50,8 @@ void c3initAdc1DMA()
     dmae = Bits.bitSet(iv, DMA_INTERRUPT);
     Volatile.save(INTERRUPT_CORE0_CPU_INT_ENABLE_REG, iv);
 
-    //import C3Gpio = api.arch.riscv.esp32c3.c3_gpio;
-    //C3Gpio.route(28, 0);
-
     import C3clock = api.arch.riscv.esp32c3.c3_clock;
     import C3Power = api.arch.riscv.esp32c3.c3_lowpower;
-
-    // auto xreg = cast(size_t*) C3Power.RTC_CNTL_SENSOR_CTRL_REG;
-    // auto xpv = Volatile.load(xreg);
-    // enum RTC_CNTL_FORCE_XPD_SAR = 30; //31
-    // xpv = Bits.bitSet(xpv, RTC_CNTL_FORCE_XPD_SAR);
-    // xpv = Bits.bitSet(xpv, 31); //or set?
-    // Volatile.save(xreg, xpv);
 
     auto areg = cast(size_t*) C3Power.RTC_CNTL_ANA_CONF_REG;
     auto apv = Volatile.load(areg);
@@ -108,11 +98,14 @@ void c3initAdc1DMA()
     cregv = Bits.bitClear(cregv, 22);
     Volatile.save(creg, cregv);
 
-    // enum APB_SARADC_APB_TSENS_CTRL_REG  = cast(size_t*)(ADC + 0x0058);
-    // auto tval = Volatile.load(APB_SARADC_APB_TSENS_CTRL_REG);
-    // enum APB_SARADC_TSENS_PU = 20;
-    // tval = Bits.bitSet(tval, APB_SARADC_TSENS_PU);
-    // Volatile.save(APB_SARADC_APB_TSENS_CTRL_REG, tval);
+    enum APB_SARADC_DMA_CONF_REG = ADC + 0x0050;
+    auto dmar = cast(size_t*) APB_SARADC_DMA_CONF_REG;
+    auto dmal = Volatile.load(dmar);
+    enum APB_SARADC_APB_ADC_TRANS = 31;
+    dmal = Bits.bitSet(dmal, APB_SARADC_APB_ADC_TRANS);
+
+    //enum APB_SARADC_APB_ADC_RESET_FSM = 30;
+    Volatile.save(dmar, dmal);
 
     auto patReg = cast(size_t*) APB_SARADC_SAR_PATT_TAB1_REG;
     auto pattV = Volatile.load(patReg);
@@ -154,13 +147,17 @@ void c3initAdc1DMA()
     //v = Bits.bitSet(v, APB_SARADC_ONETIME_CHANNEL);
 
     enum APB_SARADC_ONETIME_START = 29;
-    sampleV = Bits.bitSet(sampleV, APB_SARADC_ONETIME_START);
+    sampleV = Bits.bitClear(sampleV, APB_SARADC_ONETIME_START);
 
     //APB_SARADC_ONETIME_ATTEN = 0; //0..22
     sampleV &= ~0x7FFFFF;
     sampleV |= 0x3; //atten
 
     Volatile.save(sampleReg, sampleV);
+
+    import Rmem = api.arch.riscv.rbase.rb_memory;
+
+    Rmem.comMemFenceRWRW;
 
     auto reg = cast(size_t*) APB_SARADC_CTRL2_REG;
     auto v = Volatile.load(reg);
@@ -172,10 +169,6 @@ void c3initAdc1DMA()
 
     //enum ledc_ls_sig_out0 = 45; //45
     //C3Gpio.route(45, 0);
-
-    //import Rmem = api.arch.riscv.rbase.rb_memory;
-
-    //Rmem.comMemFenceRWRW;
 }
 
 void adc1ClearIntr()
