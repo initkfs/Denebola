@@ -22,23 +22,23 @@ void c3initAdc1()
 {
     import C3Intr = api.arch.riscv.esp32c3.c3_interrupts;
 
-    enum ADC_INTERRUPT = 18;
-    enum INTERRUPT_CORE0_APB_ADC_INT_MAP_REG = C3Intr.INTMTRX_BASE + 0x00AC;
-    Volatile.save(cast(size_t*) INTERRUPT_CORE0_APB_ADC_INT_MAP_REG, ADC_INTERRUPT);
+    // enum ADC_INTERRUPT = 18;
+    // enum INTERRUPT_CORE0_APB_ADC_INT_MAP_REG = C3Intr.INTMTRX_BASE + 0x00AC;
+    // Volatile.save(cast(size_t*) INTERRUPT_CORE0_APB_ADC_INT_MAP_REG, ADC_INTERRUPT);
 
-    enum INTERRUPT_CORE0_CPU_INT_ENABLE_REG = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0104);
-    auto iv = Volatile.load(INTERRUPT_CORE0_CPU_INT_ENABLE_REG);
-    iv = Bits.bitSet(iv, ADC_INTERRUPT);
-    Volatile.save(INTERRUPT_CORE0_CPU_INT_ENABLE_REG, iv);
+    // enum INTERRUPT_CORE0_CPU_INT_ENABLE_REG = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0104);
+    // auto iv = Volatile.load(INTERRUPT_CORE0_CPU_INT_ENABLE_REG);
+    // iv = Bits.bitSet(iv, ADC_INTERRUPT);
+    // Volatile.save(INTERRUPT_CORE0_CPU_INT_ENABLE_REG, iv);
 
-    auto typeReg = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0108);
-    auto typeConf = Volatile.load(typeReg);
-    typeConf = Bits.bitClear(typeConf, ADC_INTERRUPT);
-    Volatile.save(typeReg, typeConf);
+    // auto typeReg = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0108);
+    // auto typeConf = Volatile.load(typeReg);
+    // typeConf = Bits.bitClear(typeConf, ADC_INTERRUPT);
+    // Volatile.save(typeReg, typeConf);
 
-    auto priReg = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0118 + 0x4 * ADC_INTERRUPT);
+    //auto priReg = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0118 + 0x4 * ADC_INTERRUPT);
     //TODO only 0..3 bits
-    Volatile.save(priReg, 1);
+    //Volatile.save(priReg, 1);
 
     //import C3Gpio = api.arch.riscv.esp32c3.c3_gpio;
     //C3Gpio.route(28, 0);
@@ -46,26 +46,26 @@ void c3initAdc1()
     import C3clock = api.arch.riscv.esp32c3.c3_clock;
     import C3Power = api.arch.riscv.esp32c3.c3_lowpower;
 
-    auto preg = cast(size_t*) C3Power.RTC_CNTL_SENSOR_CTRL_REG;
-    auto pv = Volatile.load(preg);
-    enum RTC_CNTL_FORCE_XPD_SAR = 30; //31
-    pv = Bits.bitSet(pv, RTC_CNTL_FORCE_XPD_SAR);
-    pv = Bits.bitClear(pv, 31); //or set?
-    Volatile.save(preg, pv);
+    // auto xreg = cast(size_t*) C3Power.RTC_CNTL_SENSOR_CTRL_REG;
+    // auto xpv = Volatile.load(xreg);
+    // enum RTC_CNTL_FORCE_XPD_SAR = 30; //31
+    // xpv = Bits.bitSet(xpv, RTC_CNTL_FORCE_XPD_SAR);
+    // xpv = Bits.bitSet(xpv, 31); //or set?
+    // Volatile.save(xreg, xpv);
 
-    preg = cast(size_t*) C3Power.RTC_CNTL_ANA_CONF_REG;
-    pv = Volatile.load(preg);
+    auto areg = cast(size_t*) C3Power.RTC_CNTL_ANA_CONF_REG;
+    auto apv = Volatile.load(areg);
     enum RTC_CNTL_SAR_I2C_PU = 22;
-    pv = Bits.bitSet(pv, RTC_CNTL_SAR_I2C_PU);
-    Volatile.save(preg, pv);
+    apv = Bits.bitSet(apv, RTC_CNTL_SAR_I2C_PU);
+    Volatile.save(areg, apv);
 
-    preg = cast(size_t*) C3Power.RTC_CNTL_DIG_PWC_REG;
-    enum RTC_CNTL_DG_PERI_FORCE_PU = 14;
-    enum RTC_CNTL_DG_WRAP_FORCE_PU = 20;
-    pv = Volatile.load(preg);
-    pv = Bits.bitSet(pv, RTC_CNTL_DG_PERI_FORCE_PU);
-    pv = Bits.bitSet(pv, RTC_CNTL_DG_WRAP_FORCE_PU);
-    Volatile.save(preg, pv);
+    // preg = cast(size_t*) C3Power.RTC_CNTL_DIG_PWC_REG;
+    // enum RTC_CNTL_DG_PERI_FORCE_PU = 14;
+    // enum RTC_CNTL_DG_WRAP_FORCE_PU = 20;
+    // pv = Volatile.load(preg);
+    // pv = Bits.bitSet(pv, RTC_CNTL_DG_PERI_FORCE_PU);
+    // pv = Bits.bitSet(pv, RTC_CNTL_DG_WRAP_FORCE_PU);
+    // Volatile.save(preg, pv);
 
     auto clockReg = C3clock.calcSYSTEM_PERIP_CLK_EN0_REG;
     enum SYSTEM_APB_SARADC_CLK_EN = 28;
@@ -75,14 +75,13 @@ void c3initAdc1()
 
     auto clockRstReg = C3clock.calcSYSTEM_PERIP_RST_EN0_REG;
     enum SYSTEM_APB_SARADC_RST = 28;
-    clockV = Volatile.load(clockRstReg);
+    auto rstV = Volatile.load(clockRstReg);
     //Or set and clear?
-    clockV = Bits.bitSet(clockV, SYSTEM_APB_SARADC_RST);
-    Volatile.save(clockRstReg, clockV);
-    //TODO delay?
-    clockV = Volatile.load(clockRstReg);
-    clockV = Bits.bitClear(clockV, SYSTEM_APB_SARADC_RST);
-    Volatile.save(clockRstReg, clockV);
+    rstV = Bits.bitSet(rstV, SYSTEM_APB_SARADC_RST);
+    Volatile.save(clockRstReg, rstV);
+    rstV = Volatile.load(clockRstReg);
+    rstV = Bits.bitClear(rstV, SYSTEM_APB_SARADC_RST);
+    Volatile.save(clockRstReg, rstV);
 
     auto inreg = cast(size_t*) APB_SARADC_INT_ENA_REG;
     auto inv = Volatile.load(inreg);
@@ -95,52 +94,66 @@ void c3initAdc1()
     enum APB_SARADC_CLK_EN = 20;
     cregv = Bits.bitSet(cregv, APB_SARADC_CLK_EN);
     enum APB_SARADC_CLK_SEL = 21; //22
-    cregv = Bits.bitClear(cregv, 22);
     cregv = Bits.bitClear(cregv, APB_SARADC_CLK_SEL);
+    cregv = Bits.bitClear(cregv, 22);
     Volatile.save(creg, cregv);
 
-    creg = cast(size_t*) APB_SARADC_CTRL_REG;
-    cregv = Volatile.load(creg);
-    enum APB_SARADC_SAR_CLK_GATED = 6;
-    cregv = Bits.bitSet(cregv, APB_SARADC_SAR_CLK_GATED);
-    enum APB_SARADC_START_FORCE = 0;
-    cregv = Bits.bitClear(cregv, APB_SARADC_START_FORCE); //fsm or software
-    //cregv = Bits.bitSet(cregv, 1);
+    // enum APB_SARADC_APB_TSENS_CTRL_REG  = cast(size_t*)(ADC + 0x0058);
+    // auto tval = Volatile.load(APB_SARADC_APB_TSENS_CTRL_REG);
+    // enum APB_SARADC_TSENS_PU = 20;
+    // tval = Bits.bitSet(tval, APB_SARADC_TSENS_PU);
+    // Volatile.save(APB_SARADC_APB_TSENS_CTRL_REG, tval);
 
-    //enum APB_SARADC_XPD_SAR_FORCE = 27; //28
-    //cregv = Bits.bitSet(cregv, APB_SARADC_XPD_SAR_FORCE);
-    //cregv = Bits.bitSet(cregv, 28);
+    //auto ctrlReg = cast(size_t*) APB_SARADC_CTRL_REG;
+    //auto ctrlVal = Volatile.load(ctrlReg);
+    //enum APB_SARADC_SAR_CLK_GATED = 6;
+    //ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_SAR_CLK_GATED);
+    //enum APB_SARADC_START_FORCE = 0;
+    //fsm or software
+    //ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_START_FORCE);
+    //enum APB_SARADC_START = 1;
+    //ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_START);
+    //Volatile.save(creg, cregv);
 
-    Volatile.save(creg, cregv);
+    // enum APB_SARADC_XPD_SAR_FORCE = 27; //28
+    // ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_XPD_SAR_FORCE);
+    // ctrlVal = Bits.bitSet(ctrlVal, 28);
 
-    auto reg = cast(size_t*) APB_SARADC_ONETIME_SAMPLE_REG;
-    auto v = Volatile.load(reg);
+    // Volatile.save(ctrlReg, ctrlVal);
+
+    auto sampleReg = cast(size_t*) APB_SARADC_ONETIME_SAMPLE_REG;
+    auto sampleV = Volatile.load(sampleReg);
     enum APB_SARADC1_ONETIME_SAMPLE = 31;
-    v = Bits.bitSet(v, APB_SARADC1_ONETIME_SAMPLE);
+    sampleV = Bits.bitSet(sampleV, APB_SARADC1_ONETIME_SAMPLE);
 
-    //enum APB_SARADC_ONETIME_CHANNEL = 25; //25..28
-    //v = Bits.bitsClear(v, 25, 26, 27, 28); //or mask, default 25 is 1
+    enum APB_SARADC_ONETIME_CHANNEL = 25; //25..28
+    sampleV = Bits.bitsClear(sampleV, 25, 26, 27, 28); //or mask, default 25 is 1
     //v = Bits.bitSet(v, APB_SARADC_ONETIME_CHANNEL);
 
     enum APB_SARADC_ONETIME_START = 29;
-    v = Bits.bitSet(v, APB_SARADC_ONETIME_START);
+    sampleV = Bits.bitSet(sampleV, APB_SARADC_ONETIME_START);
 
     //APB_SARADC_ONETIME_ATTEN = 0; //0..22
-    //v &= ~0x7FFFFF;
-    //v |= 0x3; //atten
+    sampleV &= ~0x7FFFFF;
+    sampleV |= 0x3; //atten
 
-    Volatile.save(reg, v);
+    Volatile.save(sampleReg, sampleV);
 
     //start FSM?
-    reg = cast(size_t*) APB_SARADC_CTRL2_REG;
-    v = Volatile.load(reg);
-    enum APB_SARADC_TIMER_EN = 24;
-    v = Bits.bitSet(v, APB_SARADC_TIMER_EN);
-    Volatile.save(reg, 0);
+    // auto reg = cast(size_t*) APB_SARADC_CTRL2_REG;
+    // auto v = Volatile.load(reg);
+    // enum APB_SARADC_TIMER_EN = 24;
+    // v = Bits.bitSet(v, APB_SARADC_TIMER_EN);
+    // Volatile.save(reg, v);
 
-    // import Rmem = api.arch.riscv.rbase.rb_memory;
+    //import C3Gpio = api.arch.riscv.esp32c3.c3_gpio;
 
-    // Rmem.comMemFenceRWRW;
+    //enum ledc_ls_sig_out0 = 45; //45
+    //C3Gpio.route(45, 0);
+
+    //import Rmem = api.arch.riscv.rbase.rb_memory;
+
+    //Rmem.comMemFenceRWRW;
 }
 
 void adc1ClearIntr()
@@ -231,3 +244,5 @@ short adcTemp(ushort adcRaw) pure nothrow @nogc
 
     return cast(short) temp;
 }
+
+
