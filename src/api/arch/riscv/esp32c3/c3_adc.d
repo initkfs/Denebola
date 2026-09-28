@@ -18,27 +18,37 @@ enum APB_SARADC_INT_CLR_REG = ADC + 0x004C;
 enum APB_SARADC_CTRL2_REG = ADC + 0x0004;
 enum APB_SARADC_CTRL_REG = ADC;
 
-void c3initAdc1()
+enum APB_SARADC_SAR_PATT_TAB1_REG = ADC + 0x0018;
+
+void c3initAdc1DMA()
 {
     import C3Intr = api.arch.riscv.esp32c3.c3_interrupts;
 
-    // enum ADC_INTERRUPT = 18;
-    // enum INTERRUPT_CORE0_APB_ADC_INT_MAP_REG = C3Intr.INTMTRX_BASE + 0x00AC;
-    // Volatile.save(cast(size_t*) INTERRUPT_CORE0_APB_ADC_INT_MAP_REG, ADC_INTERRUPT);
+    enum ADC_INTERRUPT = 18;
+    enum INTERRUPT_CORE0_APB_ADC_INT_MAP_REG = C3Intr.INTMTRX_BASE + 0x00AC;
+    Volatile.save(cast(size_t*) INTERRUPT_CORE0_APB_ADC_INT_MAP_REG, ADC_INTERRUPT);
 
-    // enum INTERRUPT_CORE0_CPU_INT_ENABLE_REG = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0104);
-    // auto iv = Volatile.load(INTERRUPT_CORE0_CPU_INT_ENABLE_REG);
-    // iv = Bits.bitSet(iv, ADC_INTERRUPT);
-    // Volatile.save(INTERRUPT_CORE0_CPU_INT_ENABLE_REG, iv);
+    enum INTERRUPT_CORE0_CPU_INT_ENABLE_REG = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0104);
+    auto iv = Volatile.load(INTERRUPT_CORE0_CPU_INT_ENABLE_REG);
+    iv = Bits.bitSet(iv, ADC_INTERRUPT);
+    Volatile.save(INTERRUPT_CORE0_CPU_INT_ENABLE_REG, iv);
 
-    // auto typeReg = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0108);
-    // auto typeConf = Volatile.load(typeReg);
-    // typeConf = Bits.bitClear(typeConf, ADC_INTERRUPT);
-    // Volatile.save(typeReg, typeConf);
+    auto typeReg = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0108);
+    auto typeConf = Volatile.load(typeReg);
+    typeConf = Bits.bitClear(typeConf, ADC_INTERRUPT);
+    Volatile.save(typeReg, typeConf);
 
-    //auto priReg = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0118 + 0x4 * ADC_INTERRUPT);
+    auto priReg = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0118 + 0x4 * ADC_INTERRUPT);
     //TODO only 0..3 bits
-    //Volatile.save(priReg, 1);
+    Volatile.save(priReg, 1);
+
+    auto INTERRUPT_CORE0_DMA_CH2_INT_MAP_REG = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x00B8);
+    enum DMA_INTERRUPT = 22;
+    Volatile.save(cast(size_t*) INTERRUPT_CORE0_DMA_CH2_INT_MAP_REG, DMA_INTERRUPT);
+
+    auto dmae = Volatile.load(INTERRUPT_CORE0_CPU_INT_ENABLE_REG);
+    dmae = Bits.bitSet(iv, DMA_INTERRUPT);
+    Volatile.save(INTERRUPT_CORE0_CPU_INT_ENABLE_REG, iv);
 
     //import C3Gpio = api.arch.riscv.esp32c3.c3_gpio;
     //C3Gpio.route(28, 0);
@@ -104,22 +114,35 @@ void c3initAdc1()
     // tval = Bits.bitSet(tval, APB_SARADC_TSENS_PU);
     // Volatile.save(APB_SARADC_APB_TSENS_CTRL_REG, tval);
 
-    //auto ctrlReg = cast(size_t*) APB_SARADC_CTRL_REG;
-    //auto ctrlVal = Volatile.load(ctrlReg);
+    auto patReg = cast(size_t*) APB_SARADC_SAR_PATT_TAB1_REG;
+    auto pattV = Volatile.load(patReg);
+    //atten 0..1
+    //ch_sel 2..4
+    //sar_sel 5, Working ADC. 0: SAR ARC1; 1: SAR ADC2.
+    pattV = Bits.bitsClear(pattV, 0, 1);
+    pattV = Bits.bitsClear(pattV, 2, 3, 4);
+    pattV = Bits.bitClear(pattV, 5);
+    Volatile.save(patReg, pattV);
+
+    auto ctrlReg = cast(size_t*) APB_SARADC_CTRL_REG;
+    auto ctrlVal = Volatile.load(ctrlReg);
+
+    enum APB_SARADC_SAR_PATT_LEN = 15; //15..17
+    ctrlVal = Bits.bitsClear(ctrlVal, 15, 16, 17);
+    ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_SAR_PATT_LEN);
+
     //enum APB_SARADC_SAR_CLK_GATED = 6;
-    //ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_SAR_CLK_GATED);
-    //enum APB_SARADC_START_FORCE = 0;
-    //fsm or software
-    //ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_START_FORCE);
-    //enum APB_SARADC_START = 1;
-    //ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_START);
-    //Volatile.save(creg, cregv);
+    //ctrlVal = Bits.bitClear(ctrlVal, APB_SARADC_SAR_CLK_GATED);
+    enum APB_SARADC_START_FORCE = 0;
+    ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_START_FORCE);
+    enum APB_SARADC_START = 1;
+    ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_START);
 
-    // enum APB_SARADC_XPD_SAR_FORCE = 27; //28
-    // ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_XPD_SAR_FORCE);
-    // ctrlVal = Bits.bitSet(ctrlVal, 28);
+    //enum APB_SARADC_XPD_SAR_FORCE = 27; //28
+    //ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_XPD_SAR_FORCE);
+    //ctrlVal = Bits.bitSet(ctrlVal, 28);
 
-    // Volatile.save(ctrlReg, ctrlVal);
+    Volatile.save(ctrlReg, ctrlVal);
 
     auto sampleReg = cast(size_t*) APB_SARADC_ONETIME_SAMPLE_REG;
     auto sampleV = Volatile.load(sampleReg);
@@ -139,12 +162,11 @@ void c3initAdc1()
 
     Volatile.save(sampleReg, sampleV);
 
-    //start FSM?
-    // auto reg = cast(size_t*) APB_SARADC_CTRL2_REG;
-    // auto v = Volatile.load(reg);
-    // enum APB_SARADC_TIMER_EN = 24;
-    // v = Bits.bitSet(v, APB_SARADC_TIMER_EN);
-    // Volatile.save(reg, v);
+    auto reg = cast(size_t*) APB_SARADC_CTRL2_REG;
+    auto v = Volatile.load(reg);
+    enum APB_SARADC_TIMER_EN = 24;
+    v = Bits.bitSet(v, APB_SARADC_TIMER_EN);
+    Volatile.save(reg, v);
 
     //import C3Gpio = api.arch.riscv.esp32c3.c3_gpio;
 
@@ -245,4 +267,144 @@ short adcTemp(ushort adcRaw) pure nothrow @nogc
     return cast(short) temp;
 }
 
+void c3initAdc1()
+{
+    import C3Intr = api.arch.riscv.esp32c3.c3_interrupts;
 
+    enum ADC_INTERRUPT = 18;
+    enum INTERRUPT_CORE0_APB_ADC_INT_MAP_REG = C3Intr.INTMTRX_BASE + 0x00AC;
+    Volatile.save(cast(size_t*) INTERRUPT_CORE0_APB_ADC_INT_MAP_REG, ADC_INTERRUPT);
+
+    enum INTERRUPT_CORE0_CPU_INT_ENABLE_REG = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0104);
+    auto iv = Volatile.load(INTERRUPT_CORE0_CPU_INT_ENABLE_REG);
+    iv = Bits.bitSet(iv, ADC_INTERRUPT);
+    Volatile.save(INTERRUPT_CORE0_CPU_INT_ENABLE_REG, iv);
+
+    auto typeReg = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0108);
+    auto typeConf = Volatile.load(typeReg);
+    typeConf = Bits.bitClear(typeConf, ADC_INTERRUPT);
+    Volatile.save(typeReg, typeConf);
+
+    auto priReg = cast(size_t*)(C3Intr.INTMTRX_BASE + 0x0118 + 0x4 * ADC_INTERRUPT);
+    //TODO only 0..3 bits
+    Volatile.save(priReg, 1);
+
+    //import C3Gpio = api.arch.riscv.esp32c3.c3_gpio;
+    //C3Gpio.route(28, 0);
+
+    import C3clock = api.arch.riscv.esp32c3.c3_clock;
+    import C3Power = api.arch.riscv.esp32c3.c3_lowpower;
+
+    // auto xreg = cast(size_t*) C3Power.RTC_CNTL_SENSOR_CTRL_REG;
+    // auto xpv = Volatile.load(xreg);
+    // enum RTC_CNTL_FORCE_XPD_SAR = 30; //31
+    // xpv = Bits.bitSet(xpv, RTC_CNTL_FORCE_XPD_SAR);
+    // xpv = Bits.bitSet(xpv, 31); //or set?
+    // Volatile.save(xreg, xpv);
+
+    auto areg = cast(size_t*) C3Power.RTC_CNTL_ANA_CONF_REG;
+    auto apv = Volatile.load(areg);
+    enum RTC_CNTL_SAR_I2C_PU = 22;
+    apv = Bits.bitSet(apv, RTC_CNTL_SAR_I2C_PU);
+    Volatile.save(areg, apv);
+
+    // preg = cast(size_t*) C3Power.RTC_CNTL_DIG_PWC_REG;
+    // enum RTC_CNTL_DG_PERI_FORCE_PU = 14;
+    // enum RTC_CNTL_DG_WRAP_FORCE_PU = 20;
+    // pv = Volatile.load(preg);
+    // pv = Bits.bitSet(pv, RTC_CNTL_DG_PERI_FORCE_PU);
+    // pv = Bits.bitSet(pv, RTC_CNTL_DG_WRAP_FORCE_PU);
+    // Volatile.save(preg, pv);
+
+    auto clockReg = C3clock.calcSYSTEM_PERIP_CLK_EN0_REG;
+    enum SYSTEM_APB_SARADC_CLK_EN = 28;
+    auto clockV = Volatile.load(clockReg);
+    clockV = Bits.bitSet(clockV, SYSTEM_APB_SARADC_CLK_EN);
+    Volatile.save(clockReg, clockV);
+
+    auto clockRstReg = C3clock.calcSYSTEM_PERIP_RST_EN0_REG;
+    enum SYSTEM_APB_SARADC_RST = 28;
+    auto rstV = Volatile.load(clockRstReg);
+    //Or set and clear?
+    rstV = Bits.bitSet(rstV, SYSTEM_APB_SARADC_RST);
+    Volatile.save(clockRstReg, rstV);
+    rstV = Volatile.load(clockRstReg);
+    rstV = Bits.bitClear(rstV, SYSTEM_APB_SARADC_RST);
+    Volatile.save(clockRstReg, rstV);
+
+    auto inreg = cast(size_t*) APB_SARADC_INT_ENA_REG;
+    auto inv = Volatile.load(inreg);
+    enum APB_SARADC_ADC1_DONE_INT_ENA = 31;
+    inv = Bits.bitSet(inv, APB_SARADC_ADC1_DONE_INT_ENA);
+    Volatile.save(inreg, inv);
+
+    auto creg = cast(size_t*) APB_SARADC_APB_ADC_CLKM_CONF_REG;
+    auto cregv = Volatile.load(creg);
+    enum APB_SARADC_CLK_EN = 20;
+    cregv = Bits.bitSet(cregv, APB_SARADC_CLK_EN);
+    enum APB_SARADC_CLK_SEL = 21; //22
+    cregv = Bits.bitClear(cregv, APB_SARADC_CLK_SEL);
+    cregv = Bits.bitClear(cregv, 22);
+    Volatile.save(creg, cregv);
+
+    // enum APB_SARADC_APB_TSENS_CTRL_REG  = cast(size_t*)(ADC + 0x0058);
+    // auto tval = Volatile.load(APB_SARADC_APB_TSENS_CTRL_REG);
+    // enum APB_SARADC_TSENS_PU = 20;
+    // tval = Bits.bitSet(tval, APB_SARADC_TSENS_PU);
+    // Volatile.save(APB_SARADC_APB_TSENS_CTRL_REG, tval);
+
+    auto ctrlReg = cast(size_t*) APB_SARADC_CTRL_REG;
+    auto ctrlVal = Volatile.load(ctrlReg);
+
+    enum APB_SARADC_SAR_PATT_LEN = 15; //15..17
+    ctrlVal = Bits.bitsClear(ctrlVal, 15, 16, 17);
+    ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_SAR_PATT_LEN);
+
+    enum APB_SARADC_SAR_CLK_GATED = 6;
+    ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_SAR_CLK_GATED);
+    enum APB_SARADC_START_FORCE = 0;
+    ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_START_FORCE);
+    enum APB_SARADC_START = 1;
+    ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_START);
+    Volatile.save(creg, cregv);
+
+    // enum APB_SARADC_XPD_SAR_FORCE = 27; //28
+    // ctrlVal = Bits.bitSet(ctrlVal, APB_SARADC_XPD_SAR_FORCE);
+    // ctrlVal = Bits.bitSet(ctrlVal, 28);
+
+    // Volatile.save(ctrlReg, ctrlVal);
+
+    auto sampleReg = cast(size_t*) APB_SARADC_ONETIME_SAMPLE_REG;
+    auto sampleV = Volatile.load(sampleReg);
+    enum APB_SARADC1_ONETIME_SAMPLE = 31;
+    sampleV = Bits.bitSet(sampleV, APB_SARADC1_ONETIME_SAMPLE);
+
+    enum APB_SARADC_ONETIME_CHANNEL = 25; //25..28
+    sampleV = Bits.bitsClear(sampleV, 25, 26, 27, 28); //or mask, default 25 is 1
+    //v = Bits.bitSet(v, APB_SARADC_ONETIME_CHANNEL);
+
+    enum APB_SARADC_ONETIME_START = 29;
+    sampleV = Bits.bitSet(sampleV, APB_SARADC_ONETIME_START);
+
+    //APB_SARADC_ONETIME_ATTEN = 0; //0..22
+    sampleV &= ~0x7FFFFF;
+    sampleV |= 0x3; //atten
+
+    Volatile.save(sampleReg, sampleV);
+
+    //start FSM?
+    auto reg = cast(size_t*) APB_SARADC_CTRL2_REG;
+    auto v = Volatile.load(reg);
+    enum APB_SARADC_TIMER_EN = 24;
+    v = Bits.bitSet(v, APB_SARADC_TIMER_EN);
+    Volatile.save(reg, v);
+
+    //import C3Gpio = api.arch.riscv.esp32c3.c3_gpio;
+
+    //enum ledc_ls_sig_out0 = 45; //45
+    //C3Gpio.route(45, 0);
+
+    //import Rmem = api.arch.riscv.rbase.rb_memory;
+
+    //Rmem.comMemFenceRWRW;
+}
