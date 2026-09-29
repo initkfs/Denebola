@@ -66,6 +66,7 @@ enum PinOutMode
     down
 }
 
+//IO_MUX_GPIOn_REG
 size_t* calcImuxAddr(PinId pin) => cast(size_t*)(IO_MUX + IO_MUX_GPIOn_REG + 4 * pin);
 
 bool route(SygnalId toSignalY, PinId fromPinX, bool isMatrix = true, bool isInverted = false, bool isFilter = false)
@@ -234,6 +235,24 @@ void pinModeIn(PinId pin, PinInMode pull = PinInMode.z)
             ioMuxVal = Bit.bitSet(ioMuxVal, IO_MUX_GPIOn_FUN_WPD_BIT); // Pull-down
             break;
     }
+
+    Volatile.save(ioMuxReg, ioMuxVal);
+}
+
+void pinModeInAnalog(PinId pin)
+{
+    if (pin > 21)
+        return;
+
+    //esp-idf 0x00001802
+    size_t* ioMuxReg = calcImuxAddr(pin);
+    size_t ioMuxVal = Volatile.load(ioMuxReg);
+    ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_IE_BIT);;
+    ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPD_BIT); // reset Pull-down
+    ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPU_BIT); // reset Pull-up
+
+    enum IO_MUX_GPIOn_MCU_SEL = 12; //12..14
+    ioMuxVal = Bit.bitSet(ioMuxVal, IO_MUX_GPIOn_MCU_SEL);
 
     Volatile.save(ioMuxReg, ioMuxVal);
 }
