@@ -50,6 +50,17 @@ enum RTC_CNTL_ANA_CONF_REG = RTC + 0x0034;
 size_t* calcRTC() => cast(size_t*) RTC;
 size_t* calcRTC_CNTL_DIG_PWC_REG() => cast(size_t*) RTC_CNTL_DIG_PWC_REG;
 
+void initPower(){
+    auto reg = cast(size_t*) RTC_CNTL_REG;
+    auto v= Volatile.load(reg);
+    enum RTC_CNTL_SCK_DCAP = 14; //14.21
+    v = Bits.bitClearMask(v, 0xFF << 14);
+    v |= (0xFF << 14);
+    enum RTC_CNTL_REGULATOR_FORCE_PU = 31;
+    v = Bits.bitClear(v, RTC_CNTL_REGULATOR_FORCE_PU);
+    Volatile.save(reg, v);
+}
+
 uint getWakeupCause()
 {
     auto reg = cast(size_t*) RTC_CNTL_SLP_WAKEUP_CAUSE_REG;

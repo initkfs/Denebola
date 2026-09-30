@@ -14,8 +14,8 @@ enum SYSTEM_CPU_PER_CONF_REG = SYSTEM_BASE + 0x0008;
 enum SYSTEM_PLL_FREQ_SEL_BIT = 2;
 enum SYSTEM_CPUPERIOD_SEL = 0; //0..1
 
-enum RTC_CNTL_RESET_STATE_REG = SYSTEM_BASE + 0x0038;
-enum RTC_CNTL_RESET_CAUSE_PROCPU_BIT = 0; //0..5
+//enum RTC_CNTL_RESET_STATE_REG = RTC + 0x0038;
+//enum RTC_CNTL_RESET_CAUSE_PROCPU_BIT = 0; //0..5
 
 enum SYSTEM_PERIP_CLK_EN0_REG = SYSTEM_BASE + 0x0010;
 enum SYSTEM_PERIP_CLK_EN1_REG = SYSTEM_BASE + 0x0014;
@@ -76,6 +76,22 @@ SYSTEM_SOC_CLK_SEL getClockType()
             return SYSTEM_SOC_CLK_SEL.INVALID;
     }
     return SYSTEM_SOC_CLK_SEL.INVALID;
+}
+
+void initClock(){
+    auto confReg = cast(size_t*) SYSTEM_CPU_PER_CONF_REG;
+    enum SYSTEM_PLL_FREQ_SEL = 2;
+    auto v = Volatile.load(confReg);
+    v = Bits.bitSet(v, SYSTEM_PLL_FREQ_SEL);
+
+    enum SYSTEM_CPUPERIOD_SEL = 0; //1
+    v = Bits.bitSet(v, SYSTEM_CPUPERIOD_SEL);
+    v = Bits.bitClear(v, SYSTEM_CPUPERIOD_SEL + 1);
+
+    enum CPU_WAIT_MODE_FORCE_ON = 3;
+    v = Bits.bitClear(v, CPU_WAIT_MODE_FORCE_ON);
+
+    Volatile.save(confReg, v);
 }
 
 uint c3clockCpuFreq()
