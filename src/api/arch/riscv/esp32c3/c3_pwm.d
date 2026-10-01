@@ -37,10 +37,6 @@ size_t* calcLEDC_CHn_DUTY_REG(PWMs n) => cast(size_t*)(PWM + 0x0008 + 20 * n); /
 size_t* calcLEDC_TIMERx_CONF_REG(Timers x) => cast(size_t*)(PWM + 0x00A0 + 8 * x);
 size_t* calcLEDC_TIMERx_VALUE_REG(Timers x) => cast(size_t*)(PWM + 0x00A4 + 8 * x);
 
-enum LED1 = 2; //green
-enum LED2 = 3; //red
-enum LED3 = 10; //blue
-
 uint ledcVer() => Volatile.load(cast(size_t*) LEDC_DATE_REG);
 
 void clearTimer0Intr()
