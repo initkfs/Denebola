@@ -1,7 +1,7 @@
 module api.arch.riscv.esp32c3.c3_pwm;
 
 import Bits = api.hal.hal_bits;
-import Volatile = api.arch.riscv.rbase.rb_volatile;
+import Volatile = api.arch.riscv.rcom.rcom_volatile;
 
 /**
  * Authors: initkfs

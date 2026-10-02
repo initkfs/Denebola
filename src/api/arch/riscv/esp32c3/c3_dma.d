@@ -1,7 +1,7 @@
 module api.arch.riscv.esp32c3.c3_dma;
 
 import Bits = api.hal.hal_bits;
-import Volatile = api.arch.riscv.rbase.rb_volatile;
+import Volatile = api.arch.riscv.rcom.rcom_volatile;
 
 /**
  * Authors: initkfs
@@ -115,9 +115,9 @@ void initGDMARxAdc(ubyte n)
     perinV |= (RXChan & 0x3F);
     Volatile.save(perinReg, perinV);
 
-    import api.arch.riscv.rbase.rb_memory;
+    import api.arch.riscv.rcom.rcom_memory;
 
-    comMemFenceRWRW;
+    rcomMemFenceRWRW;
 
     auto startReg = calcGDMA_IN_LINK_CHn_REG(n);
     auto startV = Volatile.load(startReg);

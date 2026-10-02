@@ -3,7 +3,7 @@ module api.arch.riscv.esp32c3.c3_uart;
 /**
  * Authors: initkfs
  */
-import Volatile = api.arch.riscv.rbase.rb_volatile;
+import Volatile = api.arch.riscv.rcom.rcom_volatile;
 import Bits = api.hal.hal_bits;
 
 alias C3_UART0 = UART0;

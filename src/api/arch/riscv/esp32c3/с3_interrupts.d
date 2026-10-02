@@ -3,8 +3,8 @@
  */
 module api.arch.riscv.esp32c3.c3_interrupts;
 
-import ComIntr = api.arch.riscv.rbase.rb_interrupts;
-import api.arch.riscv.rbase.rb_interrupts_constants;
+import ComIntr = api.arch.riscv.rcom.rcom_interrupts;
+import api.arch.riscv.rcom.rcom_interrupts_constants;
 import Bits = api.hal.hal_bits;
 import Volatile = api.hal.hal_volatile;
 import ldc.llvmasm;
@@ -83,8 +83,8 @@ extern (C) void c3InitPerIntrs() @trusted
     //TODO only 0..3 bits
     Volatile.save(priReg, 1);
 
-    import Mem = api.arch.riscv.rbase.rb_memory;
-    Mem.comMemFenceWRW;
+    import Mem = api.arch.riscv.rcom.rcom_memory;
+    Mem.rcomMemFenceWRW;
 }
 
 void c3TriggerIntrCPU0(){
@@ -110,7 +110,7 @@ void routePeripheralInterrupt(PeripheralSource source, ubyte cpuInterruptLine) @
 //mSetInterruptVector(cast(void*)&trap_vector);
 extern (C) void c3SetIntrsOn() @trusted
 {
-    ComIntr.comSetGlobalMIntrOn;
+    ComIntr.rcomSetGlobalMIntrOn;
     // routePeripheralInterrupt(PeripheralSource.SYSTIMER_TARGET0, 16);
     // size_t currentMie = ComIntr.comGetLocalMIntrs;
     // ComIntr.comSetLocalMIntrs(currentMie | (1 << 16));

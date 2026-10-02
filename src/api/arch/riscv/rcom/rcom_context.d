@@ -1,4 +1,4 @@
-module api.arch.riscv.rbase.rb_context;
+module api.arch.riscv.rcom.rcom_context;
 /**
  * Authors: initkfs
  * TODO fence rw, rw before mret
@@ -9,7 +9,7 @@ import ldc.attributes;
 
 version (Riscv32)
 {
-    extern (C) void comSaveContext(size_t* ctx) @optStrategy("none")
+    extern (C) void rcomSaveContext(size_t* ctx) @optStrategy("none")
     {
         __asm("
     sw ra, 0($0)      # 0
@@ -33,7 +33,7 @@ version (Riscv32)
     }
 
     //freeze with @section(".text.init")
-    extern (C) void comLoadContext(size_t* ctx) @naked @optStrategy("none")
+    extern (C) void rcomLoadContext(size_t* ctx) @naked @optStrategy("none")
     {
         __asm("
     lw ra, 0(a0)      # 0
@@ -57,7 +57,7 @@ version (Riscv32)
     ", "");
     }
 
-    extern(C) align(16) void __comSwitchInterruptContext() @naked @optStrategy("none") @section(".text.init")
+    extern(C) align(16) void __rcomSwitchInterruptContext() @naked @optStrategy("none") @section(".text.init")
     {
         __asm("
     addi sp, sp, -16
@@ -190,7 +190,7 @@ com_trap_vector_ret:
 }
 else version (Riscv64)
 {
-    extern (C) void comSaveContext(size_t* ctx) @optStrategy("none")
+    extern (C) void rcomSaveContext(size_t* ctx) @optStrategy("none")
     {
         __asm("
     sd ra, 0($0)      # 0
@@ -213,7 +213,7 @@ else version (Riscv64)
     ", "{t0},~{t0}", ctx);
     }
 
-    extern (C) void comLoadContext(size_t* ctx) @naked @optStrategy("none")
+    extern (C) void rcomLoadContext(size_t* ctx) @naked @optStrategy("none")
     {
         __asm("
     ld ra, 0(a0)      # 0
@@ -237,7 +237,7 @@ else version (Riscv64)
     ", "");
     }
 
-    align(16) void __comSwitchInterruptContext() @naked @optStrategy("none") @section(".text.init")
+    align(16) void __rcomSwitchInterruptContext() @naked @optStrategy("none") @section(".text.init")
     {
         __asm("
     addi sp, sp, -16

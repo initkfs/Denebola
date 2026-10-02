@@ -1,4 +1,4 @@
-module api.arch.riscv.rbase.rb_volatile;
+module api.arch.riscv.rcom.rcom_volatile;
 /**
  * Authors: initkfs
  */

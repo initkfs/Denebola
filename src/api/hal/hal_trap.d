@@ -17,12 +17,12 @@ __gshared extern (C)
 {
     static if (__isRiscvGen)
     {
-        import ComTrap = api.arch.riscv.rbase.rb_trap;
+        import ComTrap = api.arch.riscv.rcom.rcom_trap;
 
-        //void function() halTrapInit = &ComTrap.comTrapInit;
+        //void function() halTrapInit = &ComTrap.rcomTrapInit;
         void halTrapInit()
         {
-            ComTrap.comTrapInit;
+            ComTrap.rcomTrapInit;
         }
     }
     else static if (__isC3)
@@ -87,7 +87,7 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
 
                 static if (__isRiscvGen)
                 {
-                    import ComTimer = api.arch.riscv.rbase.rb_timer;
+                    import ComTimer = api.arch.riscv.rcom.rcom_timer;
 
                     ComTimer.timerHandlerContinue(epc, cause);
                 }

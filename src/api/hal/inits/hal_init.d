@@ -16,7 +16,7 @@ void initialize(halModules)()
     }
 }
 
-mixin template InitHalFuncs(alias comModule, string comPrefix = "com", string halPrefix = "hal")
+mixin template InitHalFuncs(alias rcomModule, string rcomPrefix = "com", string halPrefix = "hal")
 {
     extern (C) void initialize()
     {
@@ -29,7 +29,7 @@ mixin template InitHalFuncs(alias comModule, string comPrefix = "com", string ha
                 alias currHalFunc = __traits(getMember, currMod, currMember);
                 static if (hasUDA!(currHalFunc, halfunc))
                 {
-                    currHalFunc = &__traits(getMember, comModule, comPrefix ~ currMember[halPrefix
+                    currHalFunc = &__traits(getMember, rcomModule, rcomPrefix ~ currMember[halPrefix
                             .length .. $]);
 
                     mixin("assert(", currMember, ",", "\"HAL function pointer '", currMember, "' must not be null in ", __traits(

@@ -1,4 +1,4 @@
-module api.arch.riscv.rbase.rb_bits;
+module api.arch.riscv.rcom.rcom_bits;
 
 /**
  * Authors: initkfs

@@ -1,4 +1,4 @@
-module api.arch.riscv.rbase.rb_atomic;
+module api.arch.riscv.rcom.rcom_atomic;
 
 /**
  * Authors: initkfs
@@ -53,7 +53,7 @@ cas_lrsc_fail:
     ret
  */
 
-    bool comCas(size_t* addr, int expectedInAddr, int newValueIfAddrEqvExpected)
+    bool rcomCas(size_t* addr, int expectedInAddr, int newValueIfAddrEqvExpected)
     {
         return __asm!bool("
     cas_lrsc:
@@ -82,7 +82,7 @@ cas_lrsc_exit:
 else version (Riscv64)
 {
 
-    bool comCas(scope size_t* addr, int expectedInAddr, int newValueIfAddrEqvExpected)
+    bool rcomCas(scope size_t* addr, int expectedInAddr, int newValueIfAddrEqvExpected)
     {
         return __asm!bool("
     cas_lrsc:
@@ -125,7 +125,7 @@ else
 
 version (Riscv32)
 {
-    bool comSwapAcquire(size_t* lockPtr)
+    bool rcomSwapAcquire(size_t* lockPtr)
     {
         return cast(bool) __asm!size_t("
     swap_acquire:
@@ -140,7 +140,7 @@ version (Riscv32)
 }
 else version (Riscv64)
 {
-    bool comSwapAcquire(size_t* lockPtr)
+    bool rcomSwapAcquire(size_t* lockPtr)
     {
         return cast(bool) __asm!size_t("
     swap_acquire:
@@ -163,7 +163,7 @@ swap_release:
  */
 version (Riscv32)
 {
-    bool comSwapRelease(size_t* lockPtr)
+    bool rcomSwapRelease(size_t* lockPtr)
     {
         return cast(bool) __asm!size_t("
        amoswap.w.rl x0, x0, 0($1)
@@ -173,7 +173,7 @@ version (Riscv32)
 }
 else version (Riscv64)
 {
-    bool comSwapRelease(size_t* lockPtr)
+    bool rcomSwapRelease(size_t* lockPtr)
     {
         return cast(bool) __asm!size_t("
        amoswap.d.rl x0, x0, 0($1)

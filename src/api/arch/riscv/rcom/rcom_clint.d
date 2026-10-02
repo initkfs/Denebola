@@ -1,4 +1,4 @@
-module api.arch.riscv.rbase.rb_clint;
+module api.arch.riscv.rcom.rcom_clint;
 
 /**
  * Authors: initkfs

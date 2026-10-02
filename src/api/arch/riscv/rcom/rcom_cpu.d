@@ -1,4 +1,4 @@
-module api.arch.riscv.rbase.rb_cpu;
+module api.arch.riscv.rcom.rcom_cpu;
 
 /**
  * Authors: initkfs
@@ -9,26 +9,26 @@ import ldc.llvmasm;
 enum size_t numCores = 2;
 enum size_t mTimerHz = 10_000_000;
 
-size_t comMhartId() @trusted => __asm!size_t("csrr $0, mhartid", "=r");
+size_t rcomMhartId() @trusted => __asm!size_t("csrr $0, mhartid", "=r");
 
 size_t m_get_misa() @trusted => __asm!size_t("csrr $0, misa", "=r");
 size_t m_get_mvendorid() @trusted => __asm!size_t("csrr $0, mvendorid", "=r");
 size_t m_get_marchid() @trusted => __asm!size_t("csrr $0, marchid", "=r");
 size_t m_get_mimpid() @trusted => __asm!size_t("csrr $0, mimpid", "=r");
 
-void comHalt() @trusted
+void rcomHalt() @trusted
 {
     while (true)
     {
     }
 }
 
-void comWait() @trusted
+void rcomWait() @trusted
 {
     __asm("wfi", "");
 }
 
-void comDelayTicks(uint ticks) @trusted
+void rcomDelayTicks(uint ticks) @trusted
 {
     foreach (_; 0 .. ticks)
     {
@@ -36,7 +36,7 @@ void comDelayTicks(uint ticks) @trusted
     }
 }
 
-ArchCaps comLoadCaps() @trusted
+ArchCaps rcomLoadCaps() @trusted
 {
     size_t misa = m_get_misa();
 
@@ -91,7 +91,7 @@ ArchCaps comLoadCaps() @trusted
     return caps;
 }
 
-string comVendorId() @trusted
+string rcomVendorId() @trusted
 {
     auto id = m_get_mvendorid();
     if (id == 0)

@@ -12,9 +12,9 @@ extern (C) void c3TrapInit()  @section(".text.init")
 _vec_table:
     .option push
     .option norvc
-    j __comSwitchInterruptContext
+    j __rcomSwitchInterruptContext
     .rept 31
-    j __comSwitchInterruptContext  
+    j __rcomSwitchInterruptContext  
     .endr
     .option pop
 2:

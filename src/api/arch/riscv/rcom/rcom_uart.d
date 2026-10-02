@@ -1,4 +1,4 @@
-module api.arch.riscv.rbase.rb_uart;
+module api.arch.riscv.rcom.rcom_uart;
 
 /**
  * Authors: initkfs
@@ -6,7 +6,7 @@ module api.arch.riscv.rbase.rb_uart;
 
 enum COM_UART0 = 0x10000000;
 
-void comInitUart0()
+void rcomInitUart0()
 {
 
 }

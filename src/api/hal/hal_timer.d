@@ -9,10 +9,10 @@ __gshared
 {
     static if (__isRiscvGen)
     {
-        import Com = api.arch.riscv.rbase.rb_timer;
+        import Com = api.arch.riscv.rcom.rcom_timer;
 
-        void function() halInitTimer = &Com.comInitTimer;
-        void function() halDisableWdt = &Com.comDisableWdt;
+        void function() halInitTimer = &Com.rcomInitTimer;
+        void function() halDisableWdt = &Com.rcomDisableWdt;
     }
     else static if (__isC3)
     {

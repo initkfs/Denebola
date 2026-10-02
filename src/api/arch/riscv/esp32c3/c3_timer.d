@@ -3,7 +3,7 @@ module api.arch.riscv.esp32c3.c3_timer;
 /**
  * Authors: initkfs
  */
-import Volatile = api.arch.riscv.rbase.rb_volatile;
+import Volatile = api.arch.riscv.rcom.rcom_volatile;
 import Bits = api.hal.hal_bits;
 
 enum SYSTIMER = 0x60023000;
@@ -67,7 +67,7 @@ size_t timerHandlerContinue(size_t epc, size_t cause)
 
 void c3InitTimer()
 {
-    //import ComIntr = api.arch.riscv.rbase.rb_interrupts;
+    //import ComIntr = api.arch.riscv.rcom.rcom_interrupts;
 
     //ComIntr.comSetTimerMIntrOff;
 
@@ -121,7 +121,7 @@ void c3InitTimer()
     // confVal = Bits.bitSet(confVal, SYSTIMER_CLK_EN);
     Volatile.save(reg, confVal);
 
-    //import Mem = api.arch.riscv.rbase.rb_memory;
+    //import Mem = api.arch.riscv.rcom.rcom_memory;
 
     //Mem.comMemFenceRWRW;
 }

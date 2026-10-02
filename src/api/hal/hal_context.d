@@ -10,15 +10,15 @@ import api.arch.vers;
 {
     static if (__isRiscv)
     {
-        import ComContext = api.arch.riscv.rbase.rb_context;
+        import ComContext = api.arch.riscv.rcom.rcom_context;
 
         extern (C)
         {
-            void function(size_t* ctx) halSaveContext = &ComContext.comSaveContext;
-            void function(size_t* ctx) halLoadContext = &ComContext.comLoadContext;
+            void function(size_t* ctx) halSaveContext = &ComContext.rcomSaveContext;
+            void function(size_t* ctx) halLoadContext = &ComContext.rcomLoadContext;
         }
 
-        extern(C) void function() halSwitchInterruptContext = &ComContext.__comSwitchInterruptContext;
+        extern(C) void function() halSwitchInterruptContext = &ComContext.__rcomSwitchInterruptContext;
     }
     else
     {

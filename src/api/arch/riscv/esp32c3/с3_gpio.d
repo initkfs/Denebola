@@ -3,7 +3,7 @@ module api.arch.riscv.esp32c3.c3_gpio;
 /**
  * Authors: initkfs
  */
-import Volatile = api.arch.riscv.rbase.rb_volatile;
+import Volatile = api.arch.riscv.rcom.rcom_volatile;
 import Bit = api.hal.hal_bits;
 
 alias PinId = ubyte;

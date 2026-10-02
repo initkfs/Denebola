@@ -1,7 +1,7 @@
 /**
  * Authors: initkfs
  */
-module api.arch.riscv.rbase.rb_interrupts_constants;
+module api.arch.riscv.rcom.rcom_interrupts_constants;
 
 extern(C):
 

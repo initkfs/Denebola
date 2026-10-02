@@ -1,12 +1,12 @@
-module api.arch.riscv.rbase.rb_timer;
+module api.arch.riscv.rcom.rcom_timer;
 /**
  * Authors: initkfs
  */
-import api.arch.riscv.rbase.rb_clint;
+import api.arch.riscv.rcom.rcom_clint;
 
-import Harts = api.arch.riscv.rbase.rb_cpu;
-import Interrupts = api.arch.riscv.rbase.rb_interrupts;
-import Volatile = api.arch.riscv.rbase.rb_volatile;
+import Harts = api.arch.riscv.rcom.rcom_cpu;
+import Interrupts = api.arch.riscv.rcom.rcom_interrupts;
+import Volatile = api.arch.riscv.rcom.rcom_volatile;
 
 ulong mTimeRegCmpAddr(size_t hartid) @trusted
 {
@@ -42,9 +42,9 @@ struct TimerScratch
 
 size_t ticksFromSec(size_t sec, size_t freqHz) => sec * freqHz;
 
-void comInitTimer()
+void rcomInitTimer()
 {
-    size_t id = Harts.comMhartId;
+    size_t id = Harts.rcomMhartId;
 
     interval = ticksFromSec(startIntervalSec, Harts.mTimerHz);
     assert(interval > 0);
@@ -57,7 +57,7 @@ void comInitTimer()
     mScratch.interval = interval;
     //Interrupts.mScratch(cast(size_t) mScratch.saveRegisters.ptr);
 
-    Interrupts.comSetTimerMIntrOn;
+    Interrupts.rcomSetTimerMIntrOn;
 
     // uint64_t read_mtime()
     // {
@@ -72,26 +72,26 @@ void comInitTimer()
     // }
 }
 
-void comDisableWdt(){
+void rcomDisableWdt(){
     
 }
 
 size_t timerHandlerContinue(size_t epc, size_t cause)
 {
     //TODO or MTIE?
-    auto id = Harts.comMhartId;
+    auto id = Harts.rcomMhartId;
     writeIntevalToTimer(id);
     //Syslog.trace("Call timer handler");
     return epc;
 }
 
-private void writeIntevalToTimer(size_t comHartId)
+private void writeIntevalToTimer(size_t rcomHartId)
 {
     import Volatile = api.hal.hal_volatile;
 
     //*mtimeCmpPtr = currTimeValue + interval;
 
-    ulong* mtimeCmpPtr = cast(ulong*) mTimeRegCmpAddr(comHartId);
+    ulong* mtimeCmpPtr = cast(ulong*) mTimeRegCmpAddr(rcomHartId);
 
     ulong currTimeValue = Volatile.load(cast(ulong*) mTime());
     const timeValue = currTimeValue + interval;
@@ -102,11 +102,11 @@ private void writeIntevalToTimer(size_t comHartId)
         {
             version (RiscvGenericSMP)
             {
-                import MemCore = api.arch.riscv.rbase.rb_memory;
+                import MemCore = api.arch.riscv.rcom.rcom_memory;
 
                 //Interrupts.mInterruptsDisable;
 
-                import Atomic = api.arch.riscv.rbase.rb_atomic;
+                import Atomic = api.arch.riscv.rcom.rcom_atomic;
                 import ldc.llvmasm : __asm;
 
                 uint spinCount = 0;

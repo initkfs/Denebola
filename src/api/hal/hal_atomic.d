@@ -15,12 +15,12 @@ import api.arch.vers;
 {
     static if (__isRiscv)
     {
-        import ComAtomic = api.arch.riscv.rbase.rb_atomic;
+        import ComAtomic = api.arch.riscv.rcom.rcom_atomic;
 
         bool function(size_t* addr, int expectedInAddr, int newValueIfAddrEqvExpected) halCas = &ComAtomic
-            .comCas;
-        bool function(size_t* lockPtr) halSwapAcquire = &ComAtomic.comSwapAcquire;
-        bool function(size_t* lockPtr) halSwapRelease = &ComAtomic.comSwapRelease;
+            .rcomCas;
+        bool function(size_t* lockPtr) halSwapAcquire = &ComAtomic.rcomSwapAcquire;
+        bool function(size_t* lockPtr) halSwapRelease = &ComAtomic.rcomSwapRelease;
     }
     else
     {

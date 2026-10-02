@@ -1,4 +1,4 @@
-module api.arch.riscv.rbase.rb_memory;
+module api.arch.riscv.rcom.rcom_memory;
 /**
  * Authors: initkfs
  */
@@ -16,28 +16,28 @@ static if (__isRiscvGen)
     }
 }
 
-void comMemFenceInstr()
+void rcomMemFenceInstr()
 {
     __asm(
         "fence.i", "~{memory}"
     );
 }
 
-void comMemFenceWRW()
+void rcomMemFenceWRW()
 {
     __asm(
         "fence w, rw", "~{memory}"
     );
 }
 
-void comMemFenceRWRW()
+void rcomMemFenceRWRW()
 {
     __asm(
         "fence rw, rw", "~{memory}"
     );
 }
 
-void comMemFenceWW()
+void rcomMemFenceWW()
 {
     __asm(
         "fence w, w", "~{memory}"

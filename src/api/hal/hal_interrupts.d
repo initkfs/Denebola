@@ -7,7 +7,7 @@ import api.arch.vers;
 import api.hal.inits.hal_init : halfunc;
 import ldc.attributes;
 
-public import api.arch.riscv.rbase.rb_interrupts_constants;
+public import api.arch.riscv.rcom.rcom_interrupts_constants;
 
 version (Qemu)
 {
@@ -18,45 +18,45 @@ version (Qemu)
 {
     static if (__isRiscv)
     {
-        import Com = api.arch.riscv.rbase.rb_interrupts;
+        import Com = api.arch.riscv.rcom.rcom_interrupts;
 
         extern (C) @trusted
         {
-            size_t function() halGetMStatus = &Com.comGetMStatus;
-            void function(size_t status) halSetMStatus = &Com.comSetMStatus;
+            size_t function() halGetMStatus = &Com.rcomGetMStatus;
+            void function(size_t status) halSetMStatus = &Com.rcomSetMStatus;
 
-            size_t function() halGetMExceptionCounter = &Com.comGetMExceptionCounter;
-            void function(size_t c) halSetMExceptionCounter = &Com.comSetMExceptionCounter;
+            size_t function() halGetMExceptionCounter = &Com.rcomGetMExceptionCounter;
+            void function(size_t c) halSetMExceptionCounter = &Com.rcomSetMExceptionCounter;
 
-            size_t function() halGetMScratch = &Com.comGetMScratch;
-            void function(size_t value) halSetMScratch = &Com.comSetMScratch;
+            size_t function() halGetMScratch = &Com.rcomGetMScratch;
+            void function(size_t value) halSetMScratch = &Com.rcomSetMScratch;
 
-            bool function() halGlobalMIntrIsOn = &Com.comGlobalMIntrIsOn;
-            size_t function() halGetGlobalMIntr = &Com.comGetGlobalMIntr;
-            void function() halSetGlobalMIntrOn = &Com.comSetGlobalMIntrOn;
-            void function() halSetGlobalMIntrOff = &Com.comSetGlobalMIntrOff;
+            bool function() halGlobalMIntrIsOn = &Com.rcomGlobalMIntrIsOn;
+            size_t function() halGetGlobalMIntr = &Com.rcomGetGlobalMIntr;
+            void function() halSetGlobalMIntrOn = &Com.rcomSetGlobalMIntrOn;
+            void function() halSetGlobalMIntrOff = &Com.rcomSetGlobalMIntrOff;
 
-            size_t function() halGetLocalMIntr = &Com.comGetLocalMIntrs;
-            void function(size_t value) halSetLocalMIntr = &Com.comSetLocalMIntrs;
+            size_t function() halGetLocalMIntr = &Com.rcomGetLocalMIntrs;
+            void function(size_t value) halSetLocalMIntr = &Com.rcomSetLocalMIntrs;
 
-            void function() halSetExternMIntrOn = &Com.comSetExternMIntrOn;
-            void function() halSetExternMIntrOff = &Com.comSetExternMIntrOff;
+            void function() halSetExternMIntrOn = &Com.rcomSetExternMIntrOn;
+            void function() halSetExternMIntrOff = &Com.rcomSetExternMIntrOff;
 
-            void function() halMRet = &Com.comMRet;
+            void function() halMRet = &Com.rcomMRet;
         }
 
         static if (__isRiscvGen)
         {
             extern (C)
             {
-                void function() halSetTimerMIntrOn = &Com.comSetTimerMIntrOn;
-                void function() halSetTimerMIntrOff = &Com.comSetTimerMIntrOff;
+                void function() halSetTimerMIntrOn = &Com.rcomSetTimerMIntrOn;
+                void function() halSetTimerMIntrOff = &Com.rcomSetTimerMIntrOff;
 
-                void function() halSetSoftwareMIntrOn = &Com.comSetSoftwareMIntrOn;
-                void function() halSetSoftwareMIntrOff = &Com.comSetSoftwareMIntrOff;
+                void function() halSetSoftwareMIntrOn = &Com.rcomSetSoftwareMIntrOn;
+                void function() halSetSoftwareMIntrOff = &Com.rcomSetSoftwareMIntrOff;
 
-                extern (C) void function() halInitIntrs = &Com.comInitIntrs;
-                extern (C) void function() halInitPerIntrs = &Com.comInitPerIntrs;
+                extern (C) void function() halInitIntrs = &Com.rcomInitIntrs;
+                extern (C) void function() halInitPerIntrs = &Com.rcomInitPerIntrs;
             }
 
         }
@@ -72,8 +72,8 @@ version (Qemu)
             static assert(false, "Unsupported arch HAL version");
         }
 
-        void function(size_t* ptr) halSetMIntrVec = &Com.comSetMIntrVec;
-        void function(size_t*) halSetMIntrVecHandler = &Com.comSetMIntrVecHandler;
+        void function(size_t* ptr) halSetMIntrVec = &Com.rcomSetMIntrVec;
+        void function(size_t*) halSetMIntrVecHandler = &Com.rcomSetMIntrVecHandler;
     }
     else
     {

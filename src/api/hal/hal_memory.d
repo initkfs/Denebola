@@ -4,7 +4,7 @@ import api.arch.vers;
 
 static if (__isRiscv)
 {
-    public import api.arch.riscv.rbase.rb_memory;
+    public import api.arch.riscv.rcom.rcom_memory;
 }
 else
 {

@@ -16,11 +16,11 @@ version (Esp32C3)
 }
 else
 {
-    import api.arch.riscv.rbase.rb_uart;
+    import api.arch.riscv.rcom.rcom_uart;
 
     enum HalUARTDef = COM_UART0;
 
-    alias halInitUart0 = comInitUart0;
+    alias halInitUart0 = rcomInitUart0;
 }
 
 __gshared size_t* uartAddr = cast(size_t*) HalUARTDef;

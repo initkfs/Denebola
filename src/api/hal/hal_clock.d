@@ -18,9 +18,9 @@ import api.arch.vers;
         }
         else
         {
-            import ComClock = api.arch.riscv.rbase.rb_clock;
+            import ComClock = api.arch.riscv.rcom.rcom_clock;
 
-            uint function() halClockCpuFreqMz = &ComClock.comClockCpuFreq;
+            uint function() halClockCpuFreqMz = &ComClock.rcomClockCpuFreq;
         }
 
     }

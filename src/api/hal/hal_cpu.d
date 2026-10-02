@@ -22,14 +22,14 @@ struct ArchCaps
 {
     static if (__isRiscv)
     {
-        import ComCPU = api.arch.riscv.rbase.rb_cpu;
+        import ComCPU = api.arch.riscv.rcom.rcom_cpu;
 
-        size_t function() halHartId = &ComCPU.comMhartId;
-        string function() halVendorId = &ComCPU.comVendorId;
-        ArchCaps function() halLoadCaps = &ComCPU.comLoadCaps;
-        void function() halWait = &ComCPU.comWait;
-        void function() halHalt = &ComCPU.comHalt;
-        void function(uint) halDelayTicks = &ComCPU.comDelayTicks;
+        size_t function() halHartId = &ComCPU.rcomMhartId;
+        string function() halVendorId = &ComCPU.rcomVendorId;
+        ArchCaps function() halLoadCaps = &ComCPU.rcomLoadCaps;
+        void function() halWait = &ComCPU.rcomWait;
+        void function() halHalt = &ComCPU.rcomHalt;
+        void function(uint) halDelayTicks = &ComCPU.rcomDelayTicks;
     }
     else
     {
