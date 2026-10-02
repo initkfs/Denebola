@@ -47,12 +47,18 @@ enum RTC_CNTL_SLP_WAKEUP_CAUSE_REG = RTC + 0x00F8;
 enum RTC_CNTL_SENSOR_CTRL_REG = RTC + 0x011C;
 enum RTC_CNTL_ANA_CONF_REG = RTC + 0x0034;
 
+enum RTC_CNTL_STORE0_REG = RTC + 0x0050;
+enum RTC_CNTL_STORE1_REG = RTC + 0x0054;
+enum RTC_CNTL_STORE2_REG = RTC + 0x0058;
+enum RTC_CNTL_STORE3_REG = RTC + 0x005C;
+
 size_t* calcRTC() => cast(size_t*) RTC;
 size_t* calcRTC_CNTL_DIG_PWC_REG() => cast(size_t*) RTC_CNTL_DIG_PWC_REG;
 
-void initPower(){
+void initPower()
+{
     auto reg = cast(size_t*) RTC_CNTL_REG;
-    auto v= Volatile.load(reg);
+    auto v = Volatile.load(reg);
     enum RTC_CNTL_SCK_DCAP = 14; //14.21
     v = Bits.bitClearMask(v, 0xFF << 14);
     v |= (0xFF << 14);
@@ -130,12 +136,9 @@ void clearSleep()
     // Volatile.save(reg, v);
 }
 
-void prepDeepSleep()
+void prepDeepSleep(uint sec = 10)
 {
     auto caliVal = calibrateRTC;
-
-    uint sec = 10;
-    //40_000_000 >> 8
 
     uint calPeriod;
     //TODO more correct calc period
@@ -189,7 +192,7 @@ void prepDeepSleep()
 
     reg = cast(size_t*) RTC_CNTL_DIG_PWC_REG;
     v = Volatile.load(reg);
-    
+
     enum RTC_CNTL_LSLP_MEM_FORCE_PU = 4;
     enum RTC_CNTL_DG_PERI_FORCE_PU = 14;
     enum RTC_CNTL_FASTMEM_FORCE_LPU = 16;
@@ -217,9 +220,6 @@ void prepDeepSleep()
     v |= callTime.high & 0xFFFF;
     Volatile.save(reg, v);
 
-    import Syslog = api.os.log.syslog;
-    import Str = api.os.str.strings;
-
     reg = cast(size_t*) RTC_CNTL_SLP_TIMER1_REG;
     v = Volatile.load(reg);
     enum RTC_CNTL_MAIN_TIMER_ALARM_EN = 16;
@@ -227,8 +227,7 @@ void prepDeepSleep()
     Volatile.save(reg, v);
 
     reg = cast(size_t*) RTC_CNTL_WAKEUP_STATE_REG;
-    //enum RTC_TIMER_WAKEUP_SOURCE = 0x8;
-    enum RTC_TIMER_WAKEUP_SOURCE = 0;
+    enum RTC_TIMER_WAKEUP_SOURCE = 0x8;
     v = Volatile.load(reg);
     v &= ~(0x1FFFFU << 15);
     v |= (RTC_TIMER_WAKEUP_SOURCE << 15);
@@ -266,3 +265,24 @@ void switchToJointMode()
     Volatile.save(reg, conf);
     //TODO reset cpu
 }
+
+void storeData(size_t v, size_t* reg)
+{
+    Volatile.save(reg, v);
+}
+
+void storeData0(size_t data)
+{
+    storeData(data, cast(size_t*) RTC_CNTL_STORE0_REG);
+}
+
+void storeData1(size_t data)
+{
+    storeData(data, cast(size_t*) RTC_CNTL_STORE1_REG);
+}
+
+size_t readData(size_t* reg) => Volatile.load(reg);
+size_t readData0() => readData(cast(size_t*) RTC_CNTL_STORE0_REG);
+size_t readData1() => readData(cast(size_t*) RTC_CNTL_STORE1_REG);
+size_t readData2() => readData(cast(size_t*) RTC_CNTL_STORE2_REG);
+size_t readData3() => readData(cast(size_t*) RTC_CNTL_STORE3_REG);
