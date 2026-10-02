@@ -114,6 +114,8 @@ extern (C) void ostart()
 
     HalUart.halWriteTxDir!"M ";
 
+    HalUart.halInitUart0(115200);
+    
     Syslog.isLoad = true;
     MemInfo.logMemInfo;
 
