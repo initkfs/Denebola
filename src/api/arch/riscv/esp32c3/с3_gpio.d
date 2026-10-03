@@ -9,6 +9,9 @@ import Bit = api.hal.hal_bits;
 alias PinId = ubyte;
 alias SygnalId = ubyte;
 
+enum HIGH = true;
+enum LOW = false;
+
 //TODO Strapping-pins (GPIO8, GPIO9), clear USB_SERIAL_JTAG_USB_PAD_ENABLE for GPIO4, GPIO5, GPIO6, GPIO7.
 //Deny for GPIO12, GPIO13, GPIO14, GPIO15, GPIO16, GPIO17 - SPI FLASH
 //Low poser gpio GPIO0, GPIO1, GPIO2, GPIO3, GPIO4, GPIO5
