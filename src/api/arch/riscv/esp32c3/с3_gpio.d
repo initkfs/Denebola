@@ -71,17 +71,9 @@ enum PinOutMode
 
 //IO_MUX_GPIOn_REG
 size_t* calcImuxAddr(PinId pin) => cast(size_t*)(IO_MUX + IO_MUX_GPIOn_REG + 4 * pin);
+size_t* calcGPIO_PINn_REG(PinId pin) => cast(size_t*)(GPIO + 0x0074 + 4 * pin); //0..21
 
-bool route(SygnalId toSignalY, PinId fromPinX, bool isMatrix = true, bool isInverted = false, bool isFilter = false)
-{
-    enum size_t GPIO_FUNC_IN_SEL_CFG_BASE = 0x0154;
-    size_t* GPIO_FUNCn_IN_SEL_CFG_REG = cast(size_t*)(GPIO + GPIO_FUNC_IN_SEL_CFG_BASE + 4 * toSignalY);
-
-    size_t* ioMuxAddr = calcImuxAddr(fromPinX);
-    return route(GPIO_FUNCn_IN_SEL_CFG_REG, ioMuxAddr, toSignalY, fromPinX, isMatrix, isInverted, isFilter);
-}
-
-bool routeTo(SygnalId fromSignal, PinId toPin)
+bool routeTo(SygnalId fromSignal, PinId toPin, bool isEnable = true, bool isFromPeri = false, bool isFunc0 = false, bool isInput = false)
 {
     enum size_t GPIO_FUNCx_OUT_SEL_CFG_REG = 0x0554;
     auto reg = cast(size_t*)(GPIO + GPIO_FUNCx_OUT_SEL_CFG_REG + 4 * toPin);
@@ -91,22 +83,30 @@ bool routeTo(SygnalId fromSignal, PinId toPin)
     v |= (fromSignal & 0xFF);
 
     enum GPIO_FUNCn_OEN_SEL = 9;
-    v = Bit.bitSet(v, GPIO_FUNCn_OEN_SEL);
+    v = !isFromPeri ? Bit.bitSet(v, GPIO_FUNCn_OEN_SEL) : Bit.bitClear(v, GPIO_FUNCn_OEN_SEL);
     Volatile.save(reg, v);
 
-    reg = cast(size_t*) GPIO_ENABLE_W1TS_REG;
-    v = Volatile.load(reg);
-    v = Bit.bitSet(v, toPin);
-    Volatile.save(reg, v);
+    if (isEnable)
+    {
+        reg = cast(size_t*) GPIO_ENABLE_W1TS_REG;
+        v = Volatile.load(reg);
+        v = Bit.bitSet(v, toPin);
+        Volatile.save(reg, v);
+    }
 
     size_t* ioMuxAddr = calcImuxAddr(toPin);
     auto ioMuxVal = Volatile.load(ioMuxAddr);
     ioMuxVal = Bit.bitsClear(ioMuxVal, MCU_SEL_GPIO_BITS);
-    ioMuxVal = Bit.bitSet(ioMuxVal, MCU_SEL_GPIO_BITS[0]);
+    if (!isFunc0)
+    {
+        ioMuxVal = Bit.bitSet(ioMuxVal, MCU_SEL_GPIO_BITS[0]);
+    }
+
     ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPD_BIT);
     ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPU_BIT);
-    ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_IE_BIT);
-    
+    ioMuxVal = !isInput ? Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_IE_BIT) : Bit.bitSet(
+        ioMuxVal, IO_MUX_GPIOn_FUN_IE_BIT);
+
     Volatile.save(ioMuxAddr, ioMuxVal);
     return true;
 }
@@ -117,12 +117,56 @@ size_t ioMuxToInputGpio(size_t ioMuxVal, bool isFilter = false)
     return ioMuxToGpio(ioMuxVal, isFilter);
 }
 
-size_t ioMuxToGpio(size_t ioMuxVal, bool isFilter = false)
+size_t ioMuxToGpio(size_t ioMuxVal, bool isFilter = false, bool isDefaultPinFunc = true)
 {
     ioMuxVal = Bit.bitsClear(ioMuxVal, MCU_SEL_GPIO_BITS);
-    ioMuxVal = Bit.bitSet(ioMuxVal, MCU_SEL_GPIO_BITS[0]);
+    if (isDefaultPinFunc)
+    {
+        ioMuxVal = Bit.bitSet(ioMuxVal, MCU_SEL_GPIO_BITS[0]);
+    }
+
     ioMuxVal = Bit.bitWrite(ioMuxVal, IO_MUX_GPIOn_FILTER_EN_BIT, isFilter);
     return ioMuxVal;
+}
+
+bool routeSimple(SygnalId toSignalY, PinId fromPinX)
+{
+    if (toSignalY > 127 || fromPinX > 21)
+    {
+        return false;
+    }
+
+    enum size_t GPIO_FUNC_IN_SEL_CFG_BASE = 0x0154;
+    size_t* GPIO_FUNCn_IN_SEL_CFG_REG = cast(size_t*)(GPIO + GPIO_FUNC_IN_SEL_CFG_BASE + 4 * toSignalY);
+    auto configMatrixAddr = GPIO_FUNCn_IN_SEL_CFG_REG;
+
+    size_t* ioMuxAddr = calcImuxAddr(fromPinX);
+
+    auto funcConfig = Volatile.load(configMatrixAddr);
+    funcConfig &= ~0x1F; //11111
+    funcConfig |= (fromPinX & 0x1F);
+
+    funcConfig = Bit.bitSet(funcConfig, GPIO_SIGn_IN_SEL_BIT);
+
+    Volatile.save(configMatrixAddr, funcConfig);
+
+    size_t ioMuxVal = Volatile.load(ioMuxAddr);
+    ioMuxVal = Bit.bitsClear(ioMuxVal, MCU_SEL_GPIO_BITS);
+    ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPD_BIT); // reset Pull-down
+    ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPU_BIT); // reset Pull-up
+
+    Volatile.save(ioMuxAddr, ioMuxVal);
+
+    return true;
+}
+
+bool route(SygnalId toSignalY, PinId fromPinX, bool isMatrix = true, bool isInverted = false, bool isFilter = false)
+{
+    enum size_t GPIO_FUNC_IN_SEL_CFG_BASE = 0x0154;
+    size_t* GPIO_FUNCn_IN_SEL_CFG_REG = cast(size_t*)(GPIO + GPIO_FUNC_IN_SEL_CFG_BASE + 4 * toSignalY);
+
+    size_t* ioMuxAddr = calcImuxAddr(fromPinX);
+    return route(GPIO_FUNCn_IN_SEL_CFG_REG, ioMuxAddr, toSignalY, fromPinX, isMatrix, isInverted, isFilter);
 }
 
 bool route(size_t* configMatrixAddr, size_t* ioMuxAddr, SygnalId toSignalY, PinId fromPinX, bool isMatrix = true, bool isInverted = false, bool isFilter = false)
@@ -210,9 +254,34 @@ bool digitalWrite(PinId pin, bool level)
     auto conf = Volatile.load(reg);
 
     import Bits = api.hal.hal_bits;
+
     conf = Bits.bitSet(conf, pin);
     Volatile.save(reg, conf);
     return true;
+}
+
+void pinInput(PinId pin, bool isInput = true)
+{
+    auto pinreg = calcImuxAddr(pin);
+    auto ioMuxVal = Volatile.load(pinreg);
+    ioMuxVal = Bit.bitWrite(ioMuxVal, IO_MUX_GPIOn_FUN_IE_BIT, isInput);
+
+    ioMuxVal = Bit.bitsClear(ioMuxVal, MCU_SEL_GPIO_BITS);
+    //ioMuxVal = Bit.bitSet(ioMuxVal, MCU_SEL_GPIO_BITS[0]);
+    
+    ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPD_BIT);
+    ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPU_BIT); 
+    
+    Volatile.save(pinreg, ioMuxVal);
+}
+
+void pinConfig(PinId pin, bool isOpenDrain = false)
+{
+    auto pinreg = calcGPIO_PINn_REG(pin);
+    auto pinv = Volatile.load(pinreg);
+    enum GPIO_PINn_PAD_DRIVER = 2; /// 0: normal output; 1: open drain output.
+    pinv = isOpenDrain ? Bit.bitSet(pinv, GPIO_PINn_PAD_DRIVER) : Bit.bitClear(pinv, GPIO_PINn_PAD_DRIVER);
+    Volatile.save(pinreg, pinv);
 }
 
 void pinModeIn(PinId pin, PinInMode pull = PinInMode.z)
@@ -250,7 +319,7 @@ void pinModeInAnalog(PinId pin)
     //esp-idf 0x00001802
     size_t* ioMuxReg = calcImuxAddr(pin);
     size_t ioMuxVal = Volatile.load(ioMuxReg);
-    ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_IE_BIT);;
+    ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_IE_BIT);
     ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPD_BIT); // reset Pull-down
     ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPU_BIT); // reset Pull-up
 
@@ -260,15 +329,14 @@ void pinModeInAnalog(PinId pin)
     Volatile.save(ioMuxReg, ioMuxVal);
 }
 
-void pinModeOut(PinId pin, PinOutMode pull = PinOutMode.none, bool isInputEnable = true)
+void pinModeOut(PinId pin, PinOutMode pull = PinOutMode.none, bool isInputEnable = true, bool isDefaultPinFunc = true)
 {
     if (pin > 21)
         return;
 
     size_t* ioMuxReg = cast(size_t*) calcImuxAddr(pin);
     size_t ioMuxVal = Volatile.load(ioMuxReg);
-    ioMuxVal = ioMuxToGpio(ioMuxVal, isFilter:
-        false);
+    ioMuxVal = ioMuxToGpio(ioMuxVal, false, isDefaultPinFunc);
 
     ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPD_BIT); // reset Pull-down
     ioMuxVal = Bit.bitClear(ioMuxVal, IO_MUX_GPIOn_FUN_WPU_BIT); // reset Pull-up

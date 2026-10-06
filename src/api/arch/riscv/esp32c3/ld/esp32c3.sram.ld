@@ -96,3 +96,9 @@ SECTIONS
   _heap_start = _stack_start; 
   _heap_end = ORIGIN(dram) + LENGTH(dram);
 }
+
+rom_gpio_matrix_in = 0x400005a0;
+rom_gpio_matrix_out = 0x400005a4;
+
+PROVIDE ( esp_rom_gpio_connect_in_signal  = rom_gpio_matrix_in );
+PROVIDE ( esp_rom_gpio_connect_out_signal = rom_gpio_matrix_out );
