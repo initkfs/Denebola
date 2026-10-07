@@ -20,10 +20,26 @@ enum I2C_SCL_LOW_PERIOD_REG = I2C + 0x0000;
 enum I2C_SCL_HIGH_PERIOD_REG = I2C + 0x0038;
 enum I2C_SCL_START_HOLD_REG = I2C + 0x0040;
 enum I2C_SCL_RSTART_SETUP_REG = I2C + 0x0044;
+enum I2C_SCL_STOP_HOLD_REG = I2C + 0x0048;
+enum I2C_SCL_STOP_SETUP_REG = I2C + 0x004C;
+enum I2C_SDA_HOLD_REG = I2C + 0x0030;
+enum I2C_SDA_SAMPLE_REG = I2C + 0x0034;
 enum I2C_CLK_CONF_REG = I2C + 0x0054;
 enum I2C_FIFO_CONF_REG = I2C + 0x0018;
 enum I2C_FIFO_ST_REG = I2C + 0x0014;
 enum I2C_SCL_SP_CONF_REG = I2C + 0x0080;
+enum I2C_INT_ENA_REG = I2C + 0x0028;
+
+enum uint I2C_DATA_REG = I2C + 0x001C;
+enum uint I2C_SR_REG = I2C + 0x0008;
+enum uint I2C_INT_CLR_REG = I2C + 0x0024;
+
+enum uint I2C_COMD0_REG = I2C + 0x0058;
+enum uint I2C_COMD1_REG = I2C + 0x005C;
+enum uint I2C_COMD2_REG = I2C + 0x0060;
+enum uint I2C_COMD3_REG = I2C + 0x0064;
+
+enum I2C_INT_RAW_REG = I2C + 0x0020;
 
 enum op_code : ubyte
 {
@@ -78,24 +94,21 @@ struct CMD
 
 size_t* calcI2C_CTR_REG = cast(size_t*) I2C_CTR_REG;
 
-extern (C) void rom_gpio_matrix_in(uint gpio, uint signal_idx, bool inv);
-extern (C) void rom_gpio_matrix_out(uint gpio, uint signal_idx, bool out_inv, bool oen_inv);
-
 void initI2C()
 {
+    //0x000a8400
+    //import api.arch.riscv.esp32c3.c3_clock;
+    //Volatile.save(cast(size_t*) SYSTEM_SYSCLK_CONF_REG, 0x000a8400);
+
     import C3Power = api.arch.riscv.esp32c3.c3_lowpower;
 
     //TODO remove
     auto areg = cast(size_t*) C3Power.RTC_CNTL_ANA_CONF_REG;
-    enum RTC_CNTL_CKGEN_I2C_PU  = 30;
+    enum RTC_CNTL_CKGEN_I2C_PU = 30;
     auto aval = Volatile.load(areg);
     aval = Bits.bitSet(aval, RTC_CNTL_CKGEN_I2C_PU);
     enum RTC_CNTL_PLL_I2C_PU = 31;
     aval = Bits.bitSet(aval, RTC_CNTL_PLL_I2C_PU);
-    enum RTC_CNTL_TXRF_I2C_PU = 27;
-    aval = Bits.bitSet(aval, RTC_CNTL_TXRF_I2C_PU);
-    enum RTC_CNTL_RFRX_PBUS_PU = 28;
-    aval = Bits.bitSet(aval, RTC_CNTL_RFRX_PBUS_PU);
     Volatile.save(areg, aval);
 
     import api.arch.riscv.esp32c3.c3_gpio;
@@ -106,24 +119,13 @@ void initI2C()
     enum I2CEXT0_SCL_in = 53; //I2CEXT0_SCL_out
     enum I2CEXT0_SDA_in = 54; //I2CEXT0_SDA_out
 
-    routeTo(I2CEXT0_SCL_in, SCL_PIN, true, true, true, true);
-    routeTo(I2CEXT0_SDA_in, SDA_PIN, true, true, true, true);
+    routeToPin(I2CEXT0_SCL_in, SCL_PIN);
+    routeToPin(I2CEXT0_SDA_in, SDA_PIN);
+    routeFromPin(I2CEXT0_SCL_in, SCL_PIN);
+    routeFromPin(I2CEXT0_SDA_in, SDA_PIN);
 
-    routeSimple(I2CEXT0_SCL_in, SCL_PIN);
-    routeSimple(I2CEXT0_SDA_in, SDA_PIN);
-
-    // rom_gpio_matrix_in(SCL_PIN, I2CEXT0_SCL_in, 0);
-    // rom_gpio_matrix_in(SDA_PIN, I2CEXT0_SDA_in, 0);
-    // rom_gpio_matrix_out(SCL_PIN, I2CEXT0_SCL_in, 0, 0);
-    // rom_gpio_matrix_out(SDA_PIN, I2CEXT0_SDA_in, 0, 0);
-
-    //pinModeOut(SDA_PIN, PinOutMode.none, true, false);
-    pinConfig(SDA_PIN, true);
-    //pinInput(SDA_PIN);
-
-    //pinModeOut(SCL_PIN, PinOutMode.none, true, false);
-    pinConfig(SCL_PIN, true);
-    //pinInput(SCL_PIN);
+    pinConfig(SCL_PIN, true, false, true);
+    pinConfig(SDA_PIN, true, false, true);
 
     import Clock = api.arch.riscv.esp32c3.c3_clock;
 
@@ -142,6 +144,14 @@ void initI2C()
     rstval = Bits.bitClear(rstval, SYSTEM_EXT0_RST);
     Volatile.save(resetReg, rstval);
 
+    auto ick = cast(size_t*) I2C_CLK_CONF_REG;
+    auto ickv = Volatile.load(ick);
+    enum I2C_SCLK_ACTIVE = 21; //default 1
+    ickv = Bits.bitSet(ickv, I2C_SCLK_ACTIVE);
+    //enum I2C_SCLK_SEL = 20; //The clock selection bit for the I2C controller. 0: XTAL_CLK; 1: RC_FAST_CLK.
+    //ickv = Bits.bitSet(ickv, I2C_SCLK_SEL);
+    Volatile.save(ick, ickv);
+
     //I2C_SDA(SCL)_FORCE_OUT = 1
     // auto spreg = cast(size_t*) I2C_SCL_SP_CONF_REG;
     // auto spval = Volatile.load(spreg);
@@ -159,7 +169,6 @@ void initI2C()
     //XTAL, 1 tick == 25us
     enum timingMask = 0x1FF;
     enum sclTime = 50;
-    enum I2C_SCL_LOW_PERIOD_REG = I2C + 0x0000;
 
     auto sreg = cast(size_t*) I2C_SCL_LOW_PERIOD_REG;
     auto sval = Volatile.load(sreg);
@@ -168,7 +177,6 @@ void initI2C()
     Volatile.save(sreg, sval);
 
     //0x00002e1b
-    enum I2C_SCL_HIGH_PERIOD_REG = I2C + 0x0038;
     sreg = cast(size_t*) I2C_SCL_HIGH_PERIOD_REG;
     sval = Volatile.load(sreg);
     sval = Bits.bitClearMask(sval, timingMask);
@@ -180,28 +188,24 @@ void initI2C()
 
     Volatile.save(sreg, sval);
 
-    enum I2C_SCL_START_HOLD_REG = I2C + 0x0040;
     sreg = cast(size_t*) I2C_SCL_START_HOLD_REG;
     sval = Volatile.load(sreg);
     sval = Bits.bitClearMask(sval, timingMask);
     sval |= (sclTime - 1); //1225
     Volatile.save(sreg, sval);
 
-    enum I2C_SCL_RSTART_SETUP_REG = I2C + 0x0044;
     sreg = cast(size_t*) I2C_SCL_RSTART_SETUP_REG;
     sval = Volatile.load(sreg);
     sval = Bits.bitClearMask(sval, timingMask);
     sval |= (sclTime - 1); //1225
     Volatile.save(sreg, sval);
 
-    enum I2C_SCL_STOP_HOLD_REG = I2C + 0x0048;
     sreg = cast(size_t*) I2C_SCL_STOP_HOLD_REG;
     sval = Volatile.load(sreg);
     sval = Bits.bitClearMask(sval, timingMask);
     sval |= (sclTime - 1); //1225
     Volatile.save(sreg, sval);
 
-    enum I2C_SCL_STOP_SETUP_REG = I2C + 0x004C;
     sreg = cast(size_t*) I2C_SCL_STOP_SETUP_REG;
     sval = Volatile.load(sreg);
     sval = Bits.bitClearMask(sval, timingMask);
@@ -209,29 +213,28 @@ void initI2C()
     Volatile.save(sreg, sval);
 
     enum sdaTime = sclTime / 2;
-    enum I2C_SDA_HOLD_REG = I2C + 0x0030;
+    
     sreg = cast(size_t*) I2C_SDA_HOLD_REG;
     sval = Volatile.load(sreg);
     sval = Bits.bitClearMask(sval, timingMask);
     sval |= 11; //275
     Volatile.save(sreg, sval);
 
-    enum I2C_SDA_SAMPLE_REG = I2C + 0x0034;
     sreg = cast(size_t*) I2C_SDA_SAMPLE_REG;
     sval = Volatile.load(sreg);
     sval = Bits.bitClearMask(sval, timingMask);
     sval |= (sdaTime - 1); //600
     Volatile.save(sreg, sval);
 
-    // enum I2C_TO_REG = I2C + 0x000C;
-    // auto toReg = cast(size_t*) I2C_TO_REG;
-    // auto toval = Volatile.load(toReg);
-    // enum I2C_TIME_OUT_VALUE = 0; //0..4
-    // toval = Bits.bitClearMask(toval, 0x1F);
-    // toval |= 16;
-    // enum I2C_TIME_OUT_EN = 5;
-    // toval = Bits.bitSet(toval, I2C_TIME_OUT_EN);
-    // Volatile.save(toReg, toval);
+    //enum I2C_TO_REG = I2C + 0x000C;
+    //auto toReg = cast(size_t*) I2C_TO_REG;
+    //auto toval = Volatile.load(toReg);
+    //enum I2C_TIME_OUT_VALUE = 0; //0..4, default 0x10
+    //toval = Bits.bitClearMask(toval, 0x1F);
+    //toval |= 16;
+    //enum I2C_TIME_OUT_EN = 5;
+    //toval = Bits.bitSet(toval, I2C_TIME_OUT_EN);
+    //Volatile.save(toReg, toval);
 
     //idf 0x13
     auto ctrlReg = calcI2C_CTR_REG;
@@ -245,8 +248,8 @@ void initI2C()
     enum I2C_ARBITRATION_EN = 9;
     ctrlVal = Bits.bitClear(ctrlVal, I2C_ARBITRATION_EN);
 
-    // enum I2C_CLK_EN = 8;
-    // ctrlVal = Bits.bitSet(ctrlVal, I2C_CLK_EN);
+    enum I2C_CLK_EN = 8; //TODO off
+    ctrlVal = Bits.bitSet(ctrlVal, I2C_CLK_EN);
 
     //reset to 0 for open drain
     //enum I2C_SDA_FORCE_OUT = 0;
@@ -273,17 +276,6 @@ void sync()
     ctrVal = Bits.bitSet(ctrVal, CONF_UPGATE);
     Volatile.save(ctrReg, ctrVal);
 }
-
-enum uint I2C_DATA_REG = I2C + 0x001C;
-enum uint I2C_SR_REG = I2C + 0x0008;
-enum uint I2C_INT_CLR_REG = I2C + 0x0024;
-
-enum uint I2C_COMD0_REG = I2C + 0x0058;
-enum uint I2C_COMD1_REG = I2C + 0x005C;
-enum uint I2C_COMD2_REG = I2C + 0x0060;
-enum uint I2C_COMD3_REG = I2C + 0x0064;
-
-enum I2C_INT_RAW_REG = I2C + 0x0020;
 
 enum MainState
 {
@@ -371,28 +363,35 @@ void startSearch()
     }
 }
 
-bool checkDeviceAddress(ubyte address7bit)
+void resetFsm()
 {
-
-    auto fifoReg = cast(uint*) I2C_FIFO_CONF_REG;
-    enum RX_FIFO_RST = 12;
-    enum TX_FIFO_RST = 13;
-    auto fifoVal = Volatile.load(fifoReg);
-    fifoVal = Bits.bitsSet(fifoVal, RX_FIFO_RST, TX_FIFO_RST);
-    Volatile.save(fifoReg, fifoVal);
-
-    fifoVal = Volatile.load(fifoReg);
-    fifoVal = Bits.bitsClear(fifoVal, RX_FIFO_RST, TX_FIFO_RST);
-    Volatile.save(fifoReg, fifoVal);
-
     auto fsmReg = cast(size_t*) I2C_CTR_REG;
     auto fsmval = Volatile.load(fsmReg);
     enum I2C_FSM_RST = 10;
     fsmval = Bits.bitSet(fsmval, I2C_FSM_RST);
-    Volatile.save(fsmReg, fsmval);
-    fsmval = Volatile.load(fsmReg);
-    fsmval = Bits.bitClear(fsmval, I2C_FSM_RST);
-    Volatile.save(fsmReg, fsmval);
+    Volatile.save(fsmReg, fsmval); //self cleared
+
+    // fsmval = Volatile.load(fsmReg);
+    // fsmval = Bits.bitClear(fsmval, I2C_FSM_RST);
+    // Volatile.save(fsmReg, fsmval);
+}
+
+bool checkDeviceAddress(ubyte address7bit)
+{
+    auto fifoReg = cast(uint*) I2C_FIFO_CONF_REG;
+    enum RX_FIFO_RST = 12;
+    enum TX_FIFO_RST = 13;
+    auto fifoVal = Volatile.load(fifoReg);
+    fifoVal = Bits.bitSet(fifoVal, RX_FIFO_RST);
+    fifoVal = Bits.bitSet(fifoVal, TX_FIFO_RST);
+    Volatile.save(fifoReg, fifoVal);
+
+    fifoVal = Volatile.load(fifoReg);
+    fifoVal = Bits.bitClear(fifoVal, RX_FIFO_RST);
+    fifoVal = Bits.bitClear(fifoVal, TX_FIFO_RST);
+    Volatile.save(fifoReg, fifoVal);
+
+    resetFsm;
 
     enum writeBit = 0;
     uint addressByte = ((address7bit << 1) | writeBit);
@@ -406,7 +405,7 @@ bool checkDeviceAddress(ubyte address7bit)
     cmd1.setOpcode(op_code.WRITE);
     cmd1.byte_num(1);
     cmd1.ack_check_en(true);
-    cmd1.ack_exp(true);
+    //cmd1.ack_exp(true);
 
     CMD cmd2;
     cmd2.setOpcode(op_code.STOP);
@@ -419,11 +418,11 @@ bool checkDeviceAddress(ubyte address7bit)
     Volatile.save(cast(size_t*) I2C_COMD2_REG, cmd2.reg);
     Volatile.save(cast(size_t*) I2C_COMD3_REG, cmd3.reg);
 
-    import Mem = api.arch.riscv.rcom.rcom_memory;
+    // import Mem = api.arch.riscv.rcom.rcom_memory;
 
-    Mem.rcomMemFenceRWRW;
+    // Mem.rcomMemFenceRWRW;
 
-    sync;
+    //sync;
 
     auto ctrReg = cast(size_t*) I2C_CTR_REG;
     auto ctrVal = Volatile.load(ctrReg);
