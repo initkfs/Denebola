@@ -100,17 +100,6 @@ void initI2C()
     //import api.arch.riscv.esp32c3.c3_clock;
     //Volatile.save(cast(size_t*) SYSTEM_SYSCLK_CONF_REG, 0x000a8400);
 
-    import C3Power = api.arch.riscv.esp32c3.c3_lowpower;
-
-    //TODO remove
-    auto areg = cast(size_t*) C3Power.RTC_CNTL_ANA_CONF_REG;
-    enum RTC_CNTL_CKGEN_I2C_PU = 30;
-    auto aval = Volatile.load(areg);
-    aval = Bits.bitSet(aval, RTC_CNTL_CKGEN_I2C_PU);
-    enum RTC_CNTL_PLL_I2C_PU = 31;
-    aval = Bits.bitSet(aval, RTC_CNTL_PLL_I2C_PU);
-    Volatile.save(areg, aval);
-
     import api.arch.riscv.esp32c3.c3_gpio;
 
     c3enablePinOut(SDA_PIN);
@@ -213,7 +202,7 @@ void initI2C()
     Volatile.save(sreg, sval);
 
     enum sdaTime = sclTime / 2;
-    
+
     sreg = cast(size_t*) I2C_SDA_HOLD_REG;
     sval = Volatile.load(sreg);
     sval = Bits.bitClearMask(sval, timingMask);
@@ -333,6 +322,7 @@ size_t rxFifoCnt()
 
 void startSearch()
 {
+    ubyte addr;
     char[64] buff = 0;
     while (true)
     {
@@ -348,8 +338,10 @@ void startSearch()
 
         if (checkDeviceAddress(0x76))
         {
+            addr = 0x76;
             Syslog.info("Found 0x76");
-            continue;
+            break;
+            //continue;
         }
         else
         {
@@ -360,6 +352,10 @@ void startSearch()
         //Syslog.info(Str.atoa(sclState, buff));
 
         Sysclock.sysRoughMs(2000);
+    }
+
+    if(addr == 0){
+        return;
     }
 }
 
@@ -437,31 +433,11 @@ bool checkDeviceAddress(ubyte address7bit)
     char[64] buff = 0;
     while (!Bits.bitIsSet(Volatile.load(stReg), I2C_TRANS_COMPLETE_INT))
     {
-        if (mainState != 0)
-        {
-            Syslog.info(Str.toStr(mainState, buff));
-            Syslog.info(Str.toStr(sclState, buff));
-        }
+        //Syslog.info(Str.toStr(CMD(Volatile.load(cast(size_t*) I2C_COMD0_REG)).isDone, buff));
+        //Syslog.info(Str.toStr(Volatile.load(stReg), buff));
+        //Syslog.info(Str.toStr(Volatile.load(ptrI2C_SR_REG), buff));
 
-        if (CMD(Volatile.load(cast(size_t*) I2C_COMD0_REG)).isDone)
-        {
-            Syslog.info("CMD0 done");
-        }
-
-        if (CMD(Volatile.load(cast(size_t*) I2C_COMD1_REG)).isDone)
-        {
-            Syslog.info("CMD1 done");
-        }
-
-        if (CMD(Volatile.load(cast(size_t*) I2C_COMD2_REG)).isDone)
-        {
-            Syslog.info("CMD2 done");
-        }
-
-        Syslog.info(Str.toStr(CMD(Volatile.load(cast(size_t*) I2C_COMD0_REG)).isDone, buff));
-        Syslog.info(Str.toStr(Volatile.load(stReg), buff));
-        Syslog.info(Str.toStr(Volatile.load(ptrI2C_SR_REG), buff));
-
+        Sysclog.info("WAIT I2C");
         Sysclock.sysRoughMs(2000);
     }
 

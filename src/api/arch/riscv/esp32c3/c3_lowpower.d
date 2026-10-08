@@ -55,16 +55,65 @@ enum RTC_CNTL_STORE3_REG = RTC + 0x005C;
 size_t* calcRTC() => cast(size_t*) RTC;
 size_t* calcRTC_CNTL_DIG_PWC_REG() => cast(size_t*) RTC_CNTL_DIG_PWC_REG;
 
-void initPower()
+extern (C) void c3InitPower()
 {
+    //0x103fc000?
     auto reg = cast(size_t*) RTC_CNTL_REG;
     auto v = Volatile.load(reg);
     enum RTC_CNTL_SCK_DCAP = 14; //14.21
-    v = Bits.bitClearMask(v, 0xFF << 14);
-    v |= (0xFF << 14);
+    v = Bits.bitClearMask(v, 0xFF << RTC_CNTL_SCK_DCAP);
+    v |= (0xFF << RTC_CNTL_SCK_DCAP);
     enum RTC_CNTL_REGULATOR_FORCE_PU = 31;
     v = Bits.bitClear(v, RTC_CNTL_REGULATOR_FORCE_PU);
     Volatile.save(reg, v);
+
+    //0x00c00000
+    auto areg = cast(size_t*) RTC_CNTL_ANA_CONF_REG;
+    auto aval = Volatile.load(areg);
+    enum RTC_CNTL_CKGEN_I2C_PU = 30;
+    aval = Bits.bitSet(aval, RTC_CNTL_CKGEN_I2C_PU);
+    enum RTC_CNTL_PLL_I2C_PU = 31;
+    aval = Bits.bitSet(aval, RTC_CNTL_PLL_I2C_PU);
+    Volatile.save(areg, aval);
+
+    //0x30c80298
+    auto clockReg = cast(size_t*) RTC_CNTL_CLK_CONF_REG;
+    enum RTC_CNTL_ENB_FOSC_DIV = 7;
+    auto cv = Volatile.load(clockReg);
+    cv = Bits.bitClear(cv, RTC_CNTL_ENB_FOSC_DIV);
+
+    //enum RTC_CNTL_FOSC_DIV_SEL = 12; //12..14
+    cv = Bits.bitsClear(cv, 12, 13, 14);
+
+    enum RTC_CNTL_FOSC_DFREQ = 17; //17..24
+    //64, 01100100?
+    cv = Bits.bitClearMask(cv, 0xFF << RTC_CNTL_FOSC_DFREQ);
+    cv |= (64 << RTC_CNTL_FOSC_DFREQ);
+
+    enum RTC_CNTL_FAST_CLK_RTC_SEL = 29;
+    cv = Bits.bitSet(cv, RTC_CNTL_FAST_CLK_RTC_SEL);
+
+    Volatile.save(clockReg, cv);
+
+    //0x00020800
+    auto digReg = cast(size_t*) RTC_CNTL_DIG_PWC_REG;
+    auto digVal = Volatile.load(digReg);
+    enum RTC_CNTL_LSLP_MEM_FORCE_PU = 5;
+    digVal = Bits.bitClear(digVal, RTC_CNTL_LSLP_MEM_FORCE_PU);
+    enum RTC_CNTL_DG_PERI_FORCE_PU = 14;
+    digVal = Bits.bitClear(digVal, RTC_CNTL_DG_PERI_FORCE_PU);
+    enum RTC_CNTL_FASTMEM_FORCE_LPU = 16;
+    digVal = Bits.bitClear(digVal, RTC_CNTL_FASTMEM_FORCE_LPU);
+    enum RTC_CNTL_WIFI_FORCE_PU = 18;
+    digVal = Bits.bitClear(digVal, RTC_CNTL_WIFI_FORCE_PU);
+    enum RTC_CNTL_DG_WRAP_FORCE_PU = 20;
+    digVal = Bits.bitClear(digVal, RTC_CNTL_DG_WRAP_FORCE_PU);
+    enum RTC_CNTL_CPU_TOP_FORCE_PU = 22;
+    digVal = Bits.bitClear(digVal, RTC_CNTL_CPU_TOP_FORCE_PU);
+
+    Volatile.save(digReg, digVal);
+
+    //TODO RTC_CNTL_DIG_ISO_REG, 0x10400080
 }
 
 uint getWakeupCause()

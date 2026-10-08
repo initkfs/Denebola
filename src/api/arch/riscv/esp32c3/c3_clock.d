@@ -13,6 +13,7 @@ enum SYSTEM_SYSCLK_CONF_REG = SYSTEM_BASE + 0x0058;
 enum SYSTEM_CPU_PER_CONF_REG = SYSTEM_BASE + 0x0008;
 enum SYSTEM_PLL_FREQ_SEL_BIT = 2;
 enum SYSTEM_CPUPERIOD_SEL = 0; //0..1
+enum SYSTEM_BT_LPCK_DIV_FRAC_REG = SYSTEM_BASE + 0x0024;
 
 //enum RTC_CNTL_RESET_STATE_REG = RTC + 0x0038;
 //enum RTC_CNTL_RESET_CAUSE_PROCPU_BIT = 0; //0..5
@@ -35,6 +36,44 @@ enum RC_FAST_CLK = 18; //17.5
 size_t* calcSYSTEM_PERIP_CLK_EN0_REG() => cast(size_t*) SYSTEM_PERIP_CLK_EN0_REG;
 size_t* calcSYSTEM_PERIP_RST_EN0_REG() => cast(size_t*) SYSTEM_PERIP_RST_EN0_REG;
 size_t* calcSYSTEM_PERIP_CLK_EN1_REG() => cast(size_t*) SYSTEM_PERIP_CLK_EN1_REG;
+
+extern (C) void c3InitClock()
+{
+    //0x00000005
+    auto confReg = cast(size_t*) SYSTEM_CPU_PER_CONF_REG;
+    enum SYSTEM_PLL_FREQ_SEL = 2;
+    auto v = Volatile.load(confReg);
+    v = Bits.bitSet(v, SYSTEM_PLL_FREQ_SEL);
+
+    enum SYSTEM_CPU_WAIT_MODE_FORCE_ON = 3;
+    v = Bits.bitClear(v, SYSTEM_CPU_WAIT_MODE_FORCE_ON);
+
+    enum SYSTEM_CPUPERIOD_SEL = 0; //1
+    v = Bits.bitSet(v, SYSTEM_CPUPERIOD_SEL);
+    v = Bits.bitClear(v, SYSTEM_CPUPERIOD_SEL + 1);
+
+    Volatile.save(confReg, v);
+
+    //0x000a8400?
+    auto clkReg = cast(size_t*) SYSTEM_SYSCLK_CONF_REG;
+    auto clkVal = Volatile.load(clkReg);
+    enum SYSTEM_PRE_DIV_CNT = 0; //0..9
+    clkVal = Bits.bitClearMask(clkVal, 0x3FF);
+
+    enum SYSTEM_SOC_CLK_SEL = 10; //10..11;
+    clkVal = Bits.bitsClear(clkVal, SYSTEM_SOC_CLK_SEL, SYSTEM_SOC_CLK_SEL + 1);
+    clkVal = Bits.bitClear(clkVal,SYSTEM_SOC_CLK_SEL + 1 );
+    Volatile.save(clkReg, clkVal);
+
+    //0x01001001
+    auto lreg = cast(size_t*) SYSTEM_BT_LPCK_DIV_FRAC_REG;
+    auto lval = Volatile.load(lreg);
+    enum SYSTEM_LPCLK_SEL_RTC_SLOW = 24;
+    lval = Bits.bitSet(lval, SYSTEM_LPCLK_SEL_RTC_SLOW);
+    enum SYSTEM_LPCLK_SEL_8M = 25;
+    lval = Bits.bitClear(lval, SYSTEM_LPCLK_SEL_8M);
+    Volatile.save(lreg, lval);
+}
 
 void enableSysTimer()
 {
@@ -76,22 +115,6 @@ SYSTEM_SOC_CLK_SEL getClockType()
             return SYSTEM_SOC_CLK_SEL.INVALID;
     }
     return SYSTEM_SOC_CLK_SEL.INVALID;
-}
-
-void initClock(){
-    auto confReg = cast(size_t*) SYSTEM_CPU_PER_CONF_REG;
-    enum SYSTEM_PLL_FREQ_SEL = 2;
-    auto v = Volatile.load(confReg);
-    v = Bits.bitSet(v, SYSTEM_PLL_FREQ_SEL);
-
-    enum SYSTEM_CPUPERIOD_SEL = 0; //1
-    v = Bits.bitSet(v, SYSTEM_CPUPERIOD_SEL);
-    v = Bits.bitClear(v, SYSTEM_CPUPERIOD_SEL + 1);
-
-    enum CPU_WAIT_MODE_FORCE_ON = 3;
-    v = Bits.bitClear(v, CPU_WAIT_MODE_FORCE_ON);
-
-    Volatile.save(confReg, v);
 }
 
 uint c3clockCpuFreq()

@@ -3,6 +3,8 @@
  */
 module api.os.osentry;
 
+import OsConfig = api.conf.os_config;
+
 //Entry point
 import api.hal.hal_entry;
 
@@ -35,8 +37,6 @@ static if (Ver.hasFPU)
 {
     // import MathFloat = api.os.math.math_float;
 }
-
-extern (C) __gshared bool isTimer = true;
 
 //TODO remove arch api
 import C3GPIO = api.arch.riscv.esp32c3.c3_gpio;
@@ -114,10 +114,18 @@ extern (C) void ostart()
 
     HalUart.halWriteTxDir!"M ";
 
-    HalUart.halInitUart0(115200);
-    
+    HalUart.halInitUart0(OsConfig.UartSpeed);
+
     Syslog.isLoad = true;
     MemInfo.logMemInfo;
+
+    import HalPower = api.hal.hal_power;
+
+    HalPower.halInitPower();
+
+    import HalClock = api.hal.hal_clock;
+
+    HalClock.halClockInit();
 
     import Interrupts = api.hal.hal_interrupts;
 
@@ -126,11 +134,11 @@ extern (C) void ostart()
     Trap.halTrapInit();
     Syslog.info("Init intrs");
 
-    if (isTimer)
+    if (OsConfig.KernIsTimer)
     {
         import Timer = api.hal.hal_timer;
 
-        //Timer.halInitTimer();
+        Timer.halInitTimer();
         Syslog.info("Init timer");
     }
 

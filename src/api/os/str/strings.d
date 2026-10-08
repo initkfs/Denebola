@@ -144,7 +144,7 @@ C[] toStrT(T, C = char)(T targetValue, C[] buff, const size_t base = 10)
     return buff[index .. $];
 }
 
-void onStr(size_t BuffLen = 64)(int value, scope void delegate(scope char[] onBuff) onBuff, const size_t base = 10)
+void onStr(size_t BuffLen = 64)(int value, scope void delegate(char[] onBuff) onBuff, const size_t base = 10)
 {
     char[BuffLen] buffer = 0;
     onBuff(toStr(value, buffer, base));
