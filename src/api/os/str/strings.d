@@ -70,7 +70,7 @@ unittest
     assert(strlenz("a b c".ptr) == 5);
 }
 
-C[] ttoa(T, C = char)(T targetValue, C[] buff, const size_t base = 10)
+C[] toStrT(T, C = char)(T targetValue, C[] buff, const size_t base = 10)
         if (__traits(isIntegral, T) && isSomeChar!C)
 {
     if (buff.length < 2 || base == 0)
@@ -144,16 +144,22 @@ C[] ttoa(T, C = char)(T targetValue, C[] buff, const size_t base = 10)
     return buff[index .. $];
 }
 
-alias itoa = atoa;
+void onStr(size_t BuffLen = 64)(int value, scope void delegate(scope char[] onBuff) onBuff, const size_t base = 10)
+{
+    char[BuffLen] buffer = 0;
+    onBuff(toStr(value, buffer, base));
+}
 
-char[] atoa(int value, char[] buff, const size_t base = 10) => ttoa(value, buff, base);
+alias itoa = toStr;
+
+char[] toStr(int value, char[] buff, const size_t base = 10) => toStrT(value, buff, base);
 
 //TODO compiler-rt
 static if (size_t.sizeof >= long.sizeof)
 {
     char[] ltoa(long value, char[] buff, const size_t base = 10)
     {
-        return ttoa(value, buff, base);
+        return toStrT(value, buff, base);
     }
 }
 
@@ -162,45 +168,45 @@ unittest
     char[64] buff = 0;
 
     //Decimal
-    assert(atoa(0, buff) == "0");
-    assert(atoa(-0, buff) == "0");
-    assert(atoa(1, buff) == "1");
-    assert(atoa(-1, buff) == "-1");
+    assert(toStr(0, buff) == "0");
+    assert(toStr(-0, buff) == "0");
+    assert(toStr(1, buff) == "1");
+    assert(toStr(-1, buff) == "-1");
 
-    assert(atoa(101, buff) == "101");
-    assert(atoa(-101, buff) == "-101");
-    assert(atoa(10_000_000, buff) == "10000000");
-    assert(atoa(648_356, buff) == "648356");
+    assert(toStr(101, buff) == "101");
+    assert(toStr(-101, buff) == "-101");
+    assert(toStr(10_000_000, buff) == "10000000");
+    assert(toStr(648_356, buff) == "648356");
 
-    assert(atoa(int.max, buff) == "2147483647");
-    assert(atoa(int.min, buff) == "-2147483648");
+    assert(toStr(int.max, buff) == "2147483647");
+    assert(toStr(int.min, buff) == "-2147483648");
 
     //Negative tests
     char[2] minBuff = 0;
-    assert(atoa(int.min, minBuff) == "-0");
+    assert(toStr(int.min, minBuff) == "-0");
 
     //Overflows
-    assert(atoa(1234, minBuff) == "4");
-    assert(atoa(-1234, minBuff) == "-4");
+    assert(toStr(1234, minBuff) == "4");
+    assert(toStr(-1234, minBuff) == "-4");
 
     //Bin
     enum binBase = 2;
-    assert(atoa(0, buff, binBase) == "0");
-    assert(atoa(1, buff, binBase) == "1");
-    assert(atoa(2, buff, binBase) == "10");
-    assert(atoa(10, buff, binBase) == "1010");
-    assert(atoa(-10, buff, binBase) == "-1010");
-    assert(atoa(648356, buff, binBase) == "10011110010010100100");
+    assert(toStr(0, buff, binBase) == "0");
+    assert(toStr(1, buff, binBase) == "1");
+    assert(toStr(2, buff, binBase) == "10");
+    assert(toStr(10, buff, binBase) == "1010");
+    assert(toStr(-10, buff, binBase) == "-1010");
+    assert(toStr(648356, buff, binBase) == "10011110010010100100");
 
     //Hex
     enum hexBase = 16;
-    assert(atoa(0, buff, hexBase) == "0");
-    assert(atoa(1, buff, hexBase) == "1");
-    assert(atoa(-1, buff, hexBase) == "-1");
-    assert(atoa(10, buff, hexBase) == "A");
-    assert(atoa(4573, buff, hexBase) == "11DD");
-    assert(atoa(int.max, buff, hexBase) == "7FFFFFFF");
-    assert(atoa(int.min, buff, hexBase) == "-2147483648");
+    assert(toStr(0, buff, hexBase) == "0");
+    assert(toStr(1, buff, hexBase) == "1");
+    assert(toStr(-1, buff, hexBase) == "-1");
+    assert(toStr(10, buff, hexBase) == "A");
+    assert(toStr(4573, buff, hexBase) == "11DD");
+    assert(toStr(int.max, buff, hexBase) == "7FFFFFFF");
+    assert(toStr(int.min, buff, hexBase) == "-2147483648");
 
     //Long
     static if (size_t.sizeof >= long.sizeof)
@@ -429,7 +435,7 @@ const(char[]) formatb(char placeholder = '%', Args...)(const(char[]) pattern, ch
                 char[64] tempBuf = 0;
                 static if (is(typeof(arg) : int))
                 {
-                    auto res = atoa(arg, tempBuf);
+                    auto res = toStr(arg, tempBuf);
                 }
                 else static if (Ver.hasFPU && is(typeof(arg) == float))
                 {

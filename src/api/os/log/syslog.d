@@ -75,7 +75,7 @@ private void log(Level level, const(char)[] message, const(char)[] file, int lin
 
     import Str = api.os.str.strings;
     char[16] lineBuff;
-    logWrite(Str.atoa(line, lineBuff));
+    logWrite(Str.toStr(line, lineBuff));
 
     logWrite('\r');
     logWrite('\n');

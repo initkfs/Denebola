@@ -29,7 +29,7 @@ void panic(lazy bool expression, const string message = "Assertion failure", con
         import Str = api.os.str.strings;
 
         char[64] buff = 0;
-        const buffPtr = Str.atoa(line, buff);
+        const buffPtr = Str.toStr(line, buff);
         println("Panic! ", message, ": ", file, ":", buffPtr);
 
         halt;
