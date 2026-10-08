@@ -237,8 +237,8 @@ void initI2C()
     //Volatile.save(toReg, toval);
 
     //idf 0x13
-    auto ctrlReg = calcI2C_CTR_REG;
-    auto ctrlVal = Volatile.load(ctrlReg);
+    //auto ctrlReg = calcI2C_CTR_REG; not works on qemu fork
+    auto ctrlVal = Volatile.load(cast(size_t*) I2C_CTR_REG);
     enum I2C_MS_MODE = 4;
     ctrlVal = Bits.bitSet(ctrlVal, I2C_MS_MODE);
 
@@ -259,7 +259,7 @@ void initI2C()
     //enum I2C_CONF_UPGATE = 11;
     //ctrlVal = Bits.bitSet(ctrlVal, I2C_CONF_UPGATE);
 
-    Volatile.save(ctrlReg, ctrlVal);
+    Volatile.save(cast(size_t*) I2C_CTR_REG, ctrlVal);
 
     import Mem = api.arch.riscv.rcom.rcom_memory;
 
@@ -439,8 +439,8 @@ bool checkDeviceAddress(ubyte address7bit)
     {
         if (mainState != 0)
         {
-            Syslog.info(Str.atoa(mainState, buff));
-            Syslog.info(Str.atoa(sclState, buff));
+            Syslog.info(Str.toStr(mainState, buff));
+            Syslog.info(Str.toStr(sclState, buff));
         }
 
         if (CMD(Volatile.load(cast(size_t*) I2C_COMD0_REG)).isDone)
@@ -458,9 +458,9 @@ bool checkDeviceAddress(ubyte address7bit)
             Syslog.info("CMD2 done");
         }
 
-        Syslog.info(Str.atoa(CMD(Volatile.load(cast(size_t*) I2C_COMD0_REG)).isDone, buff));
-        Syslog.info(Str.atoa(Volatile.load(stReg), buff));
-        Syslog.info(Str.atoa(Volatile.load(ptrI2C_SR_REG), buff));
+        Syslog.info(Str.toStr(CMD(Volatile.load(cast(size_t*) I2C_COMD0_REG)).isDone, buff));
+        Syslog.info(Str.toStr(Volatile.load(stReg), buff));
+        Syslog.info(Str.toStr(Volatile.load(ptrI2C_SR_REG), buff));
 
         Sysclock.sysRoughMs(2000);
     }
