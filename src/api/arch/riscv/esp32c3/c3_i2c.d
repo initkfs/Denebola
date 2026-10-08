@@ -38,6 +38,9 @@ enum uint I2C_COMD0_REG = I2C + 0x0058;
 enum uint I2C_COMD1_REG = I2C + 0x005C;
 enum uint I2C_COMD2_REG = I2C + 0x0060;
 enum uint I2C_COMD3_REG = I2C + 0x0064;
+enum uint I2C_COMD4_REG = I2C + 0x0068;
+enum uint I2C_COMD5_REG = I2C + 0x006C;
+enum uint I2C_COMD6_REG = I2C + 0x0070;
 
 enum I2C_INT_RAW_REG = I2C + 0x0020;
 
@@ -354,7 +357,8 @@ void startSearch()
         Sysclock.sysRoughMs(2000);
     }
 
-    if(addr == 0){
+    if (addr == 0)
+    {
         return;
     }
 }
@@ -372,27 +376,116 @@ void resetFsm()
     // Volatile.save(fsmReg, fsmval);
 }
 
-bool checkDeviceAddress(ubyte address7bit)
+CMD cmdRstart() => cmd(op_code.RSTART);
+CMD cmdRead() => cmd(op_code.READ);
+CMD cmdWrite() => cmd(op_code.WRITE);
+CMD cmdStop() => cmd(op_code.STOP);
+CMD cmdEnd() => cmd(op_code.END);
+CMD cmd(op_code opcode)
 {
-    auto fifoReg = cast(uint*) I2C_FIFO_CONF_REG;
-    enum RX_FIFO_RST = 12;
-    enum TX_FIFO_RST = 13;
-    auto fifoVal = Volatile.load(fifoReg);
-    fifoVal = Bits.bitSet(fifoVal, RX_FIFO_RST);
-    fifoVal = Bits.bitSet(fifoVal, TX_FIFO_RST);
-    Volatile.save(fifoReg, fifoVal);
+    CMD cmd;
+    cmd.setOpcode(opcode);
+    return cmd;
+}
 
-    fifoVal = Volatile.load(fifoReg);
-    fifoVal = Bits.bitClear(fifoVal, RX_FIFO_RST);
-    fifoVal = Bits.bitClear(fifoVal, TX_FIFO_RST);
-    Volatile.save(fifoReg, fifoVal);
+void startTrans()
+{
+    auto ctrReg = cast(size_t*) I2C_CTR_REG;
+    auto ctrVal = Volatile.load(ctrReg);
+    enum I2C_TRANS_START = 5;
+    ctrVal = Bits.bitSet(ctrVal, I2C_TRANS_START);
+    Volatile.save(ctrReg, ctrVal);
+}
 
+bool waitTransComplete()
+{
+    auto stReg = cast(size_t*) I2C_INT_RAW_REG;
+    enum I2C_TRANS_COMPLETE_INT = 7;
+
+    while (!Bits.bitIsSet(Volatile.load(stReg), I2C_TRANS_COMPLETE_INT))
+    {
+        //Syslog.info(Str.toStr(CMD(Volatile.load(cast(size_t*) I2C_COMD0_REG)).isDone, buff));
+        //Syslog.info(Str.toStr(Volatile.load(stReg), buff));
+        //Syslog.info(Str.toStr(Volatile.load(ptrI2C_SR_REG), buff));
+
+        Syslog.info("WAIT I2C");
+        Sysclock.sysRoughMs(2000);
+    }
+
+    uint statusVal = Volatile.load(cast(size_t*) I2C_INT_RAW_REG);
+    enum I2C_NACK_INT_RAW = 10;
+    return !Bits.bitIsSet(statusVal, I2C_NACK_INT_RAW);
+}
+
+void waitEndDetect()
+{
+    auto stReg = cast(size_t*) I2C_INT_RAW_REG;
+    enum I2C_END_DETECT_INT_RAW = 3;
+
+    while (!Bits.bitIsSet(Volatile.load(stReg), I2C_END_DETECT_INT_RAW))
+    {
+        Syslog.info("WAIT END DETECT I2C");
+        Sysclock.sysRoughMs(500);
+    }
+}
+
+uint readFromReg(ubyte address7bit, ubyte reg)
+{
+    resetFIFO;
     resetFsm;
 
-    enum writeBit = 0;
-    uint addressByte = ((address7bit << 1) | writeBit);
-    auto dataReg = cast(size_t*) I2C_DATA_REG;
-    Volatile.save(dataReg, addressByte);
+    storeAddr7bit(address7bit);
+    store(reg);
+    storeAddr7bit(address7bit, false);
+
+    CMD cmd0 = cmdRstart;
+
+    CMD cmd1 = cmdWrite;
+    cmd1.byte_num(2);
+    cmd1.ack_check_en(true);
+
+    CMD cmd2 = cmdRstart;
+
+    CMD cmd3 = cmdWrite;
+    cmd3.byte_num(1);
+    cmd3.ack_check_en(true);
+
+    CMD cmd4 = cmdRead;
+    cmd4.byte_num(1);
+    cmd4.ack_value(true);
+
+    CMD cmd5 = cmdStop;
+
+    Volatile.save(cast(size_t*) I2C_COMD0_REG, cmd0.reg);
+    Volatile.save(cast(size_t*) I2C_COMD1_REG, cmd1.reg);
+    Volatile.save(cast(size_t*) I2C_COMD2_REG, cmd2.reg);
+    Volatile.save(cast(size_t*) I2C_COMD3_REG, cmd3.reg);
+    Volatile.save(cast(size_t*) I2C_COMD4_REG, cmd4.reg);
+    Volatile.save(cast(size_t*) I2C_COMD5_REG, cmd5.reg);
+
+    startTrans;
+    if(!waitTransComplete){
+        Syslog.info("I2C NACK");
+        clearTrans;
+        return 0;
+    }
+
+    clearTrans;
+
+    Syslog.info("WRITE complete");
+
+    //TODO check ACK
+    uint res = Volatile.load(cast(size_t*) I2C_DATA_REG);
+
+    return res;
+}
+
+bool checkDeviceAddress(ubyte address7bit)
+{
+    resetFIFO;
+    resetFsm;
+
+    storeAddr7bit(address7bit);
 
     CMD cmd0;
     cmd0.setOpcode(op_code.RSTART);
@@ -437,7 +530,7 @@ bool checkDeviceAddress(ubyte address7bit)
         //Syslog.info(Str.toStr(Volatile.load(stReg), buff));
         //Syslog.info(Str.toStr(Volatile.load(ptrI2C_SR_REG), buff));
 
-        Sysclog.info("WAIT I2C");
+        Syslog.info("WAIT I2C");
         Sysclock.sysRoughMs(2000);
     }
 
@@ -450,6 +543,43 @@ bool checkDeviceAddress(ubyte address7bit)
     enum I2C_NACK_INT_RAW = 10;
     bool isDeviceFound = !Bits.bitIsSet(statusVal, I2C_NACK_INT_RAW);
 
+    clearTrans;
+
+    return isDeviceFound;
+}
+
+void resetFIFO()
+{
+    auto fifoReg = cast(uint*) I2C_FIFO_CONF_REG;
+    enum RX_FIFO_RST = 12;
+    enum TX_FIFO_RST = 13;
+    auto fifoVal = Volatile.load(fifoReg);
+    fifoVal = Bits.bitSet(fifoVal, RX_FIFO_RST);
+    fifoVal = Bits.bitSet(fifoVal, TX_FIFO_RST);
+    Volatile.save(fifoReg, fifoVal);
+
+    fifoVal = Volatile.load(fifoReg);
+    fifoVal = Bits.bitClear(fifoVal, RX_FIFO_RST);
+    fifoVal = Bits.bitClear(fifoVal, TX_FIFO_RST);
+    Volatile.save(fifoReg, fifoVal);
+}
+
+void store(ubyte value)
+{
+    auto dataReg = cast(size_t*) I2C_DATA_REG;
+    Volatile.save(dataReg, value);
+}
+
+void storeAddr7bit(ubyte address7bit, bool isWrite = true)
+{
+    auto writeBit = isWrite ? 0 : 1;
+    uint addressByte = ((address7bit << 1) | writeBit);
+    auto dataReg = cast(size_t*) I2C_DATA_REG;
+    Volatile.save(dataReg, addressByte);
+}
+
+void clearTrans()
+{
     auto intrReg = cast(size_t*) I2C_INT_CLR_REG;
     auto intrVal = Volatile.load(intrReg);
     enum NACK_INT_CLR = 10;
@@ -457,6 +587,4 @@ bool checkDeviceAddress(ubyte address7bit)
     enum I2C_END_DETECT_INT_CLR = 3;
     intrVal = Bits.bitsSet(intrVal, TRANS_COMPLETE_INT_CLR, NACK_INT_CLR, I2C_END_DETECT_INT_CLR);
     Volatile.save(intrReg, intrVal);
-
-    return isDeviceFound;
 }
