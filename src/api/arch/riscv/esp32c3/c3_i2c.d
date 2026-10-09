@@ -95,7 +95,7 @@ struct CMD
     }
 }
 
-size_t* calcI2C_CTR_REG = cast(size_t*) I2C_CTR_REG;
+size_t* ptrI2C_CTR_REG() => cast(size_t*) I2C_CTR_REG;
 
 void initI2C()
 {
@@ -229,8 +229,8 @@ void initI2C()
     //Volatile.save(toReg, toval);
 
     //idf 0x13
-    //auto ctrlReg = calcI2C_CTR_REG; not works on qemu fork
-    auto ctrlVal = Volatile.load(cast(size_t*) I2C_CTR_REG);
+    auto ctrlReg = ptrI2C_CTR_REG;
+    auto ctrlVal = Volatile.load(ctrlReg);
     enum I2C_MS_MODE = 4;
     ctrlVal = Bits.bitSet(ctrlVal, I2C_MS_MODE);
 
@@ -251,7 +251,7 @@ void initI2C()
     //enum I2C_CONF_UPGATE = 11;
     //ctrlVal = Bits.bitSet(ctrlVal, I2C_CONF_UPGATE);
 
-    Volatile.save(cast(size_t*) I2C_CTR_REG, ctrlVal);
+    Volatile.save(ctrlReg, ctrlVal);
 
     import Mem = api.arch.riscv.rcom.rcom_memory;
 
