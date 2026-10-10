@@ -323,6 +323,12 @@ size_t rxFifoCnt()
     return (Volatile.load(ptrI2C_SR_REG) >> I2C_RXFIFO_CNT) & 0x3F;
 }
 
+size_t txFifoCnt()
+{
+    enum I2C_RXFIFO_CNT = 8; //8..13
+    return (Volatile.load(ptrI2C_SR_REG) >> I2C_RXFIFO_CNT) & 0x3F;
+}
+
 void startSearch()
 {
     ubyte addr;
@@ -397,6 +403,12 @@ void startTrans()
     Volatile.save(ctrReg, ctrVal);
 }
 
+bool isTransComplete()
+{
+    enum I2C_TRANS_COMPLETE_INT = 7;
+    return Bits.bitIsSet(Volatile.load(cast(size_t*) I2C_INT_RAW_REG), I2C_TRANS_COMPLETE_INT);
+}
+
 bool waitTransComplete()
 {
     auto stReg = cast(size_t*) I2C_INT_RAW_REG;
@@ -415,6 +427,13 @@ bool waitTransComplete()
     uint statusVal = Volatile.load(cast(size_t*) I2C_INT_RAW_REG);
     enum I2C_NACK_INT_RAW = 10;
     return !Bits.bitIsSet(statusVal, I2C_NACK_INT_RAW);
+}
+
+bool isEndDetect()
+{
+    auto stReg = cast(size_t*) I2C_INT_RAW_REG;
+    enum I2C_END_DETECT_INT_RAW = 3;
+    return Bits.bitIsSet(Volatile.load(stReg), I2C_END_DETECT_INT_RAW);
 }
 
 void waitEndDetect()
@@ -464,7 +483,8 @@ uint readFromReg(ubyte address7bit, ubyte reg)
     Volatile.save(cast(size_t*) I2C_COMD5_REG, cmd5.reg);
 
     startTrans;
-    if(!waitTransComplete){
+    if (!waitTransComplete)
+    {
         Syslog.info("I2C NACK");
         clearTrans;
         return 0;
@@ -586,5 +606,14 @@ void clearTrans()
     enum TRANS_COMPLETE_INT_CLR = 7;
     enum I2C_END_DETECT_INT_CLR = 3;
     intrVal = Bits.bitsSet(intrVal, TRANS_COMPLETE_INT_CLR, NACK_INT_CLR, I2C_END_DETECT_INT_CLR);
+    Volatile.save(intrReg, intrVal);
+}
+
+void clearEndDetectIntr()
+{
+    auto intrReg = cast(size_t*) I2C_INT_CLR_REG;
+    auto intrVal = Volatile.load(intrReg);
+    enum I2C_END_DETECT_INT_CLR = 3;
+    intrVal = Bits.bitSet(intrVal, I2C_END_DETECT_INT_CLR);
     Volatile.save(intrReg, intrVal);
 }
