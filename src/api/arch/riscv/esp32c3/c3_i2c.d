@@ -420,8 +420,8 @@ bool waitTransComplete()
         //Syslog.info(Str.toStr(Volatile.load(stReg), buff));
         //Syslog.info(Str.toStr(Volatile.load(ptrI2C_SR_REG), buff));
 
-        Syslog.info("WAIT I2C");
-        Sysclock.sysRoughMs(2000);
+        //Syslog.info("WAIT I2C");
+        //Sysclock.sysRoughMs(2000);
     }
 
     uint statusVal = Volatile.load(cast(size_t*) I2C_INT_RAW_REG);
