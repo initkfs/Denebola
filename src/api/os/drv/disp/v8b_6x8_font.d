@@ -160,13 +160,14 @@ bool drawAsciiChar(char c, ubyte[] frameBuffer, int startX = 0, int pageY = 0, s
         if (fbIndex >= frameBuffer.length)
             return false;
 
-        Buffer.frameBuffer.ptr[fbIndex] |= asciiFont[fontIndex * FontSize + col];
+        //Buffer.frameBuffer.ptr[fbIndex] |= asciiFont[fontIndex * FontSize + col];
+        Buffer.frameBuffer.ptr[fbIndex] = asciiFont[fontIndex * FontSize + col];
     }
 
     return true;
 }
 
-bool drawString(string text, ubyte[] frameBuffer, int startX = 0, int pageY = 0, size_t maxWidth = 128, size_t maxPages = 8)
+bool drawString(const(char)[] text, ubyte[] frameBuffer, int startX = 0, int pageY = 0, size_t maxWidth = 128, size_t maxPages = 8)
 {
     if (text.length == 0)
     {

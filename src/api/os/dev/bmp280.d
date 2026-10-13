@@ -96,7 +96,8 @@ enum Oversmpl
 
 bool checkID() => readID == ID;
 
-void initSensor(){
+void runSensor()
+{
     resetFIFO;
 
     storeAddr7bit(ADDR);
@@ -268,7 +269,7 @@ void readTempPress(out int temp, out uint press)
 
     int adcP = (cast(int) press_msb << 12) | (cast(int) press_lsb << 4) | (cast(int) press_xlsb >> 4);
     int adcT = (cast(int) temp_msb << 12) | (cast(int) temp_lsb << 4) | (cast(int) temp_xlsb >> 4);
-    
+
     temp = compensateT(adcT);
     press = compensateP(adcP);
 }
@@ -440,4 +441,23 @@ static uint compensateP(uint pressure, uint minValue = 10000)
     }
 
     return minValue;
+}
+
+int paToMM(uint pressPa)
+{
+    // max 110 000Pa, 1mm == 133.3224Pa, 100 / 133.3224 = 0.7500..
+    // 2^12 = 4096, 0.750061683 * 4096 = 3072.25
+    // Pa * 3072 / 4096, + 2048 for round to int 
+    int temp = (cast(int) pressPa * 3072) + 2048;
+    return temp >> 12; // /4096
+}
+
+uint bringSeaLevel(uint pressPa, int tempC100, int heightM)
+{
+    if (heightM == 0) return pressPa;
+    int tempK100 = tempC100 + 27315;
+    int pScaled = cast(int)(pressPa >> 8);
+    int pDelta = ((pScaled * heightM * 223891) + (tempK100 / 2)) / tempK100;
+    pDelta = (pDelta + 128) >> 8;
+    return cast(uint)(cast(int)pressPa + pDelta);
 }

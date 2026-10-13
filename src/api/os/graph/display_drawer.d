@@ -26,7 +26,12 @@ bool printChar(char c, int startX = 0, int pageY = 0, size_t maxWidth = 128)
     return Font.drawAsciiChar(c, Buffer.frameBuffer, startX, pageY, maxWidth);
 }
 
-bool printStr(string text, int startX = 0, int pageY = 0, size_t maxWidth = 128, size_t maxPages = 8)
+bool printStr(const(char)[] text, int startX = 0, int pageY = 0, size_t maxWidth = 128, size_t maxPages = 8)
 {
     return Font.drawString(text, Buffer.frameBuffer, startX, pageY, maxWidth, maxPages);
+}
+
+void updateBuffer()
+{
+    Driver.updateBuffer(Buffer.frameBuffer);
 }
