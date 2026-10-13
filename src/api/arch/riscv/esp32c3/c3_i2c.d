@@ -325,8 +325,8 @@ size_t rxFifoCnt()
 
 size_t txFifoCnt()
 {
-    enum I2C_RXFIFO_CNT = 8; //8..13
-    return (Volatile.load(ptrI2C_SR_REG) >> I2C_RXFIFO_CNT) & 0x3F;
+    enum I2C_TXFIFO_CNT = 18; //18..23
+    return (Volatile.load(ptrI2C_SR_REG) >> I2C_TXFIFO_CNT) & 0x3F;
 }
 
 void startSearch()

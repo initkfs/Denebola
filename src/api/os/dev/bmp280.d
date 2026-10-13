@@ -3,6 +3,10 @@ module api.os.dev.bmp280;
 import Volatile = api.hal.hal_volatile;
 import Bits = api.hal.hal_bits;
 
+import Sysclock = api.os.sys.sys_clock;
+import Syslog = api.os.log.syslog;
+import Str = api.os.str.strings;
+
 /**
  * Authors: initkfs
  *
@@ -91,6 +95,183 @@ enum Oversmpl
 }
 
 bool checkID() => readID == ID;
+
+void initSensor(){
+    resetFIFO;
+
+    storeAddr7bit(ADDR);
+    store(0xF4);
+    store(0x25);
+
+    CMD cmd0 = cmdRstart;
+
+    CMD cmd1 = cmdWrite;
+    cmd1.byte_num(3);
+    cmd1.ack_check_en(true);
+
+    CMD cmd2 = cmdStop;
+
+    Volatile.save(cast(size_t*) I2C_COMD0_REG, cmd0.reg);
+    Volatile.save(cast(size_t*) I2C_COMD1_REG, cmd1.reg);
+    Volatile.save(cast(size_t*) I2C_COMD2_REG, cmd2.reg);
+
+    startTrans;
+    while (!waitTransComplete)
+    {
+        //Syslog.info("WAIT cali transaction");
+        //Sysclock.sysRoughMs(2000);
+    }
+
+    Sysclock.sysRoughMs(10);
+
+    clearTrans;
+}
+
+void initCali()
+{
+    resetFIFO;
+    //resetFsm;
+
+    enum caliBytes = 24; //3 * short.sizeof + 9 * short.sizeof;
+    enum firstCaliAddr = 0x88;
+
+    storeAddr7bit(ADDR);
+    store(firstCaliAddr);
+    storeAddr7bit(ADDR, false);
+
+    CMD cmd0 = cmdRstart;
+
+    CMD cmd1 = cmdWrite;
+    cmd1.byte_num(2);
+    cmd1.ack_check_en(true);
+
+    CMD cmd2 = cmdRstart;
+
+    CMD cmd3 = cmdWrite;
+    cmd3.byte_num(1);
+    cmd3.ack_check_en(true);
+
+    CMD cmd4 = cmdRead;
+    cmd4.byte_num(24 - 1);
+    //cmd4.ack_value(true);
+
+    CMD cmd5 = cmdRead;
+    cmd5.byte_num(1);
+    cmd5.ack_value(true);
+
+    CMD cmd6 = cmdStop;
+
+    Volatile.save(cast(size_t*) I2C_COMD0_REG, cmd0.reg);
+    Volatile.save(cast(size_t*) I2C_COMD1_REG, cmd1.reg);
+    Volatile.save(cast(size_t*) I2C_COMD2_REG, cmd2.reg);
+    Volatile.save(cast(size_t*) I2C_COMD3_REG, cmd3.reg);
+    Volatile.save(cast(size_t*) I2C_COMD4_REG, cmd4.reg);
+    Volatile.save(cast(size_t*) I2C_COMD5_REG, cmd5.reg);
+    Volatile.save(cast(size_t*) I2C_COMD6_REG, cmd6.reg);
+
+    startTrans;
+    while (!waitTransComplete)
+    {
+        //Syslog.info("WAIT cali transaction");
+        //Sysclock.sysRoughMs(2000);
+    }
+
+    //0..(24 / 2)
+    foreach (i; 0 .. 12)
+    {
+        ubyte lsb = cast(ubyte) Volatile.load(cast(size_t*) I2C_DATA_REG);
+        ubyte msb = cast(ubyte) Volatile.load(cast(size_t*) I2C_DATA_REG);
+
+        uint val = (cast(uint) msb << 8) | lsb;
+
+        //dfmt off
+        switch (i)
+        {
+            case 0:  digT1 = cast(ushort) val; break;
+            case 1:  digT2 = cast(short) val;  break;
+            case 2:  digT3 = cast(short) val;  break;
+            case 3:  digP1 = cast(ushort) val; break;
+            case 4:  digP2 = cast(short) val;  break;
+            case 5:  digP3 = cast(short) val;  break;
+            case 6:  digP4 = cast(short) val;  break;
+            case 7:  digP5 = cast(short) val;  break;
+            case 8:  digP6 = cast(short) val;  break;
+            case 9:  digP7 = cast(short) val;  break;
+            case 10: digP8 = cast(short) val;  break;
+            case 11: digP9 = cast(short) val;  break;
+            default: break;
+        }
+        //Sysclock.sysRoughMs(2000);
+        //dfmt on
+    }
+
+    clearTrans;
+}
+
+void readTempPress(out int temp, out uint press)
+{
+    resetFIFO;
+    //resetFsm;
+
+    enum caliBytes = 6;
+    enum firstDataAddr = 0xF7;
+
+    storeAddr7bit(ADDR);
+    store(firstDataAddr);
+    storeAddr7bit(ADDR, false);
+
+    CMD cmd0 = cmdRstart;
+
+    CMD cmd1 = cmdWrite;
+    cmd1.byte_num(2);
+    cmd1.ack_check_en(true);
+
+    CMD cmd2 = cmdRstart;
+
+    CMD cmd3 = cmdWrite;
+    cmd3.byte_num(1);
+    cmd3.ack_check_en(true);
+
+    CMD cmd4 = cmdRead;
+    cmd4.byte_num(caliBytes - 1);
+
+    CMD cmd5 = cmdRead;
+    cmd5.byte_num(1);
+    cmd5.ack_value(true);
+
+    CMD cmd6 = cmdStop;
+
+    Volatile.save(cast(size_t*) I2C_COMD0_REG, cmd0.reg);
+    Volatile.save(cast(size_t*) I2C_COMD1_REG, cmd1.reg);
+    Volatile.save(cast(size_t*) I2C_COMD2_REG, cmd2.reg);
+    Volatile.save(cast(size_t*) I2C_COMD3_REG, cmd3.reg);
+    Volatile.save(cast(size_t*) I2C_COMD4_REG, cmd4.reg);
+    Volatile.save(cast(size_t*) I2C_COMD5_REG, cmd5.reg);
+    Volatile.save(cast(size_t*) I2C_COMD6_REG, cmd6.reg);
+
+    startTrans;
+    while (!waitTransComplete)
+    {
+        //Syslog.info("WAIT cali transaction");
+        //Sysclock.sysRoughMs(2000);
+    }
+
+    clearTrans;
+
+    ubyte press_msb = Volatile.load(cast(ubyte*) I2C_DATA_REG);
+    ubyte press_lsb = Volatile.load(cast(ubyte*) I2C_DATA_REG);
+    ubyte press_xlsb = Volatile.load(cast(ubyte*) I2C_DATA_REG);
+
+    ubyte temp_msb = Volatile.load(cast(ubyte*) I2C_DATA_REG);
+    ubyte temp_lsb = Volatile.load(cast(ubyte*) I2C_DATA_REG);
+    ubyte temp_xlsb = Volatile.load(cast(ubyte*) I2C_DATA_REG);
+
+    int adcP = (cast(int) press_msb << 12) | (cast(int) press_lsb << 4) | (cast(int) press_xlsb >> 4);
+    int adcT = (cast(int) temp_msb << 12) | (cast(int) temp_lsb << 4) | (cast(int) temp_xlsb >> 4);
+    
+    temp = compensateT(adcT);
+    press = compensateP(adcP);
+}
 
 int readID()
 {
