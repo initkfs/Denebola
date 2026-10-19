@@ -1,4 +1,4 @@
-module api.os.drv.disp.v8b_128x64_buff;
+module api.os.drv.disp.v8b8x8.v8b_128x64_buff;
 
 /**
  * Authors: initkfs

@@ -1,6 +1,6 @@
-module api.os.drv.disp.v8b_128x64_draw;
+module api.os.drv.disp.v8b8x8.v8b_128x64_draw;
 
-import api.os.drv.disp.v8b_128x64_buff;
+import api.os.drv.disp.v8b8x8.v8b_128x64_buff;
 
 enum DisplayWidth = 128;
 enum DisplayHeight = 64;

@@ -157,16 +157,17 @@ ushort readAdc1()
     enum APB_SARADC_ONETIME_START = 29;
     sampleV = Bits.bitSet(sampleV, APB_SARADC_ONETIME_START);
 
-    foreach (_; 0 .. 100)
-    {
-        Volatile.save(sampleReg, sampleV);
-    }
+    // foreach (_; 0 .. 100)
+    // {
+    //     Volatile.save(sampleReg, sampleV);
+    // }
+    Volatile.save(sampleReg, sampleV);
 
     auto reg = cast(size_t*) APB_SARADC_INT_RAW_REG;
     enum APB_SARADC_ADC1_DONE_INT_RAW = 31;
     while (!Bits.bitIsSet(Volatile.load(reg), APB_SARADC_ADC1_DONE_INT_RAW))
     {
-
+        
     }
 
     reg = cast(size_t*) APB_SARADC_1_DATA_STATUS_REG;
