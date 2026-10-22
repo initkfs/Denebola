@@ -3,7 +3,7 @@
  */
 module api.os.errors;
 
-void halt()
+void halt(string message = null)
 {
     import HalIntr = api.hal.hal_interrupts;
     import HalCpu = api.hal.hal_cpu;
@@ -13,7 +13,24 @@ void halt()
         HalIntr.halSetGlobalMIntrOff();
     }
 
-    HalCpu.halWait();
+    if (message.length == 0)
+    {
+        HalCpu.halWait();
+    }
+
+    import api.os.io.cstdio;
+
+    //TODO delay
+    while (true)
+    {
+        println(message);
+        size_t i = size_t.max;
+        while (i > 0)
+        {
+            i--;
+        }
+    }
+
 }
 
 void panic(const string message = "Assertion failure", const string file = __FILE__, const int line = __LINE__)

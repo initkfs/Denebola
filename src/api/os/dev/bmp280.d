@@ -277,7 +277,7 @@ void readTempPress(out int temp, out uint press)
 int readID()
 {
     enum invalidID = -1;
-    if (!checkDeviceAddress(ADDR))
+    if (!checkAddress(ADDR))
     {
         return invalidID;
     }

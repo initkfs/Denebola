@@ -129,58 +129,59 @@ extern (C) size_t trap_handler(size_t epc, size_t cause, size_t mtval)
     }
     else
     {
+        string msg = "Trap!";
         switch (causeCode)
         {
             case 0:
-                println("Instruction address misaligned.");
+                msg = "Instruction address misaligned.";
                 break;
             case 1:
-                println("Instruction access fault.");
+                msg = "Instruction access fault.";
                 break;
             case 2:
-                println("Illegal instruction.");
+                msg = "Illegal instruction.";
                 break;
             case 3:
-                println("Breakpoint.");
+                msg = "Breakpoint.";
                 break;
             case 4:
-                println("Load address misaligned.");
+                msg = "Load address misaligned.";
                 break;
             case 5:
-                println("Load access fault.");
+                msg = "Load access fault.";
                 break;
             case 6:
-                println("Store/AMO address misaligned.");
+                msg = "Store/AMO address misaligned.";
                 break;
             case 7:
-                println("Store/AMO access fault.");
+                msg = "Store/AMO access fault.";
                 break;
             case 8:
                 println("Environment call from U-mode.");
                 break;
             case 9:
-                println("Environment call from S-mode.");
+                msg = "Environment call from S-mode.";
                 break;
             case 11:
-                println("Environment call from M-mode.");
+                msg = "Environment call from M-mode.";
                 break;
             case 12:
-                println("Instruction page fault.");
+                msg = "Instruction page fault.";
                 break;
             case 13:
-                println("Load page fault.");
+                msg = "Load page fault.";
                 break;
             case 15:
-                println("Store/AMO page fault.");
+                msg = "Store/AMO page fault.";
                 break;
             default:
-                println("Unknown synchronous exception.");
+                msg = "Unknown synchronous exception.";
                 break;
         }
 
         import api.os.errors : halt;
 
-        halt;
+        halt(msg);
     }
     return retPc;
 }

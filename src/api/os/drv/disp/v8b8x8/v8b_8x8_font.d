@@ -70,8 +70,6 @@ bool drawString(const(char)[] text, ubyte[] frameBuffer, int startX = 0, int pag
             return false;
         }
 
-        continue;
-
         if (currentX >= maxWidth)
         {
             if (pageY == (maxPages - 1))

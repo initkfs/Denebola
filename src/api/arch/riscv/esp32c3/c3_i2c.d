@@ -335,17 +335,17 @@ void startSearch()
     char[64] buff = 0;
     while (true)
     {
-        // if (checkDeviceAddress(0x76))
+        // if (checkAddress(0x76))
         // {
         //     Syslog.info("Found 0x76");
         // }
 
-        // if (checkDeviceAddress(0x77))
+        // if (checkAddress(0x77))
         // {
         //     Syslog.info("Found 0x77");
         // }
 
-        if (checkDeviceAddress(0x76))
+        if (checkAddress(0x76))
         {
             addr = 0x76;
             Syslog.info("Found 0x76");
@@ -500,10 +500,10 @@ uint readFromReg(ubyte address7bit, ubyte reg)
     return res;
 }
 
-bool checkDeviceAddress(ubyte address7bit)
+bool checkAddress(ubyte address7bit)
 {
     resetFIFO;
-    resetFsm;
+    //resetFsm;
 
     storeAddr7bit(address7bit);
 
