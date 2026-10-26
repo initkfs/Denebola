@@ -69,6 +69,6 @@ void sync1()
     auto reg = cast(size_t*) SPI_CMD_REG_1;
     auto data = Volatile.load(reg);
     enum SPI_UPDATE = 23;
-    data = Bits.bitSet(SPI_UPDATE);
-    Volatile.store(reg, data);
+    data = Bits.bitSet(data, SPI_UPDATE);
+    Volatile.save(reg, data);
 }
