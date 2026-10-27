@@ -2,9 +2,8 @@ ENTRY(_start)
 
 MEMORY
 {
-    iram (rx) : org = 0x40380000, len = 0x40000 
-    dram (rw) : org = 0x3FC90000, len = 0x40000 
-    rtc_ram (rx): org = 0x50000000, len = 0x2000
+   iram (rwx) : org = 0x40380000, len = 320K
+   dram (rw)  : org = 0x3FC80000, len = 320K
 }
 
 SECTIONS
@@ -20,15 +19,18 @@ SECTIONS
     *(.text .stub .text.* .gnu.linkonce.t.*)
     *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*)
     *(.gnu.warning)
-    . = ALIGN(4);
+    . = ALIGN(16);
     _iram_end = .;
   } > iram
 
-  .rodata ORIGIN(dram) :
+  _iram_size = _iram_end - 0x40380000;
+  
+  _dram_start = ORIGIN(dram) + _iram_size;
+
+  .rodata _dram_start : AT(_iram_size)
   {
-    _dram_start = .;
-    *(.rodata .rodata.* .srodata .srodata.* .sdata2 .sdata2.* .gnu.linkonce.r.*)
-    *(.rela.data .rela.data.* .rela.gnu.linkonce.r.*)
+    _dram_start_data = .;
+    *(.rodata .rodata.* .srodata .srodata.*)
     . = ALIGN(4);
   } > dram
 
@@ -96,9 +98,3 @@ SECTIONS
   _heap_start = _stack_start; 
   _heap_end = ORIGIN(dram) + LENGTH(dram);
 }
-
-rom_gpio_matrix_in = 0x400005a0;
-rom_gpio_matrix_out = 0x400005a4;
-
-PROVIDE ( esp_rom_gpio_connect_in_signal  = rom_gpio_matrix_in );
-PROVIDE ( esp_rom_gpio_connect_out_signal = rom_gpio_matrix_out );
