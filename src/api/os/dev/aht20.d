@@ -17,7 +17,7 @@ import api.arch.riscv.esp32c3.c3_i2c;
 
 enum ADDR = 0x38;
 
-ubyte checkCalib()
+bool checkCalib()
 {
     resetFIFO;
 
@@ -60,7 +60,7 @@ ubyte checkCalib()
 
     clearTrans;
 
-    return result; //& 0x08 == 1
+    return (result & 0x08) == 1; //& 0x08 == 1
 }
 
 void runHum()
@@ -112,6 +112,7 @@ void ahtReset()
     Volatile.save(cast(size_t*) I2C_COMD0_REG, cmd0.reg);
     Volatile.save(cast(size_t*) I2C_COMD1_REG, cmd1.reg);
     Volatile.save(cast(size_t*) I2C_COMD2_REG, cmd2.reg);
+    
     startTrans;
     while (!waitTransComplete)
     {
@@ -241,17 +242,18 @@ ubyte calcAhtCrc(ubyte[6] data)
     return crc;
 }
 
-int calcDewPoint(int temp, uint hum) pure nothrow @nogc
+int calcDewPoint(int temp, uint hum)
 {
     // 5050 -> 50
-    int hPercent = cast(int)(hum / 100);
-
-    if (hPercent > 100) hPercent = 100;
-    if (hPercent < 1) hPercent = 1;
+    uint hPercent = hum / 100u;
+    enum hBound = 100u;
+    enum lBound = 1u;
+    if (hPercent > hBound) hPercent = hBound;
+    if (hPercent < lBound) hPercent = lBound;
 
     // (100 - H) * 20 
     // (1/5 * 100 = 20)
-    int deficit = (100 - hPercent) * 20;
+    int deficit = (100 - cast(int) hPercent) * 20;
 
     return temp - deficit;
 }

@@ -55,7 +55,15 @@ struct SBuffer(size_t Len, T = char)
         _length = value;
     }
 
-    size_t capacity() const pure @safe => _buffer.length - _length;
+    size_t capacity() const pure @safe
+    {
+        if (_length >= _buffer.length)
+        {
+            return 0;
+        }
+        return _buffer.length - _length;
+    }
+
     size_t index() const pure @safe => _length;
 
     bool isOverflow() const pure @safe => _overflow;
