@@ -360,7 +360,7 @@ void startSearch()
         //Syslog.info(Str.atoa(mainState, buff));
         //Syslog.info(Str.atoa(sclState, buff));
 
-        Sysclock.sysRoughMs(2000);
+        Sysclock.sysDelayMs(2000);
     }
 
     if (addr == 0)
@@ -421,7 +421,7 @@ bool waitTransComplete()
         //Syslog.info(Str.toStr(Volatile.load(ptrI2C_SR_REG), buff));
 
         //Syslog.info("WAIT I2C");
-        //Sysclock.sysRoughMs(2000);
+        //Sysclock.sysDelayMs(2000);
     }
 
     uint statusVal = Volatile.load(cast(size_t*) I2C_INT_RAW_REG);
@@ -444,7 +444,7 @@ void waitEndDetect()
     while (!Bits.bitIsSet(Volatile.load(stReg), I2C_END_DETECT_INT_RAW))
     {
         Syslog.info("WAIT END DETECT I2C");
-        Sysclock.sysRoughMs(500);
+        Sysclock.sysDelayMs(500);
     }
 }
 
@@ -551,7 +551,7 @@ bool checkAddress(ubyte address7bit)
         //Syslog.info(Str.toStr(Volatile.load(ptrI2C_SR_REG), buff));
 
         Syslog.info("WAIT I2C");
-        Sysclock.sysRoughMs(2000);
+        Sysclock.sysDelayMs(2000);
     }
 
     //uint statusVal = Volatile.load(cast(size_t*) I2C_SR_REG);

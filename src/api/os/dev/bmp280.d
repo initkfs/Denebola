@@ -120,10 +120,10 @@ void runSensor()
     while (!waitTransComplete)
     {
         //Syslog.info("WAIT cali transaction");
-        //Sysclock.sysRoughMs(2000);
+        //Sysclock.sysDelayMs(2000);
     }
 
-    Sysclock.sysRoughMs(10);
+    Sysclock.sysDelayMs(10);
 
     clearTrans;
 }
@@ -174,7 +174,7 @@ void initCali()
     while (!waitTransComplete)
     {
         //Syslog.info("WAIT cali transaction");
-        //Sysclock.sysRoughMs(2000);
+        //Sysclock.sysDelayMs(2000);
     }
 
     //0..(24 / 2)
@@ -202,7 +202,7 @@ void initCali()
             case 11: digP9 = cast(short) val;  break;
             default: break;
         }
-        //Sysclock.sysRoughMs(2000);
+        //Sysclock.sysDelayMs(2000);
         //dfmt on
     }
 
@@ -254,7 +254,7 @@ void readTempPress(out int temp, out uint press)
     while (!waitTransComplete)
     {
         //Syslog.info("WAIT cali transaction");
-        //Sysclock.sysRoughMs(2000);
+        //Sysclock.sysDelayMs(2000);
     }
 
     clearTrans;

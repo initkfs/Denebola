@@ -91,7 +91,7 @@ void runHum()
 
     clearTrans;
 
-    Sysclock.sysRoughMs(100); //80ms
+    Sysclock.sysDelayMs(100); //80ms
 }
 
 void ahtReset()
@@ -149,7 +149,7 @@ void hatInitCali()
     }
 
     clearTrans;
-    Sysclock.sysRoughMs(20); //10ms
+    Sysclock.sysDelayMs(20); //10ms
 }
 
 bool readHum(out uint hum, out int temp)

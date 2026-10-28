@@ -40,12 +40,12 @@ void runLightSensor()
     while (!waitTransComplete)
     {
         //Syslog.info("WAIT LIGHT SENSOR");
-        //Sysclock.sysRoughMs(100);
+        //Sysclock.sysDelayMs(100);
     }
 
     clearTrans;
 
-    Sysclock.sysRoughMs(150); //180ms
+    Sysclock.sysDelayMs(150); //180ms
 }
 
 uint readLightSensor()

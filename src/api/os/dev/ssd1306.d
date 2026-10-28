@@ -179,7 +179,7 @@ void resetCoords()
     {
         //TODO return false
         Syslog.info("WAIT reset end");
-        Sysclock.sysRoughMs(2000);
+        Sysclock.sysDelayMs(2000);
     }
 
     clearTrans;
@@ -219,7 +219,7 @@ void updateBuffer(ubyte[] frameBuffer)
     while (!isEndDetect)
     {
         //Syslog.info("WAIT END first data portion");
-        //Sysclock.sysRoughMs(1000);
+        //Sysclock.sysDelayMs(1000);
     }
 
     clearEndDetectIntr;
@@ -232,7 +232,7 @@ void updateBuffer(ubyte[] frameBuffer)
         if (fifoFree == 0)
         {
             //Syslog.info("FIFO full");
-            //Sysclock.sysRoughMs(1000);
+            //Sysclock.sysDelayMs(1000);
             continue;
         }
 
@@ -270,7 +270,7 @@ void updateBuffer(ubyte[] frameBuffer)
         while (!isEndDetect)
         {
             //Syslog.info("WAIT NEXT data portion");
-            //Sysclock.sysRoughMs(1000);
+            //Sysclock.sysDelayMs(1000);
         }
 
         if (isStop)
@@ -288,7 +288,7 @@ void updateBuffer(ubyte[] frameBuffer)
     while (!isTransComplete)
     {
         //Syslog.info("WAIT display complete");
-        //Sysclock.sysRoughMs(1000);
+        //Sysclock.sysDelayMs(1000);
     }
 
     clearTrans;
