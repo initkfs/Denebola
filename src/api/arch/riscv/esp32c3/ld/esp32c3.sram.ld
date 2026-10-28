@@ -98,3 +98,9 @@ SECTIONS
   _heap_start = _stack_start; 
   _heap_end = ORIGIN(dram) + LENGTH(dram);
 }
+
+
+PROVIDE( esp_rom_spiflash_read = 0x40000130 );
+PROVIDE( esp_rom_spiflash_attach = 0x40000164 );
+PROVIDE( spi_flash_get_chip_size = 0x40000168 );
+PROVIDE( esp_rom_spiflash_config_param = 0x40000134 );
